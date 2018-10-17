@@ -6,74 +6,78 @@ namespace CDPlayer
     {
         public string CDName;
         public bool isOpen = false;
-        CDTrigger cdt;
         public bool ready = false;
         public CDPlayer cdp;
+        public bool inRack;
+        public int inRackNr = 0;
+        public int inRackSlot = 0;
+        private CDTrigger cdt;
+        private Animator animator;
+        public bool purchased;
+
         void Start()
         {
-            //Destroy all playmakers
-            foreach (PlayMakerFSM c in gameObject.GetComponentsInChildren<PlayMakerFSM>())
-                Destroy(c);
-            foreach (PlayMakerFSM c in gameObject.GetComponents<PlayMakerFSM>())
-                Destroy(c);
-            Destroy(transform.GetChild(1).GetComponent("PlayMakerTriggerEnter"));
-            transform.GetChild(1).gameObject.AddComponent<BoxCollider>().isTrigger = true;
-            transform.GetChild(1).gameObject.GetComponent<BoxCollider>().size = new Vector3(0.1f,0.1f,0.1f);
-            cdt = transform.GetChild(1).gameObject.AddComponent<CDTrigger>();
+            animator = transform.GetChild(0).GetComponent<Animator>();
+            cdt = transform.GetChild(2).gameObject.AddComponent<CDTrigger>();
             cdt.CDcase = this;
-            transform.position = new Vector3(-9.76f, 0.17f, 6.47f);
-            if(cdp != null)
-              cdp.Load();
-            Destroy(transform.GetChild(1).GetComponent<PlayMakerFSM>()); //Why you keep doing this???
-            transform.GetChild(1).gameObject.SetActive(true);
         }
-
+        void FixedUpdate()
+        {
+            if (transform.parent == null && !gameObject.GetComponent<Rigidbody>().detectCollisions)
+            {
+                gameObject.GetComponent<Rigidbody>().detectCollisions = true;
+                gameObject.GetComponent<Rigidbody>().isKinematic = false;
+                inRack = false;
+                gameObject.name = "cd case(item2)";
+            }
+        }
         void Update()
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            //if (Physics.Raycast(ray, out RaycastHit hit, 1f))
-            RaycastHit[] hits = Physics.RaycastAll(ray, 1f);
-            foreach (RaycastHit hit in hits)
+            if (Camera.main != null) //sometimes playmaker disable camera.main for whatever reason
             {
-                if (hit.collider == gameObject.GetComponent<Collider>() && !cdt.entered)
+
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                RaycastHit[] hits = Physics.RaycastAll(ray, 1f);
+
+                foreach (RaycastHit hit in hits)
                 {
-                    if (isOpen)
+
+                    if (hit.collider == transform.GetChild(0).GetComponent<Collider>() && !cdt.entered && hit.transform.parent == null)
                     {
-                        PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse").Value = true;
-                        PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Close Case";
-                        if (cInput.GetButtonDown("Use"))
+                        if (isOpen)
                         {
-                            gameObject.transform.GetChild(0).GetComponent<Animation>().Play("cd_close");
-                            isOpen = false;
-                        }
-                    }
-                    else
-                    {
-                        PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse").Value = true;
-                        PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Open Case";
-                        if (cInput.GetButtonDown("Use"))
-                        {
-                            gameObject.transform.GetChild(0).GetComponent<Animation>().Play("cd_open");
-                            isOpen = true;
-                            if (transform.GetChild(2).childCount > 0)
+                            PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse").Value = true;
+                            PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Close Case";
+                            if (cInput.GetButtonDown("Use"))
                             {
+                                animator.SetBool("open", false);
+                                isOpen = false;
 
-                                if (transform.GetChild(2).GetChild(0).gameObject.name == "cd(item1)")
+                                if (transform.GetChild(2).childCount > 0)
                                 {
-                                    transform.GetChild(2).GetChild(0).SetParent(null);
-
+                                    transform.GetChild(2).GetChild(0).gameObject.layer = 0;
                                 }
-                                transform.GetChild(2).GetChild(0).GetComponent<CD>().inCase = false;
-                                transform.GetChild(2).GetChild(0).SetParent(null);
                             }
                         }
+                        else
+                        {
+                            PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse").Value = true;
+                            PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Open Case";
+                            if (cInput.GetButtonDown("Use"))
+                            {
+                                animator.SetBool("open", true);
+                                isOpen = true;
 
+                                if (transform.GetChild(2).childCount > 0)
+                                {
+                                    MSCLoader.LoadAssets.MakeGameObjectPickable(transform.GetChild(2).GetChild(0).gameObject);
+                                }
+                            }
+
+                        }
                     }
                 }
             }
         }
-
-
     }
 }

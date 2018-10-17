@@ -10,11 +10,7 @@ namespace CDPlayer
         public bool inCase = false;
         public CDCase cdCase;
         public bool inPlayer = false;
-        void Start()
-        {
-            foreach (PlayMakerFSM c in gameObject.GetComponents<PlayMakerFSM>())
-                Destroy(c); //Destroy this shit
-        }
+
         void FixedUpdate()
         {
             if (transform.parent == null && !gameObject.GetComponent<Rigidbody>().detectCollisions)
@@ -22,17 +18,17 @@ namespace CDPlayer
                 gameObject.GetComponent<Rigidbody>().detectCollisions = true;
                 gameObject.GetComponent<Rigidbody>().isKinematic = false;
                 inPlayer = false;
+                inCase = false;
+
             }
         }
-        void Update()
+        public void InCase()
         {
-            if(inCase)
-            {
-                gameObject.GetComponent<Rigidbody>().detectCollisions = false;
-                gameObject.GetComponent<Rigidbody>().isKinematic = true;
-                transform.localPosition = Vector3.zero;
-                transform.localEulerAngles = Vector3.zero;
-            }
+            gameObject.GetComponent<Rigidbody>().detectCollisions = false;
+            gameObject.GetComponent<Rigidbody>().isKinematic = true;
+            transform.localPosition = Vector3.zero;
+            transform.localEulerAngles = Vector3.zero;
+            inCase = true;
         }
     }
 }

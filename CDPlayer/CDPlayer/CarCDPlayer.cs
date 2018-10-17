@@ -63,7 +63,7 @@ namespace CDPlayer
         void Next()
         {
             currentSong++;
-            if(currentSong >= audioFiles.Length)
+            if (currentSong >= audioFiles.Length)
                 currentSong = 0;
             audioPlayer.Stop();
             audioPlayer.LoadAudioFromFile(Path.GetFullPath(audioFiles[currentSong]), true, true);
@@ -83,7 +83,7 @@ namespace CDPlayer
             {
 
                 if (currentSong == 0)
-                    currentSong = audioFiles.Length-1;
+                    currentSong = audioFiles.Length - 1;
                 else
                     currentSong--;
                 audioPlayer.Stop();
@@ -173,11 +173,11 @@ namespace CDPlayer
             yield return new WaitForSeconds(1f);
             transform.FindChild("ButtonsCD/RadioCDSwitch").GetComponent<PlayMakerFSM>().FsmVariables.FindFsmBool("RadioOn").Value = false;
             if (GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/RadioChannels") != null)
-                GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/RadioChannels").transform.SetParent(GameObject.Find("RADIO").transform,false);
+                GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/RadioChannels").transform.SetParent(GameObject.Find("RADIO").transform, false);
             if (GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/RadioChannels") != null)
                 GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/RadioChannels").transform.SetParent(GameObject.Find("RADIO").transform, false);
             PlayMakerFSM[] sees = transform.FindChild("ButtonsCD/TrackChannelSwitch").GetComponents<PlayMakerFSM>();
-            foreach(PlayMakerFSM saas in sees)
+            foreach (PlayMakerFSM saas in sees)
             {
                 if (saas.FsmName == "ChangeTrack")
                     saas.enabled = true;
@@ -207,7 +207,7 @@ namespace CDPlayer
                 {
                     PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse").Value = true;
                     PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Eject CD";
-                    if (Input.GetMouseButtonDown(0))
+                    if (Input.GetMouseButtonDown(0) && isRadioOn)
                     {
                         eject.gameObject.SetActive(false);
                         transform.FindChild("Sled/cd_sled_pivot/cd(item2)").localEulerAngles = new Vector3(0, 0, UnityEngine.Random.Range(-360f, 360f));
@@ -223,7 +223,7 @@ namespace CDPlayer
                     PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Next/Previous Song";
                     if (Input.GetMouseButtonDown(0))
                     {
-                        if(isCDin)
+                        if (isCDin)
                             Next();
                     }
                     if (Input.GetMouseButtonDown(1))
