@@ -20,6 +20,12 @@ namespace ModsShop
         public static readonly Vector3 outsideRamp = new Vector3(-1553.83f, 5f, 1182.74f);
 
     }
+    public static class FleetariSpawnLocation
+    {
+        public static readonly Vector3 outside = new Vector3(1549.38f, 5f, 728.47f);
+        public static readonly Vector3 desk = new Vector3(1553.83f, 6f, 740.17f);
+        public static readonly Vector3 floor = new Vector3(1553.42f, 6f, 739.31f);
+    }
     public class ShopItems
     {
         public Mod mod;
@@ -36,12 +42,16 @@ namespace ModsShop
         public Dictionary<ShopItems, int> shoppingCart = new Dictionary<ShopItems, int>();
         public GameObject modPref, catPref, itemPref, cartItemPref;
         public Collider teimoCatalog;
+        public Collider fleetariCatalog;
         public GameObject shopCatalogUI;
         GameObject leftListView;
         GameObject cartListView;
         Text selectSth;
         float totalPrice = 0;
-        AudioSource fo;
+        AudioSource teimoCashSound;
+        AudioSource fleetariCashSound;
+
+        bool fleetariLast = false;
         public void RemoveChildren(Transform parent) //clear 
         {
             foreach (Transform child in parent)
@@ -50,14 +60,18 @@ namespace ModsShop
 
         public void Prepare()
         {
-            shopCatalogUI.transform.GetChild(1).GetChild(0).GetComponent<Button>().onClick.AddListener(() => OpenCatalog());
+            shopCatalogUI.transform.GetChild(1).GetChild(0).GetComponent<Button>().onClick.AddListener(() => OpenCatalog(false));
+            shopCatalogUI.transform.GetChild(2).GetChild(0).GetComponent<Button>().onClick.AddListener(() => OpenCatalog(true));
+
             leftListView = shopCatalogUI.transform.GetChild(0).GetChild(0).GetChild(1).GetChild(0).gameObject;
             selectSth = shopCatalogUI.transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetComponent<Text>();
             cartListView = shopCatalogUI.transform.GetChild(0).GetChild(1).GetChild(1).GetChild(0).gameObject;
             shopCatalogUI.transform.GetChild(0).GetChild(1).GetChild(2).GetChild(2).GetComponent<Button>().onClick.AddListener(() => FinishOrder());
-            fo = GameObject.Find("STORE/StoreCashRegister").AddComponent<AudioSource>();
-            fo.clip = GameObject.Find("MasterAudio/Store/cash_register_2").GetComponent<AudioSource>().clip;
-
+            teimoCashSound = GameObject.Find("STORE/StoreCashRegister").AddComponent<AudioSource>();
+            fleetariCashSound = GameObject.Find("REPAIRSHOP").transform.GetChild(0).GetChild(5).GetChild(0).gameObject.AddComponent<AudioSource>();
+            teimoCashSound.playOnAwake = false; fleetariCashSound.playOnAwake = false;
+            teimoCashSound.clip = GameObject.Find("MasterAudio/Store/cash_register_2").GetComponent<AudioSource>().clip;
+            fleetariCashSound.clip = teimoCashSound.clip;
         }
 
         public void Add(Mod mod, ProductDetails product, ShopType shopType, GameObject productObject)
@@ -79,12 +93,26 @@ namespace ModsShop
                 fleetariShopItems.Add(item);
         }
 
-        public void ShowCatalog()
+        public void ShowCatalog(bool fleetari)
         {
             PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerInMenu").Value = true; //unlock mouse
             GameObject.Find("Systems").transform.GetChild(7).gameObject.SetActive(true); //can't clickthrough UI when menu is active.
             shopCatalogUI.transform.GetChild(0).gameObject.SetActive(false);
-            shopCatalogUI.transform.GetChild(1).gameObject.SetActive(true);
+            if(fleetariLast != fleetari)
+                shoppingCart.Clear();
+            if (!fleetari)
+            {
+                shopCatalogUI.transform.GetChild(1).gameObject.SetActive(true);
+                shopCatalogUI.transform.GetChild(2).gameObject.SetActive(false);
+                fleetariLast = false;
+            }
+            else
+            {
+                shopCatalogUI.transform.GetChild(1).gameObject.SetActive(false);
+                shopCatalogUI.transform.GetChild(2).gameObject.SetActive(true);
+                fleetariLast = true;
+            }
+
             shopCatalogUI.SetActive(true);
         }
 
@@ -95,13 +123,17 @@ namespace ModsShop
             shopCatalogUI.SetActive(false);
         }
 
-        public void OpenCatalog()
+        public void OpenCatalog(bool fleetari)
         {
             shopCatalogUI.transform.GetChild(0).gameObject.SetActive(true);
-            shopCatalogUI.transform.GetChild(1).gameObject.SetActive(false);
+            if(!fleetari)
+                shopCatalogUI.transform.GetChild(1).gameObject.SetActive(false);
+            else
+                shopCatalogUI.transform.GetChild(2).gameObject.SetActive(false);
+            UpdateCart();
             shopCatalogUI.transform.GetChild(0).GetChild(1).GetChild(0).GetChild(0).GetComponent<Text>().text = string.Format("Items in cart: {0}", shoppingCart.Count);
             shopCatalogUI.transform.GetChild(0).GetChild(1).GetChild(0).GetChild(1).GetComponent<Text>().text = string.Format("Money: {0} MK", Math.Round(PlayMakerGlobals.Instance.Variables.FindFsmFloat("PlayerMoney").Value,1));
-            ListOfMods();
+            ListOfMods(fleetari);
         }
         public void AddToCart(ShopItems item)
         {
@@ -162,19 +194,29 @@ namespace ModsShop
                 PlayMakerGlobals.Instance.Variables.FindFsmFloat("PlayerMoney").Value -= totalPrice;
                 UpdateCart();
                 HideCatalog();
-                fo.Play();
+                if(!fleetariLast)
+                    teimoCashSound.Play();
+                else
+                    fleetariCashSound.Play();
+
             }
 
         }
 
-        public void ListOfMods()
+        public void ListOfMods(bool fleetari)
         {
             RemoveChildren(leftListView.transform);
             selectSth.text = "Select Mod:";
             Text numOfproductsText = null;
             int num = 1;
             Mod lastmod =null;
-            foreach(Mod mods in teimoShopItems.Select(s => s.mod))
+            IEnumerable<Mod> mods_array;
+            if (!fleetari)            
+               mods_array = teimoShopItems.Select(s => s.mod);            
+            else            
+               mods_array = fleetariShopItems.Select(s => s.mod);
+            
+            foreach (Mod mods in mods_array)
             {
                 if (lastmod == mods)
                 {
@@ -185,7 +227,7 @@ namespace ModsShop
                 {
                     num = 1;
                     GameObject mod = Instantiate(modPref);
-                    mod.GetComponent<Button>().onClick.AddListener(() => ListOfCats(mods));
+                    mod.GetComponent<Button>().onClick.AddListener(() => ListOfCats(mods,fleetari));
                     mod.transform.GetChild(0).GetComponent<Text>().text = mods.Name;
                     numOfproductsText = mod.transform.GetChild(1).GetComponent<Text>();
                     numOfproductsText.text = "Available products: 1";
@@ -194,12 +236,16 @@ namespace ModsShop
                 }
             }
         }
-        public void ListOfCats(Mod mod)
+        public void ListOfCats(Mod mod, bool fleetari)
         {
             RemoveChildren(leftListView.transform);
             selectSth.text = "Select Product:";
-
-            foreach (ShopItems shopItem in teimoShopItems.Select(s => s).Where(x => x.mod == mod))
+            IEnumerable<ShopItems> shopItemArray;
+            if (!fleetari)
+                shopItemArray = teimoShopItems.Select(s => s).Where(x => x.mod == mod);
+            else
+                shopItemArray = fleetariShopItems.Select(s => s).Where(x => x.mod == mod);
+            foreach (ShopItems shopItem in shopItemArray)
             {
                 GameObject item = Instantiate(itemPref);
                 item.transform.GetChild(0).GetComponent<Image>().sprite = shopItem.details.productIcon;
@@ -225,7 +271,17 @@ namespace ModsShop
                         PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Open shop catalog";
                         if (Input.GetMouseButtonDown(0))
                         {
-                            ShowCatalog();
+                            ShowCatalog(false);
+                        }
+                        break;
+                    }
+                    if (hit.collider == fleetariCatalog)
+                    {
+                        PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy").Value = true;
+                        PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Open shop catalog";
+                        if (Input.GetMouseButtonDown(0))
+                        {
+                            ShowCatalog(true);
                         }
                         break;
                     }
