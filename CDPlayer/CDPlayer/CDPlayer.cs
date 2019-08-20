@@ -40,7 +40,7 @@ namespace CDPlayer
         public override string ID => "CDPlayer";
         public override string Name => "CDPlayer Enchanced";
         public override string Author => "Piotrulos";
-        public override string Version => "1.2";
+        public override string Version => "1.3";
 
         //Set this to true if you will be load custom assets from Assets folder.
         //This will create subfolder in Assets folder for your mod.
@@ -49,12 +49,29 @@ namespace CDPlayer
         public string path = Path.GetFullPath("CD");
 
         Settings resetCds = new Settings("resetcd", "Reset CDs", ResetPosition);
+        public Settings debugInfo = new Settings("debugInfo", "Show debug info", false);
+        public Settings RDSsim = new Settings("RDSsim", "Simulate RDS", true);
+        public Settings channel3url = new Settings("ch3url", "Channel 3:", "http://185.33.21.112:11010");
+        public Settings channel4url = new Settings("ch4url", "Channel 4:", string.Empty);
         List<GameObject> listOfCDs, listOfCases;
 
 
+        public override void OnNewGame()
+        {
+            string savepath = Path.Combine(ModLoader.GetModConfigFolder(this), "cdplayer.save");
+            if (File.Exists(savepath))
+                File.Delete(savepath);
+        }
+
         public override void ModSettings()
         {
-            Settings.AddButton(this, resetCds, "Respawn purchased cds on kitchen table");
+            Settings.AddHeader(this, "CD Settings");
+            Settings.AddButton(this, resetCds, "Respawn purchased stuff on kitchen table");
+            Settings.AddHeader(this, "Radio settings");
+            Settings.AddCheckBox(this, debugInfo);
+            Settings.AddCheckBox(this, RDSsim);
+            Settings.AddTextBox(this, channel3url, "Stream URL...");
+            Settings.AddTextBox(this, channel4url, "Stream URL...");
         }
 
         public override void OnSave()
@@ -72,8 +89,6 @@ namespace CDPlayer
 
             foreach (GameObject go in listOfCDs)
             {
-                // if (go.activeSelf) //maybe not 
-                // {
                 CDSaveDataList sdl = new CDSaveDataList
                 {
                     pos = go.transform.position,
@@ -86,8 +101,6 @@ namespace CDPlayer
                 if (go.GetComponent<CD>().inPlayer)
                     sdl.inCase = true;
                 sd.cds.Add(sdl);
-                //  }
-
             }
             foreach (GameObject go in listOfCases)
             {
@@ -278,7 +291,7 @@ namespace CDPlayer
                 //find correct cd player object
                 if (p.parent.name != "Boxes" && p.parent.name != "Products")
                 {
-                    p.gameObject.AddComponent<CarCDPlayer>();
+                    p.gameObject.AddComponent<CarCDPlayer>().cdplayer = this;
                     ModConsole.Print("<color=green>Your CD Player is now enchanced! Enjoy.</color>");
                 }
             }

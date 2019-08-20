@@ -9,7 +9,17 @@ namespace CDPlayer
         private GameObject cdcase;
         private int rackSlot;
         public bool purchased;
-
+        //SoundGroupVariation assembleSound;
+        AudioSource audioSource;
+        void Start()
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.clip = GameObject.Find("MasterAudio/CarBuilding/assemble").GetComponent<AudioSource>().clip;
+            audioSource.volume = 1f;
+            audioSource.playOnAwake = false;
+            audioSource.loop = false;
+           // assembleSound = GameObject.Find("MasterAudio/CarBuilding/assemble").GetComponent<SoundGroupVariation>();
+        }
         void Update()
         {
             if (entered)
@@ -32,7 +42,8 @@ namespace CDPlayer
                     cdcase.transform.localEulerAngles = Vector3.zero;
                     entered = false;
                     PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble").Value = false;
-                    GameObject.Find("MasterAudio/CarBuilding/assemble").GetComponent<AudioSource>().Play();
+                    //assembleSound.Play(1f, 1f, gameObject.name, 1f, 1f, 1f, transform, false, 0f, false, true); //for whatever reason here doesn't work (just playmaker things...)
+                    audioSource.Play();
                     PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = string.Empty;
                     cdcase.GetComponent<CDCase>().inRack = true;
                     cdcase.GetComponent<CDCase>().inRackSlot = rackSlot;
