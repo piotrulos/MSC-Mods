@@ -40,7 +40,7 @@ namespace CDPlayer
         public override string ID => "CDPlayer";
         public override string Name => "CDPlayer Enchanced";
         public override string Author => "Piotrulos";
-        public override string Version => "1.3";
+        public override string Version => "1.3.1";
 
         //Set this to true if you will be load custom assets from Assets folder.
         //This will create subfolder in Assets folder for your mod.
@@ -139,13 +139,12 @@ namespace CDPlayer
             rack_icon = ab.LoadAsset<Sprite>("rackicon.png");
             ab.Unload(false);
 
-            rack10.name = "CD Rack(item2)";
+            rack10.name = "CD Rack(itemy)";
             LoadAssets.MakeGameObjectPickable(rack10);
             rack10.transform.position = new Vector3(-9.76f, 0.17f, 6.47f);
             rack10.AddComponent<CDRack>();
             rack10.SetActive(false);
-            GameObject.Find("cd(item1)").SetActive(false); //GTFO
-            GameObject.Find("cd case(Clone)").SetActive(false); //GTFO
+
 
             string[] dirs = Directory.GetDirectories(path);
             int i = 0;
@@ -158,8 +157,8 @@ namespace CDPlayer
                 cd.layer = 0;
                 GameObject cdCase = GameObject.Instantiate(cdCaseP);
                 LoadAssets.MakeGameObjectPickable(cdCase);
-                cd.name = "cd(item2)";
-                cdCase.name = "cd case(item2)";
+                cd.name = "cd(itemy)";
+                cdCase.name = "cd case(itemy)";
                 cd.AddComponent<CD>().CDName = new DirectoryInfo(dir).Name;
                 cdCase.AddComponent<CDCase>().CDName = new DirectoryInfo(dir).Name;
                 if (i == dirs.Length - 1)
@@ -232,6 +231,18 @@ namespace CDPlayer
                     go.SetActive(true);
             }
             FindPlayer();
+            if (GameObject.Find("cd(item1)") != null)
+                GameObject.Find("cd(item1)").SetActive(false);
+            if (GameObject.Find("cd case(item1)") != null)
+                GameObject.Find("cd case(item1)").SetActive(false);
+            if (GameObject.Find("cd(item2)") != null)
+                GameObject.Find("cd(item2)").SetActive(false);
+            if (GameObject.Find("cd case(item2)") != null)
+                GameObject.Find("cd case(item2)").SetActive(false);
+            if (GameObject.Find("cd(item3)") != null)
+                GameObject.Find("cd(item3)").SetActive(false);
+            if (GameObject.Find("cd case(item3)") != null)
+                GameObject.Find("cd case(item3)").SetActive(false);
         }
         public void BuyCDs(ModsShop.PurchaseInfo item)
         {
@@ -259,7 +270,7 @@ namespace CDPlayer
                 {
                     if (go.activeSelf)
                     {
-                        if (go.name == "cd(item2)")
+                        if (go.name == "cd(itemy)")
                         {
                             if (!go.GetComponent<CD>().inPlayer && !go.GetComponent<CD>().inCase)
                             {
@@ -267,12 +278,12 @@ namespace CDPlayer
                                 go.transform.rotation = e;
                             }
                         }
-                        else if (go.name == "cd case(item2)")
+                        else if (go.name == "cd case(itemy)")
                         {
                             go.transform.position = new Vector3(-9.76f, 0.17f, 6.47f);
                             go.transform.rotation = e;
                         }
-                        else if (go.name == "CD Rack(item2)")
+                        else if (go.name == "CD Rack(itemy)")
                         {
                             go.transform.position = new Vector3(-9.76f, 0.17f, 6.47f);
                             go.transform.rotation = e;
@@ -338,7 +349,7 @@ namespace CDPlayer
                                 go.transform.localEulerAngles = Vector3.zero;
                                 go.GetComponent<CDCase>().inRack = true;
                                 go.GetComponent<CDCase>().inRackSlot = data.cases[i].inRackSlot;
-                                go.name = "cd case (" + (data.cases[i].inRackSlot + 1).ToString() + ")(item2)";
+                                go.name = "cd case (" + (data.cases[i].inRackSlot + 1).ToString() + ")(itemy)";
                             }
                             go.GetComponent<CDCase>().purchased = true;
                             go.SetActive(true);

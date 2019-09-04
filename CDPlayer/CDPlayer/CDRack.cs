@@ -47,7 +47,7 @@ namespace CDPlayer
                     PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = string.Empty;
                     cdcase.GetComponent<CDCase>().inRack = true;
                     cdcase.GetComponent<CDCase>().inRackSlot = rackSlot;
-                    cdcase.name = "cd case (" + (rackSlot + 1).ToString() + ")(item2)";
+                    cdcase.name = "cd case (" + (rackSlot + 1).ToString() + ")(itemy)";
                 }
             }
 
@@ -55,7 +55,7 @@ namespace CDPlayer
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.name == "cd case(item2)" && other.transform.parent != null)
+            if (other.name == "cd case(itemy)" && other.transform.parent != null)
             {
                 for (int i = 0; i < 10; i++)
                 {

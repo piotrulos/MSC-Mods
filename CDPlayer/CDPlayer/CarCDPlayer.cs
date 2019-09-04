@@ -80,14 +80,14 @@ namespace CDPlayer
                     break;
             }
             PlayMakerFSM radioCh;
-            if (GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/CD1") != null)
+            if (GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/CDPlayer") != null)
             {
-                audioStreamPlayer.audioSource = GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/CD1").GetComponent<AudioSource>();
+                audioStreamPlayer.audioSource = GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/CDPlayer").GetComponent<AudioSource>();
                 radioCh = GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/RadioChannels").GetComponent<PlayMakerFSM>();
             }
             else
             {
-                audioStreamPlayer.audioSource = GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/CD1").GetComponent<AudioSource>();
+                audioStreamPlayer.audioSource = GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/CDPlayer").GetComponent<AudioSource>();
                 radioCh = GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/RadioChannels").GetComponent<PlayMakerFSM>();
             }
             radioCh.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmBool("OnMuteChannel1").Value = true;
@@ -144,10 +144,10 @@ namespace CDPlayer
                 {
                     CDempty = false;
                     isCDplaying = true;
-                    if (GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/CD1") != null)
-                        audioPlayer.audioSource = GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/CD1").GetComponent<AudioSource>();
+                    if (GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/CDPlayer") != null)
+                        audioPlayer.audioSource = GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/CDPlayer").GetComponent<AudioSource>();
                     else
-                        audioPlayer.audioSource = GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/CD1").GetComponent<AudioSource>();
+                        audioPlayer.audioSource = GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/CDPlayer").GetComponent<AudioSource>();
                     audioPlayer.LoadAudioFromFile(Path.GetFullPath(audioFiles[currentSong]), true, true);
                     audioPlayer.Play();
                 }
@@ -349,7 +349,7 @@ namespace CDPlayer
                     {
                         PlayCDPlayerBeep();
                         eject.gameObject.SetActive(false);
-                        transform.FindChild("Sled/cd_sled_pivot/cd(item2)").localEulerAngles = new Vector3(0, 0, UnityEngine.Random.Range(-360f, 360f));
+                        transform.FindChild("Sled/cd_sled_pivot/cd(itemy)").localEulerAngles = new Vector3(0, 0, UnityEngine.Random.Range(-360f, 360f));
                         transform.FindChild("Sled/cd_sled_pivot").GetComponentInParent<Animation>().Play("cd_sled_out");
                         transform.GetChild(0).GetComponent<TextMesh>().text = "NO CD";
                     }
@@ -394,7 +394,7 @@ namespace CDPlayer
         void OnTriggerEnter(Collider other)
         {
 
-            if (other.gameObject.name == "cd(item2)" && isRadioOn && !isCDin)
+            if (other.gameObject.name == "cd(itemy)" && isRadioOn && !isCDin)
             {
                 currentSong = 0;
                 other.GetComponent<Rigidbody>().isKinematic = true;

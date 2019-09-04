@@ -28,7 +28,7 @@ namespace CDPlayer
                 gameObject.GetComponent<Rigidbody>().detectCollisions = true;
                 gameObject.GetComponent<Rigidbody>().isKinematic = false;
                 inRack = false;
-                gameObject.name = "cd case(item2)";
+                gameObject.name = "cd case(itemy)";
             }
         }
         void Update()
