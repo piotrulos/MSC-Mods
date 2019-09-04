@@ -40,7 +40,7 @@ namespace CDPlayer
         public override string ID => "CDPlayer";
         public override string Name => "CDPlayer Enchanced";
         public override string Author => "Piotrulos";
-        public override string Version => "1.3.1";
+        public override string Version => "1.3.2";
 
         //Set this to true if you will be load custom assets from Assets folder.
         //This will create subfolder in Assets folder for your mod.
@@ -144,8 +144,8 @@ namespace CDPlayer
             rack10.transform.position = new Vector3(-9.76f, 0.17f, 6.47f);
             rack10.AddComponent<CDRack>();
             rack10.SetActive(false);
-
-
+            if (!Directory.Exists(path)) //CD folder was renamed to CD1/2/3
+                Directory.CreateDirectory(path);
             string[] dirs = Directory.GetDirectories(path);
             int i = 0;
             listOfCDs = new List<GameObject>();
@@ -161,15 +161,25 @@ namespace CDPlayer
                 cdCase.name = "cd case(itemy)";
                 cd.AddComponent<CD>().CDName = new DirectoryInfo(dir).Name;
                 cdCase.AddComponent<CDCase>().CDName = new DirectoryInfo(dir).Name;
-                if (i == dirs.Length - 1)
-                    cdCase.GetComponent<CDCase>().cdp = this;
-                if (File.Exists(Path.Combine(dir, "folder.txt")))
+
+                string[] pls = Directory.GetFiles(dir, "*.*").Where(file => file.ToLower().EndsWith(".m3u", System.StringComparison.OrdinalIgnoreCase) ||
+                                                                            file.ToLower().EndsWith(".m3u8", System.StringComparison.OrdinalIgnoreCase) ||
+                                                                            file.ToLower().EndsWith(".pls", System.StringComparison.OrdinalIgnoreCase)).ToArray();
+                if (pls.Length > 0)
                 {
-                    string[] txtDirs = File.ReadAllLines(Path.Combine(dir, "folder.txt"));
-                    cd.GetComponent<CD>().CDPath = Path.GetFullPath(txtDirs[0]);
+                    cd.GetComponent<CD>().isPlaylist = true;
+                    cd.GetComponent<CD>().CDPath = Path.GetFullPath(pls[0]);
                 }
                 else
-                    cd.GetComponent<CD>().CDPath = Path.GetFullPath(dir);
+                {
+                    if (File.Exists(Path.Combine(dir, "folder.txt")))
+                    {
+                        string[] txtDirs = File.ReadAllLines(Path.Combine(dir, "folder.txt"));
+                        cd.GetComponent<CD>().CDPath = Path.GetFullPath(txtDirs[0]);
+                    }
+                    else
+                        cd.GetComponent<CD>().CDPath = Path.GetFullPath(dir);
+                }
                 cd.GetComponent<CD>().cdCase = cdCase.GetComponent<CDCase>();
 
                 cd.GetComponent<CD>().InCase();

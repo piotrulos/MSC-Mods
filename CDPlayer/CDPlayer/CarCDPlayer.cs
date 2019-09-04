@@ -403,11 +403,21 @@ namespace CDPlayer
                 other.transform.localPosition = Vector3.zero;
                 other.transform.localEulerAngles = Vector3.zero;
                 other.transform.GetComponentInParent<Animation>().Play("cd_sled_in");
-                audioFiles = Directory.GetFiles(other.GetComponent<CD>().CDPath, "*.*").
-                    Where(file => file.ToLower().EndsWith(".ogg", StringComparison.OrdinalIgnoreCase) ||
-                                  file.ToLower().EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) ||
-                                  file.ToLower().EndsWith(".wav", StringComparison.OrdinalIgnoreCase) ||
-                                  file.ToLower().EndsWith(".aiff", StringComparison.OrdinalIgnoreCase)).ToArray();
+                if (other.GetComponent<CD>().isPlaylist)
+                {
+                    if (other.GetComponent<CD>().CDPath.ToLower().EndsWith(".m3u", StringComparison.OrdinalIgnoreCase) || other.GetComponent<CD>().CDPath.ToLower().EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase))
+                        audioFiles = Playlists.m3uPlaylist(other.GetComponent<CD>().CDPath).ToArray();
+                    if (other.GetComponent<CD>().CDPath.ToLower().EndsWith(".pls", StringComparison.OrdinalIgnoreCase))
+                        audioFiles = Playlists.plsPlaylist(other.GetComponent<CD>().CDPath).ToArray();
+                }
+                else
+                {
+                    audioFiles = Directory.GetFiles(other.GetComponent<CD>().CDPath, "*.*").
+                        Where(file => file.ToLower().EndsWith(".ogg", StringComparison.OrdinalIgnoreCase) ||
+                                      file.ToLower().EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) ||
+                                      file.ToLower().EndsWith(".wav", StringComparison.OrdinalIgnoreCase) ||
+                                      file.ToLower().EndsWith(".aiff", StringComparison.OrdinalIgnoreCase)).ToArray();
+                }
                 eject.gameObject.SetActive(true);
                 other.GetComponent<CD>().inPlayer = true;
                 loadingCD = true;

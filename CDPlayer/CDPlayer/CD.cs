@@ -7,6 +7,7 @@ namespace CDPlayer
     {
         public string CDName;
         public string CDPath = null;
+        public bool isPlaylist = false;
         public bool inCase = false;
         public CDCase cdCase;
         public bool inPlayer = false;

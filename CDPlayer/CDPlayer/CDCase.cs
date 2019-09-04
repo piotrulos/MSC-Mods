@@ -7,7 +7,7 @@ namespace CDPlayer
         public string CDName;
         public bool isOpen = false;
         public bool ready = false;
-        public CDPlayer cdp;
+       // public CDPlayer cdp;
         public bool inRack;
         public int inRackNr = 0;
         public int inRackSlot = 0;

@@ -53,7 +53,7 @@ namespace CDPlayer
 
         }
 
-        private void OnTriggerEnter(Collider other)
+        private void OnTriggerStay(Collider other)
         {
             if (other.name == "cd case(itemy)" && other.transform.parent != null)
             {

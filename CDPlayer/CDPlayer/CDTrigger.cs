@@ -35,7 +35,7 @@ namespace CDPlayer
             }
         }
 
-        void OnTriggerEnter(Collider col)
+        void OnTriggerStay(Collider col)
         {
             if (col.name == "cd(itemy)" && CDcase.isOpen && col.transform.parent == null)
                 entered = false;
