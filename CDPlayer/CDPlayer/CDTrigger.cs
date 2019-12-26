@@ -12,11 +12,6 @@ namespace CDPlayer
 
         void Update()
         {
-            if (entered && !ready)
-            {
-                PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIdisassemble").Value = true;
-                PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Wrong Case";
-            }
             if (entered && ready)
             {
                 PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble").Value = true;
@@ -37,8 +32,6 @@ namespace CDPlayer
 
         void OnTriggerStay(Collider col)
         {
-            if (col.name == "cd(itemy)" && CDcase.isOpen && col.transform.parent == null)
-                entered = false;
             if (col.name == "cd(itemy)" && CDcase.isOpen && col.transform.parent != null)
             {
                 if (!col.GetComponent<CD>().inCase)

@@ -41,10 +41,8 @@
     <Reference Include="ModsShop">
       <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\Mods\ModsShop.dll</HintPath>
     </Reference>
-    <Reference Include="MSCLoader, Version=1.0.0.168, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="MSCLoader">
       <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\MSCLoader.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
     </Reference>
     <Reference Include="PlayMaker">
       <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\PlayMaker.dll</HintPath>

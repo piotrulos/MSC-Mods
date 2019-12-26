@@ -38,10 +38,14 @@ namespace CDPlayer
     {
 
         public override string ID => "CDPlayer";
-        public override string Name => "CDPlayer Enchanced";
+        public override string Name => "CDPlayer Enhanced";
         public override string Author => "Piotrulos";
-        public override string Version => "1.3.2";
+        public override string Version => "1.3.3";
 
+        private readonly string readme = string.Format(
+            "This folder is used by CDPlayer Enhanced mod{0}{0}" +
+            "To create a new CD, create a new folder here, put your music or playlist file in that new folder.",
+            System.Environment.NewLine);
         //Set this to true if you will be load custom assets from Assets folder.
         //This will create subfolder in Assets folder for your mod.
         public override bool UseAssetsFolder => true;
@@ -52,7 +56,10 @@ namespace CDPlayer
         public Settings debugInfo = new Settings("debugInfo", "Show debug info", false);
         public Settings RDSsim = new Settings("RDSsim", "Simulate RDS", true);
         public Settings channel3url = new Settings("ch3url", "Channel 3:", "http://185.33.21.112:11010");
-        public Settings channel4url = new Settings("ch4url", "Channel 4:", string.Empty);
+        public Settings channel4url = new Settings("ch4url", "Channel 4:", "http://185.33.21.112/90s_128");
+
+        static Settings bypassDis = new Settings("cdDisBypass", "Bypass distortion filters", false, FilterChange);
+
         List<GameObject> listOfCDs, listOfCases;
 
 
@@ -62,12 +69,19 @@ namespace CDPlayer
             if (File.Exists(savepath))
                 File.Delete(savepath);
         }
-
+        public static void FilterChange()
+        {
+            if (GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/CDPlayer") != null)
+                GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/CDPlayer").GetComponent<AudioSource>().bypassEffects = (bool)bypassDis.GetValue();
+        }
         public override void ModSettings()
         {
-            Settings.AddHeader(this, "CD Settings");
-            Settings.AddButton(this, resetCds, "Respawn purchased stuff on kitchen table");
-            Settings.AddHeader(this, "Radio settings");
+            Settings.AddHeader(this, "CD player settings", new Color32(0, 128, 0, 255));
+            Settings.AddText(this, "Disable distortion filter on satsuma amplifier speakers");
+            Settings.AddCheckBox(this, bypassDis);
+            Settings.AddText(this, "Respawn purchased stuff on kitchen table");
+            Settings.AddButton(this, resetCds, new Color32(255, 66, 66, 255), new Color32(255, 86, 86, 255), new Color32(255, 106, 106, 255));
+            Settings.AddHeader(this, "Internet radio settings", new Color32(0, 128, 0, 255));
             Settings.AddCheckBox(this, debugInfo);
             Settings.AddCheckBox(this, RDSsim);
             Settings.AddTextBox(this, channel3url, "Stream URL...");
@@ -146,6 +160,8 @@ namespace CDPlayer
             rack10.SetActive(false);
             if (!Directory.Exists(path)) //CD folder was renamed to CD1/2/3
                 Directory.CreateDirectory(path);
+            if (!File.Exists(Path.Combine(path, "CD Player Enhanced.txt")))
+                File.WriteAllText(Path.Combine(path, "CD Player Enhanced.txt"), readme);
             string[] dirs = Directory.GetDirectories(path);
             int i = 0;
             listOfCDs = new List<GameObject>();
@@ -312,8 +328,8 @@ namespace CDPlayer
                 //find correct cd player object
                 if (p.parent.name != "Boxes" && p.parent.name != "Products")
                 {
-                    p.gameObject.AddComponent<CarCDPlayer>().cdplayer = this;
-                    ModConsole.Print("<color=green>Your CD Player is now enchanced! Enjoy.</color>");
+                    p.Find("Sled/cd_sled_pivot").gameObject.AddComponent<CarCDPlayer>().cdplayer = this;
+                    ModConsole.Print("<color=green>Your CD Player is now enhanced! Enjoy.</color>");
                 }
             }
         }
@@ -387,17 +403,5 @@ namespace CDPlayer
             }
         }
 
-        // Update is called once per frame
-        public override void Update()
-        {
-           /* if (Input.GetKeyDown(KeyCode.Alpha8))
-            {
-                OnSave();
-            }
-            if (Input.GetKeyDown(KeyCode.Alpha9))
-            {
-                Load();
-            }*/
-        }
     }
 }

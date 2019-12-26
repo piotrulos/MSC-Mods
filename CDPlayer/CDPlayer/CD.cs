@@ -14,13 +14,11 @@ namespace CDPlayer
 
         void FixedUpdate()
         {
-            if (transform.parent == null && !gameObject.GetComponent<Rigidbody>().detectCollisions)
+            if (!gameObject.GetComponent<Rigidbody>().detectCollisions && (transform.parent.name == "ItemPivot" || transform.parent == null))
             {
                 gameObject.GetComponent<Rigidbody>().detectCollisions = true;
-                gameObject.GetComponent<Rigidbody>().isKinematic = false;
                 inPlayer = false;
                 inCase = false;
-
             }
         }
         public void InCase()
