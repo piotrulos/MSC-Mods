@@ -40,14 +40,13 @@ namespace CDPlayer
         public override string ID => "CDPlayer";
         public override string Name => "CDPlayer Enhanced";
         public override string Author => "Piotrulos";
-        public override string Version => "1.3.3";
+        public override string Version => "1.4";
 
         private readonly string readme = string.Format(
             "This folder is used by CDPlayer Enhanced mod{0}{0}" +
             "To create a new CD, create a new folder here, put your music or playlist file in that new folder.",
             System.Environment.NewLine);
-        //Set this to true if you will be load custom assets from Assets folder.
-        //This will create subfolder in Assets folder for your mod.
+
         public override bool UseAssetsFolder => true;
 
         public string path = Path.GetFullPath("CD");
@@ -60,8 +59,10 @@ namespace CDPlayer
 
         static Settings bypassDis = new Settings("cdDisBypass", "Bypass distortion filters", false, FilterChange);
 
-        List<GameObject> listOfCDs, listOfCases;
+        static List<GameObject> listOfCDs, listOfCases;
 
+        static GameObject rack10, cdp, cdCaseP;
+        Sprite cd_icon, rack_icon;
 
         public override void OnNewGame()
         {
@@ -139,12 +140,10 @@ namespace CDPlayer
 
 
         }
-        GameObject rack10, cdp, cdCaseP;
-        Sprite cd_icon, rack_icon;
+
         //Called when mod is loading
         public override void OnLoad()
         {
-            //fuck playmaker, use AssetBundle!
             AssetBundle ab = LoadAssets.LoadBundle(this, "cdplayer.unity3d");
             rack10 = GameObject.Instantiate(ab.LoadAsset<GameObject>("rack10.prefab"));
             cdp = ab.LoadAsset<GameObject>("cd.prefab");
@@ -163,22 +162,20 @@ namespace CDPlayer
             if (!File.Exists(Path.Combine(path, "CD Player Enhanced.txt")))
                 File.WriteAllText(Path.Combine(path, "CD Player Enhanced.txt"), readme);
             string[] dirs = Directory.GetDirectories(path);
-            int i = 0;
             listOfCDs = new List<GameObject>();
             listOfCases = new List<GameObject>();
-            foreach (string dir in dirs)
+            for (int i = 0; i < dirs.Length; i++)
             {
-                //Quaternion e = Quaternion.Euler(new Vector3(270, 0, 0));
-                GameObject cd = (GameObject)Object.Instantiate(cdp);
+                GameObject cd = GameObject.Instantiate(cdp);
                 cd.layer = 0;
                 GameObject cdCase = GameObject.Instantiate(cdCaseP);
                 LoadAssets.MakeGameObjectPickable(cdCase);
                 cd.name = "cd(itemy)";
                 cdCase.name = "cd case(itemy)";
-                cd.AddComponent<CD>().CDName = new DirectoryInfo(dir).Name;
-                cdCase.AddComponent<CDCase>().CDName = new DirectoryInfo(dir).Name;
+                cd.AddComponent<CD>().CDName = new DirectoryInfo(dirs[i]).Name;
+                cdCase.AddComponent<CDCase>().CDName = new DirectoryInfo(dirs[i]).Name;
 
-                string[] pls = Directory.GetFiles(dir, "*.*").Where(file => file.ToLower().EndsWith(".m3u", System.StringComparison.OrdinalIgnoreCase) ||
+                string[] pls = Directory.GetFiles(dirs[i], "*.*").Where(file => file.ToLower().EndsWith(".m3u", System.StringComparison.OrdinalIgnoreCase) ||
                                                                             file.ToLower().EndsWith(".m3u8", System.StringComparison.OrdinalIgnoreCase) ||
                                                                             file.ToLower().EndsWith(".pls", System.StringComparison.OrdinalIgnoreCase)).ToArray();
                 if (pls.Length > 0)
@@ -188,24 +185,23 @@ namespace CDPlayer
                 }
                 else
                 {
-                    if (File.Exists(Path.Combine(dir, "folder.txt")))
+                    if (File.Exists(Path.Combine(dirs[i], "folder.txt")))
                     {
-                        string[] txtDirs = File.ReadAllLines(Path.Combine(dir, "folder.txt"));
+                        string[] txtDirs = File.ReadAllLines(Path.Combine(dirs[i], "folder.txt"));
                         cd.GetComponent<CD>().CDPath = Path.GetFullPath(txtDirs[0]);
                     }
                     else
-                        cd.GetComponent<CD>().CDPath = Path.GetFullPath(dir);
+                        cd.GetComponent<CD>().CDPath = Path.GetFullPath(dirs[i]);
                 }
                 cd.GetComponent<CD>().cdCase = cdCase.GetComponent<CDCase>();
-
                 cd.GetComponent<CD>().InCase();
                 cd.transform.SetParent(cdCase.transform.GetChild(2), false);
 
                 //Load coverart.png if exists, else leave default.
-                if (File.Exists(Path.Combine(dir, "coverart.png")))
+                if (File.Exists(Path.Combine(dirs[i], "coverart.png")))
                 {
                     Texture2D t2d = new Texture2D(1, 1);
-                    t2d.LoadImage(File.ReadAllBytes(Path.Combine(dir, "coverart.png")));
+                    t2d.LoadImage(File.ReadAllBytes(Path.Combine(dirs[i], "coverart.png")));
                     cd.transform.GetChild(0).GetComponent<MeshRenderer>().material.mainTexture = t2d;
                     cdCase.transform.GetChild(3).GetComponent<MeshRenderer>().material.mainTexture = t2d;
                     cdCase.transform.GetChild(0).GetChild(0).GetComponent<MeshRenderer>().material.mainTexture = t2d;
@@ -213,7 +209,6 @@ namespace CDPlayer
                 listOfCDs.Add(cd);
                 listOfCases.Add(cdCase);
                 cdCase.SetActive(false);
-                i++;
             }
             Load();
             if (GameObject.Find("Shop for mods") != null)
@@ -233,8 +228,9 @@ namespace CDPlayer
                     };
                     shop.Add(this, cdRack, ModsShop.ShopType.Teimo, BuyCDRack, rack10);
                 }
-                foreach (GameObject go in listOfCases)
+                for (int i = 0; i < listOfCases.Count; i++)
                 {
+                    GameObject go = listOfCases[i];
                     if (!go.activeSelf)
                     {
                         ModsShop.ProductDetails cases = new ModsShop.ProductDetails
@@ -257,6 +253,7 @@ namespace CDPlayer
                     go.SetActive(true);
             }
             FindPlayer();
+            //disable OG cds
             if (GameObject.Find("cd(item1)") != null)
                 GameObject.Find("cd(item1)").SetActive(false);
             if (GameObject.Find("cd case(item1)") != null)
@@ -291,30 +288,27 @@ namespace CDPlayer
             }
             else
             {
-                Quaternion e = Quaternion.Euler(new Vector3(0, 0, 0));
-                foreach (GameObject go in GameObject.FindObjectsOfType<GameObject>())
+                for (int i = 0; i < listOfCases.Count; i++)
                 {
-                    if (go.activeSelf)
+                    if (!listOfCases[i].activeSelf)
+                        continue;
+                    listOfCases[i].transform.position = new Vector3(-10f, 0.16f, 6.28f);
+                    listOfCases[i].transform.localEulerAngles = Vector3.zero;
+                }
+                for (int i = 0; i < listOfCDs.Count; i++)
+                {
+                    if (!listOfCDs[i].activeSelf)
+                        continue;
+                    if (!listOfCDs[i].GetComponent<CD>().inPlayer && !listOfCDs[i].GetComponent<CD>().inCase)
                     {
-                        if (go.name == "cd(itemy)")
-                        {
-                            if (!go.GetComponent<CD>().inPlayer && !go.GetComponent<CD>().inCase)
-                            {
-                                go.transform.position = new Vector3(-9.76f, 0.17f, 6.47f);
-                                go.transform.rotation = e;
-                            }
-                        }
-                        else if (go.name == "cd case(itemy)")
-                        {
-                            go.transform.position = new Vector3(-9.76f, 0.17f, 6.47f);
-                            go.transform.rotation = e;
-                        }
-                        else if (go.name == "CD Rack(itemy)")
-                        {
-                            go.transform.position = new Vector3(-9.76f, 0.17f, 6.47f);
-                            go.transform.rotation = e;
-                        }
+                        listOfCDs[i].transform.position = new Vector3(-10.1f, 0.16f, 6.28f);
+                        listOfCDs[i].transform.localEulerAngles = Vector3.zero;
                     }
+                }
+                if (rack10.activeSelf)
+                {
+                    rack10.transform.position = new Vector3(-10.2f, 0.17f, 6.47f);
+                    rack10.transform.transform.localEulerAngles = Vector3.zero;
                 }
             }
         }
@@ -323,12 +317,19 @@ namespace CDPlayer
         {
             List<Transform> players = Resources.FindObjectsOfTypeAll<Transform>().Where(x => x.name == "cd player(Clone)").ToList();
 
-            foreach (Transform p in players)
+            for (int i = 0; i < players.Count; i++)
             {
-                //find correct cd player object
-                if (p.parent.name != "Boxes" && p.parent.name != "Products")
+                if (players[i].parent != null)
                 {
-                    p.Find("Sled/cd_sled_pivot").gameObject.AddComponent<CarCDPlayer>().cdplayer = this;
+                    if (players[i].parent.name != "Boxes" && players[i].parent.name != "Products")
+                    {
+                        players[i].Find("Sled/cd_sled_pivot").gameObject.AddComponent<CarCDPlayer>().cdplayer = this;
+                        ModConsole.Print("<color=green>Your CD Player is now enhanced! Enjoy.</color>");
+                    }
+                }
+                else
+                {
+                    players[i].Find("Sled/cd_sled_pivot").gameObject.AddComponent<CarCDPlayer>().cdplayer = this;
                     ModConsole.Print("<color=green>Your CD Player is now enhanced! Enjoy.</color>");
                 }
             }
@@ -351,57 +352,55 @@ namespace CDPlayer
                 if (data.rackpurchased)
                 {
                     rack10.transform.position = data.rackpos;
-                    rack10.transform.rotation = Quaternion.Euler(data.rackrotX, data.rackrotY, data.rackrotZ);
+                    rack10.transform.eulerAngles = new Vector3(data.rackrotX, data.rackrotY, data.rackrotZ);
                     rack10.SetActive(true);
                     rack10.GetComponent<CDRack>().purchased = true;
                 }
-                foreach (GameObject go in listOfCases)
+                for (int i = 0; i < listOfCases.Count; i++)
                 {
-                    for (int i = 0; i < data.cases.Count; i++)
+                    CaseSaveDataList cas = data.cases.Where(x => x.CDName == listOfCases[i].GetComponent<CDCase>().CDName && x.purchased).FirstOrDefault();
+                    if (cas != null)
                     {
-                        if (data.cases[i].CDName == go.GetComponent<CDCase>().CDName && data.cases[i].purchased)
+                        if (!cas.inRack)
                         {
-                            if (!data.cases[i].inRack)
-                            {
-                                go.transform.position = data.cases[i].pos;
-                                go.transform.rotation = Quaternion.Euler(data.cases[i].rotX, data.cases[i].rotY, data.cases[i].rotZ);
-                            }
-                            else
-                            {
-                                go.GetComponent<Rigidbody>().isKinematic = true;
-                                go.GetComponent<Rigidbody>().detectCollisions = false;
-                                go.transform.SetParent(rack10.transform.GetChild(data.cases[i].inRackSlot), false);
-                                go.transform.localPosition = Vector3.zero;
-                                go.transform.localEulerAngles = Vector3.zero;
-                                go.GetComponent<CDCase>().inRack = true;
-                                go.GetComponent<CDCase>().inRackSlot = data.cases[i].inRackSlot;
-                                go.name = "cd case (" + (data.cases[i].inRackSlot + 1).ToString() + ")(itemy)";
-                            }
-                            go.GetComponent<CDCase>().purchased = true;
-                            go.SetActive(true);
+                            listOfCases[i].transform.position = cas.pos;
+                            listOfCases[i].transform.eulerAngles = new Vector3(cas.rotX, cas.rotY, cas.rotZ);
                         }
-                    }
-
-                }
-                foreach (GameObject go in listOfCDs)
-                {
-                    for (int i = 0; i < data.cds.Count; i++)
-                    {
-                        if (data.cds[i].CDName == go.GetComponent<CD>().CDName)
+                        else
                         {
-                            if (!data.cds[i].inCase)
+                            listOfCases[i].GetComponent<Rigidbody>().isKinematic = true;
+                            listOfCases[i].GetComponent<Rigidbody>().detectCollisions = false;
+                            listOfCases[i].transform.SetParent(rack10.transform.GetChild(cas.inRackSlot), false);
+                            listOfCases[i].transform.localPosition = Vector3.zero;
+                            listOfCases[i].transform.localEulerAngles = Vector3.zero;
+                            listOfCases[i].GetComponent<CDCase>().inRack = true;
+                            listOfCases[i].GetComponent<CDCase>().inRackSlot = cas.inRackSlot;
+                            listOfCases[i].name = "cd case (" + (cas.inRackSlot + 1).ToString() + ")(itemy)";
+                        }
+                        listOfCases[i].GetComponent<CDCase>().purchased = true;
+                        listOfCases[i].SetActive(true);
+                    }
+                }
+
+                for (int i = 0; i < listOfCDs.Count; i++)
+                {
+                    CDSaveDataList cds = data.cds.Where(x => x.CDName == listOfCDs[i].GetComponent<CD>().CDName).FirstOrDefault();
+                    if (cds != null)
+                    {
+                        if (cds.CDName == listOfCDs[i].GetComponent<CD>().CDName)
+                        {
+                            if (!cds.inCase)
                             {
-                                go.GetComponent<CD>().inCase = false;
-                                LoadAssets.MakeGameObjectPickable(go);
-                                go.transform.SetParent(null);
-                                go.transform.position = data.cds[i].pos;
-                                go.transform.rotation = Quaternion.Euler(data.cds[i].rotX, data.cds[i].rotY, data.cds[i].rotZ);
+                                listOfCDs[i].GetComponent<CD>().inCase = false;
+                                LoadAssets.MakeGameObjectPickable(listOfCDs[i]);
+                                listOfCDs[i].transform.SetParent(null);
+                                listOfCDs[i].transform.position = cds.pos;
+                                listOfCDs[i].transform.eulerAngles = new Vector3(cds.rotX, cds.rotY, cds.rotZ);
                             }
                         }
                     }
                 }
             }
         }
-
     }
 }

@@ -30,19 +30,21 @@ namespace CDPlayer
                 inRack = false;
                 gameObject.name = "cd case(itemy)";
             }
+            if (transform.parent == null && !gameObject.GetComponent<Rigidbody>().useGravity)
+            {
+                gameObject.GetComponent<Rigidbody>().useGravity = true;
+            }
+
         }
         void Update()
         {
             if (Camera.main != null) //sometimes playmaker disable camera.main for whatever reason
             {
+                RaycastHit[] hits = Physics.RaycastAll(Camera.main.ScreenPointToRay(Input.mousePosition), 1f);
 
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                RaycastHit[] hits = Physics.RaycastAll(ray, 1f);
-
-                foreach (RaycastHit hit in hits)
+                for (int i = 0; i < hits.Length; i++)
                 {
-
-                    if (hit.collider == transform.GetChild(0).GetComponent<Collider>() && !cdt.entered && hit.transform.parent == null)
+                    if (hits[i].collider == transform.GetChild(0).GetComponent<Collider>() && !cdt.entered && hits[i].transform.parent == null)
                     {
                         if (isOpen)
                         {
@@ -73,7 +75,6 @@ namespace CDPlayer
                                     MSCLoader.LoadAssets.MakeGameObjectPickable(transform.GetChild(2).GetChild(0).gameObject);
                                 }
                             }
-
                         }
                     }
                 }

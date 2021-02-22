@@ -20,6 +20,13 @@ namespace CDPlayer
             audioSource.loop = false;
            // assembleSound = GameObject.Find("MasterAudio/CarBuilding/assemble").GetComponent<SoundGroupVariation>();
         }
+        void FixedUpdate()
+        {
+            if (transform.parent == null && !gameObject.GetComponent<Rigidbody>().useGravity)
+            {
+                gameObject.GetComponent<Rigidbody>().useGravity = true;
+            }
+        }
         void Update()
         {
             if (entered)
