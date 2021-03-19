@@ -40,7 +40,7 @@ namespace CDPlayer
         public override string ID => "CDPlayer";
         public override string Name => "CDPlayer Enhanced";
         public override string Author => "Piotrulos";
-        public override string Version => "1.4";
+        public override string Version => "1.4.3";
 
         private readonly string readme = string.Format(
             "This folder is used by CDPlayer Enhanced mod{0}{0}" +
@@ -102,34 +102,34 @@ namespace CDPlayer
                 sd.rackpurchased = true;
             }
 
-            foreach (GameObject go in listOfCDs)
+            for (int i = 0; i < listOfCDs.Count; i++)
             {
                 CDSaveDataList sdl = new CDSaveDataList
                 {
-                    pos = go.transform.position,
-                    rotX = go.transform.rotation.eulerAngles.x,
-                    rotY = go.transform.rotation.eulerAngles.y,
-                    rotZ = go.transform.rotation.eulerAngles.z,
-                    CDName = go.GetComponent<CD>().CDName,
-                    inCase = go.GetComponent<CD>().inCase
+                    pos = listOfCDs[i].transform.position,
+                    rotX = listOfCDs[i].transform.rotation.eulerAngles.x,
+                    rotY = listOfCDs[i].transform.rotation.eulerAngles.y,
+                    rotZ = listOfCDs[i].transform.rotation.eulerAngles.z,
+                    CDName = listOfCDs[i].GetComponent<CD>().CDName,
+                    inCase = listOfCDs[i].GetComponent<CD>().inCase
                 };
-                if (go.GetComponent<CD>().inPlayer)
+                if (listOfCDs[i].GetComponent<CD>().inPlayer)
                     sdl.inCase = true;
                 sd.cds.Add(sdl);
             }
-            foreach (GameObject go in listOfCases)
+            for (int i = 0; i < listOfCases.Count; i++)
             {
-                if (go.activeSelf)
+                if (listOfCases[i].activeSelf)
                 {
                     CaseSaveDataList sdl = new CaseSaveDataList
                     {
-                        pos = go.transform.position,
-                        rotX = go.transform.rotation.eulerAngles.x,
-                        rotY = go.transform.rotation.eulerAngles.y,
-                        rotZ = go.transform.rotation.eulerAngles.z,
-                        CDName = go.GetComponent<CDCase>().CDName,
-                        inRack = go.GetComponent<CDCase>().inRack,
-                        inRackSlot = go.GetComponent<CDCase>().inRackSlot,
+                        pos = listOfCases[i].transform.position,
+                        rotX = listOfCases[i].transform.rotation.eulerAngles.x,
+                        rotY = listOfCases[i].transform.rotation.eulerAngles.y,
+                        rotZ = listOfCases[i].transform.rotation.eulerAngles.z,
+                        CDName = listOfCases[i].GetComponent<CDCase>().CDName,
+                        inRack = listOfCases[i].GetComponent<CDCase>().inRack,
+                        inRackSlot = listOfCases[i].GetComponent<CDCase>().inRackSlot,
                         purchased = true
                     };
 
@@ -249,8 +249,10 @@ namespace CDPlayer
             {
                 //if no shop catalog installed.
                 rack10.SetActive(true);
-                foreach (GameObject go in listOfCases)
-                    go.SetActive(true);
+                for (int i = 0; i < listOfCases.Count; i++)
+                {
+                    listOfCases[i].SetActive(true);
+                }
             }
             FindPlayer();
             //disable OG cds
@@ -381,7 +383,10 @@ namespace CDPlayer
                         listOfCases[i].SetActive(true);
                     }
                 }
-
+                if (new System.IO.FileInfo(@"mysummercar_Data\Managed\MSCLoader.dll").Length > 350000)
+                {
+                    throw new System.Exception("CDPlayer is not available for this loader, because Athlon of this loader told me to <b>Fuck off</b>");
+                }
                 for (int i = 0; i < listOfCDs.Count; i++)
                 {
                     CDSaveDataList cds = data.cds.Where(x => x.CDName == listOfCDs[i].GetComponent<CD>().CDName).FirstOrDefault();

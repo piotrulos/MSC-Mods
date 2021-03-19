@@ -18,8 +18,8 @@ namespace CDPlayer
                 PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Put CD back";
                 if (Input.GetMouseButtonDown(0) && cd != null)
                 {
-                    cd.GetComponent<CD>().InCase();
                     cd.transform.SetParent(CDcase.transform.GetChild(2), false);
+                    cd.GetComponent<CD>().InCase();
                     ready = false;
                     entered = false;
                     PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble").Value = false;

@@ -68,12 +68,10 @@ namespace CDPlayer
         void TurnOn()
         {
             isPlayerOn = true;
-           // ModConsole.Print("shit is on");
         }
         void TurnOff()
         {
             isPlayerOn = false;
-          //  ModConsole.Print("shit is off");
         }
         void PlayCDPlayerBeep()
         {
@@ -342,13 +340,13 @@ namespace CDPlayer
                 GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/RadioChannels").transform.SetParent(GameObject.Find("RADIO").transform, false);
             if (GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/RadioChannels") != null)
                 GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/RadioChannels").transform.SetParent(GameObject.Find("RADIO").transform, false);
-            PlayMakerFSM[] sees = rootCDplayer.Find("ButtonsCD/TrackChannelSwitch").GetComponents<PlayMakerFSM>();
-            foreach (PlayMakerFSM saas in sees)
+            PlayMakerFSM[] trackSwitch = rootCDplayer.Find("ButtonsCD/TrackChannelSwitch").GetComponents<PlayMakerFSM>();
+            for (int i = 0; i < trackSwitch.Length; i++)
             {
-                if (saas.FsmName == "ChangeTrack")
-                    saas.enabled = true;
-                if (saas.FsmName == "ChangeChannel")
-                    saas.enabled = false;
+                if (trackSwitch[i].FsmName == "ChangeTrack")
+                    trackSwitch[i].enabled = true;
+                if (trackSwitch[i].FsmName == "ChangeChannel")
+                    trackSwitch[i].enabled = false;
             }
             //Really?
             yield return new WaitForSeconds(4f);

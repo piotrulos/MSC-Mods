@@ -12,12 +12,12 @@ namespace CDPlayer
         public int inRackNr = 0;
         public int inRackSlot = 0;
         private CDTrigger cdt;
-        private Animator animator;
+        private Animation animation;
         public bool purchased;
 
         void Start()
         {
-            animator = transform.GetChild(0).GetComponent<Animator>();
+            animation = transform.GetChild(0).GetComponent<Animation>();
             cdt = transform.GetChild(2).gameObject.AddComponent<CDTrigger>();
             cdt.CDcase = this;
         }
@@ -52,7 +52,7 @@ namespace CDPlayer
                             PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Close Case";
                             if (cInput.GetButtonDown("Use"))
                             {
-                                animator.SetBool("open", false);
+                                animation.Play("cd_close");
                                 isOpen = false;
 
                                 if (transform.GetChild(2).childCount > 0)
@@ -67,7 +67,7 @@ namespace CDPlayer
                             PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Open Case";
                             if (cInput.GetButtonDown("Use"))
                             {
-                                animator.SetBool("open", true);
+                                animation.Play("cd_open");
                                 isOpen = true;
 
                                 if (transform.GetChild(2).childCount > 0)
