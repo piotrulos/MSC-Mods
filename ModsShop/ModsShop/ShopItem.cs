@@ -1,4 +1,6 @@
-﻿using MSCLoader;
+﻿#if !Mini 
+using MSCLoader; 
+#endif
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +30,9 @@ namespace ModsShop
     }
     public class ShopItems
     {
+#if !Mini
         public Mod mod;
+#endif
         public ProductDetails details;
         public Vector3 spawnLocation;
         public GameObject gameObject;
@@ -73,7 +77,7 @@ namespace ModsShop
             teimoCashSound.clip = GameObject.Find("MasterAudio/Store/cash_register_2").GetComponent<AudioSource>().clip;
             fleetariCashSound.clip = teimoCashSound.clip;
         }
-
+        #if !Mini
         public void Add(Mod mod, ProductDetails product, ShopType shopType, GameObject productObject)
         {
             throw new NotImplementedException("Not implemented - yet");
@@ -92,7 +96,7 @@ namespace ModsShop
             else
                 fleetariShopItems.Add(item);
         }
-
+#endif
         public void ShowCatalog(bool fleetari)
         {
             PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerInMenu").Value = true; //unlock mouse
@@ -133,19 +137,33 @@ namespace ModsShop
             UpdateCart();
             shopCatalogUI.transform.GetChild(0).GetChild(1).GetChild(0).GetChild(0).GetComponent<Text>().text = string.Format("Items in cart: {0}", shoppingCart.Count);
             shopCatalogUI.transform.GetChild(0).GetChild(1).GetChild(0).GetChild(1).GetComponent<Text>().text = string.Format("Money: {0} MK", Math.Round(PlayMakerGlobals.Instance.Variables.FindFsmFloat("PlayerMoney").Value,1));
+           #if !Mini
             ListOfMods(fleetari);
+#endif
         }
         public void AddToCart(ShopItems item)
         {
             if (shoppingCart.ContainsKey(item))
                 if (item.details.multiplePurchases)
+                {
                     shoppingCart[item] += 1;
+                }
                 else
+                {
+#if !Mini
                     ModUI.ShowMessage("This item can be bought only once", "Information");
+#endif
+                }
             else if (item.purchashed)
+            {
+#if !Mini
                 ModUI.ShowMessage("You already bought this item", "Information");
+#endif
+            }
             else
+            {
                 shoppingCart.Add(item, 1);
+            }
             UpdateCart();
         }
         void UpdateCart()
@@ -171,12 +189,16 @@ namespace ModsShop
         {
             if (shoppingCart.Count == 0)
             {
+#if !Mini
                 ModUI.ShowMessage("Your shopping cart is empty", "Shopping cart");
+#endif
 
             }
             else if (totalPrice > Math.Round(PlayMakerGlobals.Instance.Variables.FindFsmFloat("PlayerMoney").Value, 1))
             {
+#if !Mini
                 ModUI.ShowMessage("You are too poor for this order!", "Poor man");
+#endif
             }
             else 
             {
@@ -202,7 +224,7 @@ namespace ModsShop
             }
 
         }
-
+#if !Mini
         public void ListOfMods(bool fleetari)
         {
             RemoveChildren(leftListView.transform);
@@ -257,6 +279,7 @@ namespace ModsShop
             }
             //ModConsole.Print("Sas " + mod.Name);
         }
+#endif
         private void Update()
         {
             if (Camera.main != null)
