@@ -20,6 +20,7 @@ namespace ModsShop
             mpb = new MaterialPropertyBlock();
             matOff = new Color(0, 0, 0);
             matOn = new Color(1, 1, 1);
+            TurnOff();
         }
         IEnumerator TryToTurnOn(float delay, int tries, int halfAfter)
         {
@@ -74,6 +75,7 @@ namespace ModsShop
         }
         public void TurnOff()
         {
+            StopAllCoroutines();
             turnedOn = false;
             SetOnOffEmmision(false, bulbs[0].GetComponent<Renderer>());
             SetOnOffEmmision(false, bulbs[1].GetComponent<Renderer>());

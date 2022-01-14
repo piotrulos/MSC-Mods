@@ -2,15 +2,12 @@
 using System.Collections.Generic;
 namespace ModsShop
 {
-    public class LampsOnOff : MonoBehaviour
+    public class ListOfLamps : MonoBehaviour
     {
 
         public List<Lamp> lamps;
-        void Awake()
-        {
-            lamps = new List<Lamp>();
-        }
-        void Update()
+
+     /*   void Update()
         {
             if (Input.GetKeyDown(KeyCode.Alpha5))
                 foreach (Lamp l in lamps)
@@ -18,6 +15,6 @@ namespace ModsShop
             if (Input.GetKeyDown(KeyCode.Alpha6))
                 foreach (Lamp l in lamps)
                     l.TurnOff();
-        }
+        }*/
     }
 }
