@@ -16,7 +16,9 @@ namespace ModsShop
 
         void Awake()
         {
+#if !Mini
             shop = ModsShop.GetShopReference();
+#endif
         }
 
         void Start()
@@ -25,15 +27,6 @@ namespace ModsShop
             if (ItemDetails == null) ModConsole.Error($"Shop: Shop itemID <b>{ItemID}</b> not found in mod <b>{ModID}</b>");
         }
 
-        void OnMouseOver()
-        {
-            if (ItemDetails == null) return;
-#if !Mini
-            //Infinite range kinda sucks.
-     //       PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy").Value = true;
-    //        PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = $"{ItemID} - {ItemDetails.ItemPrice} MK";
-#endif
-        }
         void OnMouseExit()
         {
             if (ItemDetails == null) return;

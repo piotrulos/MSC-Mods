@@ -66,6 +66,7 @@
     <Compile Include="AutoShelves.cs" />
     <Compile Include="CustomShelves.cs" />
     <Compile Include="DebugCmd.cs" />
+    <Compile Include="Door.cs" />
     <Compile Include="Lamp.cs" />
     <Compile Include="ModsShop.cs" />
     <Compile Include="MopShelfHack.cs" />

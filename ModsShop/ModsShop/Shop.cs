@@ -18,9 +18,9 @@ namespace ModsShop
             items = new List<ItemDetails>();
         }
 #if !Mini
-        public ItemDetails CreateShopItem(Mod mod, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> purchashedAction)
+        public ItemDetails CreateShopItem(Mod mod, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> purchashedAction, GameObject itemPrefab)
         {
-            ItemDetails itemDetails = new ItemDetails(mod.Name, $"{mod.ID}_{itemID}", itemName, itemPrice, multiplePurchases, purchashedAction);
+            ItemDetails itemDetails = new ItemDetails(mod.Name, $"{mod.ID}_{itemID}", itemName, itemPrice, multiplePurchases, purchashedAction, itemPrefab);
             items.Add(itemDetails);
             return itemDetails;
         }

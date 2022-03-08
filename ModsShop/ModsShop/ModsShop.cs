@@ -12,7 +12,6 @@ namespace ModsShop
         public override string Author => "piotrulos";
         public override string Version => "0.9.4";
 
-        bool experimentalShop = true;
         public GameObject modShop;
         private Shop mainShop;
         private ShopItem shopGameObject;
@@ -28,58 +27,43 @@ namespace ModsShop
         {
             GameObject go = new GameObject("Shop for mods");
             GameObject.DontDestroyOnLoad(go);
-            shopGameObject = go.AddComponent<ShopItem>();
-            mainShop = go.AddComponent<Shop>();
+            shopGameObject = go.AddComponent<ShopItem>(); //Legacy shop
+            mainShop = go.AddComponent<Shop>(); //Standalone shop
         }
 
         // Update is called once per frame
         public void Shop_OnLoad()
         {
             AssetBundle ab = LoadAssets.LoadBundle(this, "shopassets.unity3d");
+
+            //Load standalone shop from bundle
+            GameObject shelves = ab.LoadAsset<GameObject>("Main Shop Area.prefab");
+            GameObject inspection = GameObject.Find("INSPECTION");
+            //disable 2 random shelves and add anti-MOP enabler
+            inspection.transform.Find("LOD/garage_shelf_bars 1").gameObject.AddComponent<MopShelfHack>();
+            inspection.transform.Find("LOD/garage_shelf_bars 2").gameObject.AddComponent<MopShelfHack>();
+            //disable weird reflections on window
+            inspection.transform.GetChild(1).GetChild(inspection.transform.GetChild(1).childCount - 1).GetComponent<MeshRenderer>().reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
+            //Create new GameObject that will be parent for shop stuff
+            modShop = new GameObject("Mod Shop");
+            modShop.transform.SetParent(inspection.transform, false);
+            modShop.transform.localPosition = new Vector3(-4.5f, -32f, 0.2f);
+            modShop.transform.localEulerAngles = new Vector3(90, 0, 0);
+            shelves = GameObject.Instantiate(shelves);
+            shelves.transform.SetParent(modShop.transform, false);
+            mainShop.shopRefs = shelves.GetComponent<ShopRefs>();
+            inspection.transform.GetChild(1).Find("Floor").transform.SetParent(shelves.transform.Find("Info Board"), false);
+            shelves.transform.Find("Info Board/Floor").localEulerAngles = new Vector3(0, 0, 352);
+            shelves.transform.Find("Info Board/Floor").localPosition = new Vector3(0.5f, 0, 0);
+
+
+            //old code for legacy shop
             shopGameObject.modPref = ab.LoadAsset<GameObject>("Mod.prefab");
             shopGameObject.catPref = ab.LoadAsset<GameObject>("Category.prefab");
             shopGameObject.itemPref = ab.LoadAsset<GameObject>("Product.prefab");
             shopGameObject.cartItemPref = ab.LoadAsset<GameObject>("CartItem.prefab");
             GameObject te = ab.LoadAsset<GameObject>("Catalog_shelf.prefab");
             GameObject fl = ab.LoadAsset<GameObject>("Catalog_shelf_F.prefab");
-            if (experimentalShop)
-            {
-                GameObject door = ab.LoadAsset<GameObject>("door.prefab");
-                GameObject shelves = ab.LoadAsset<GameObject>("Main Shop Area.prefab");
-                GameObject shop_banner = ab.LoadAsset<GameObject>("shop_banner.prefab");
-
-                //disable 2 random shelves
-                GameObject.Find("INSPECTION").transform.Find("LOD/garage_shelf_bars 1").gameObject.AddComponent<MopShelfHack>();
-                GameObject.Find("INSPECTION").transform.Find("LOD/garage_shelf_bars 2").gameObject.AddComponent<MopShelfHack>();
-                //disable weird reflections on window
-                GameObject.Find("INSPECTION").transform.GetChild(1).GetChild(GameObject.Find("INSPECTION").transform.GetChild(1).childCount - 1).GetComponent<MeshRenderer>().reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
-                //Create new GameObject that will be parent for shop stuff
-                modShop = new GameObject("Mod Shop");
-                modShop.transform.SetParent(GameObject.Find("INSPECTION").transform, false);
-                modShop.transform.localPosition = new Vector3(-4.5f, -32f, 0.2f);
-                modShop.transform.localEulerAngles = new Vector3(90, 0, 0);
-                door = GameObject.Instantiate(door);
-                GameObject.Find("INSPECTION").transform.GetChild(1).GetChild(GameObject.Find("INSPECTION").transform.GetChild(1).childCount - 1).GetComponent<MeshRenderer>().material = door.transform.GetChild(1).GetComponent<MeshRenderer>().material;
-                door.name = "Door";
-                door.transform.SetParent(modShop.transform, false);
-                door.transform.localPosition = new Vector3(0.17f, -0.02f, 3.17f);
-                shelves = GameObject.Instantiate(shelves);
-                shelves.transform.SetParent(modShop.transform, false);
-                mainShop.shopRefs = shelves.GetComponent<ShopRefs>();
-                // shelves.transform.localPosition = new Vector3(0.5f, 1.1f, 0.3f);
-                GameObject.Find("INSPECTION").transform.GetChild(1).Find("Floor").transform.SetParent(shelves.transform.Find("Info Board"), false);
-                //shelves.transform.GetChild(0).GetChild(0).localEulerAngles = Vector3.zero;
-                shelves.transform.Find("Info Board/Floor").localEulerAngles = new Vector3(0, 0, 352);
-                shelves.transform.Find("Info Board/Floor").localPosition = new Vector3(0.5f, 0, 0);
-
-                shop_banner = GameObject.Instantiate(shop_banner);
-                shop_banner.transform.SetParent(modShop.transform, false);
-                shop_banner.transform.localPosition = new Vector3(0.8f, 3.1f, 4.38f);
-                shop_banner.transform.localEulerAngles = new Vector3(0, 270, 0);
-            }
-
-            //old code
-
 
             //teimo catalog pos
             //-1550.65, 4.7, 1183.3
