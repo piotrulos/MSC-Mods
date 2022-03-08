@@ -24,9 +24,14 @@ namespace ModsShop
                         GameObject.Find("PLAYER").transform.position = new Vector3(-1511.606f, 4f, 1234.105f);
                         GameObject.Find("PLAYER").transform.eulerAngles = new Vector3(0f, 332f, 0f);
                         break;
+                    case "list":
+
+                        break;
+                    default:
+                        ModConsole.Error("Invalid syntax");
+                        break;
                 }
             }
-            ModConsole.Print("0");
         }
 
     }

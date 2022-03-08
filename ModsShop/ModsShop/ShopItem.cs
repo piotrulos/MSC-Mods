@@ -39,6 +39,7 @@ namespace ModsShop
         public Action<PurchaseInfo> action;
         public bool purchashed = false;
     }
+
     public class ShopItem : MonoBehaviour
     {
         public List<ShopItems> teimoShopItems = new List<ShopItems>();
@@ -78,10 +79,6 @@ namespace ModsShop
             fleetariCashSound.clip = teimoCashSound.clip;
         }
         #if !Mini
-        public void Add(Mod mod, ProductDetails product, ShopType shopType, GameObject productObject)
-        {
-            throw new NotImplementedException("Not implemented - yet");
-        }
         public void Add(Mod mod, ProductDetails product, ShopType shopType, Action<PurchaseInfo> action, GameObject go)
         {
             ShopItems item = new ShopItems

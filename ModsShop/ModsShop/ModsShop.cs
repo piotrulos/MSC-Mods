@@ -12,12 +12,14 @@ namespace ModsShop
         public override string Author => "piotrulos";
         public override string Version => "0.9.4";
 
-        ShopItem shopGameObject;
         bool experimentalShop = true;
         public GameObject modShop;
-
+        private Shop mainShop;
+        private ShopItem shopGameObject;
+        private static ModsShop instance;
         public override void ModSetup()
         {
+            instance = this; 
             SetupFunction(Setup.OnMenuLoad, Shop_OnMenuLoad);
             SetupFunction(Setup.OnLoad, Shop_OnLoad);
         }
@@ -27,6 +29,7 @@ namespace ModsShop
             GameObject go = new GameObject("Shop for mods");
             GameObject.DontDestroyOnLoad(go);
             shopGameObject = go.AddComponent<ShopItem>();
+            mainShop = go.AddComponent<Shop>();
         }
 
         // Update is called once per frame
@@ -42,9 +45,8 @@ namespace ModsShop
             if (experimentalShop)
             {
                 GameObject door = ab.LoadAsset<GameObject>("door.prefab");
-                GameObject shelves = ab.LoadAsset<GameObject>("Kenneths stuff.prefab");
+                GameObject shelves = ab.LoadAsset<GameObject>("Main Shop Area.prefab");
                 GameObject shop_banner = ab.LoadAsset<GameObject>("shop_banner.prefab");
-             //   GameObject lamps = ab.LoadAsset<GameObject>("Lamps.prefab");
 
                 //disable 2 random shelves
                 GameObject.Find("INSPECTION").transform.Find("LOD/garage_shelf_bars 1").gameObject.AddComponent<MopShelfHack>();
@@ -63,24 +65,13 @@ namespace ModsShop
                 door.transform.localPosition = new Vector3(0.17f, -0.02f, 3.17f);
                 shelves = GameObject.Instantiate(shelves);
                 shelves.transform.SetParent(modShop.transform, false);
+                mainShop.shopRefs = shelves.GetComponent<ShopRefs>();
                 // shelves.transform.localPosition = new Vector3(0.5f, 1.1f, 0.3f);
-                GameObject.Find("INSPECTION").transform.GetChild(1).Find("Floor").transform.SetParent(shelves.transform.GetChild(1), false);
+                GameObject.Find("INSPECTION").transform.GetChild(1).Find("Floor").transform.SetParent(shelves.transform.Find("Info Board"), false);
                 //shelves.transform.GetChild(0).GetChild(0).localEulerAngles = Vector3.zero;
-                shelves.transform.GetChild(0).Find("Floor").localEulerAngles = new Vector3(0, 0, 352);
-                shelves.transform.GetChild(0).Find("Floor").localPosition = new Vector3(0.5f, 0, 0);
-                //GameObject lr = GameObject.Find("YARD/Building/LIVINGROOM/");
-                /* GameObject rallyAd = GameObject.Instantiate(GameObject.Find("YARD/Building/LIVINGROOM/").transform.GetChild(0).GetChild(11).GetChild(2).gameObject);
-                 rallyAd.transform.SetParent(shelves.transform.GetChild(0), false);*/
-          /*      lamps = GameObject.Instantiate(lamps);
-                lamps.transform.SetParent(modShop.transform, false);
-                lamps.AddComponent<LampsOnOff>();
-                foreach (Transform c in lamps.transform)
-                {
-                    c.gameObject.AddComponent<Lamp>().bulbs[0] = c.GetChild(0).gameObject;
-                    c.GetComponent<Lamp>().bulbs[1] = c.GetChild(1).gameObject;
-                    c.GetComponent<Lamp>().light = c.GetChild(2).GetComponent<Light>();
-                    lamps.GetComponent<LampsOnOff>().lamps.Add(c.GetComponent<Lamp>());
-                }*/
+                shelves.transform.Find("Info Board/Floor").localEulerAngles = new Vector3(0, 0, 352);
+                shelves.transform.Find("Info Board/Floor").localPosition = new Vector3(0.5f, 0, 0);
+
                 shop_banner = GameObject.Instantiate(shop_banner);
                 shop_banner.transform.SetParent(modShop.transform, false);
                 shop_banner.transform.localPosition = new Vector3(0.8f, 3.1f, 4.38f);
@@ -115,8 +106,6 @@ namespace ModsShop
             shopGameObject.shopCatalogUI = teimoUI;
             shopGameObject.Prepare();
             ab.Unload(false);
-
-
         }
 
         public override void ModSettings()
@@ -125,6 +114,11 @@ namespace ModsShop
             ConsoleCommand.Add(new DebugCmd());
         }
 
+        public static Shop GetShopReference()
+        {
+            if (instance.mainShop == null) return null;
+            return instance.mainShop;
+        }
 #region BS
         bool wl = false;
         public override void OnMenuLoad()
