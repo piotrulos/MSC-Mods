@@ -16,14 +16,16 @@ namespace ModsShop
         private Shop mainShop;
         private ShopItem shopGameObject;
         private static ModsShop instance;
+        AssetBundle assetBundle;
         public override void ModSetup()
         {
             instance = this; 
-            SetupFunction(Setup.OnMenuLoad, Shop_OnMenuLoad);
-            SetupFunction(Setup.OnLoad, Shop_OnLoad);
+            SetupFunction(Setup.OnMenuLoad, InitializeShop);
+            SetupFunction(Setup.PreLoad, BuildShop);
+            SetupFunction(Setup.OnLoad, LegacyShopLoad);
         }
 
-        public void Shop_OnMenuLoad()
+        void InitializeShop()
         {
             GameObject go = new GameObject("Shop for mods");
             GameObject.DontDestroyOnLoad(go);
@@ -31,13 +33,11 @@ namespace ModsShop
             mainShop = go.AddComponent<Shop>(); //Standalone shop
         }
 
-        // Update is called once per frame
-        public void Shop_OnLoad()
+        void BuildShop()
         {
-            AssetBundle ab = LoadAssets.LoadBundle(this, "shopassets.unity3d");
-
+            assetBundle = LoadAssets.LoadBundle(this, "shopassets.unity3d");
             //Load standalone shop from bundle
-            GameObject shelves = ab.LoadAsset<GameObject>("Main Shop Area.prefab");
+            GameObject shelves = assetBundle.LoadAsset<GameObject>("Main Shop Area.prefab");
             GameObject inspection = GameObject.Find("INSPECTION");
             //disable 2 random shelves and add anti-MOP enabler
             inspection.transform.Find("LOD/garage_shelf_bars 1").gameObject.AddComponent<MopShelfHack>();
@@ -55,15 +55,17 @@ namespace ModsShop
             inspection.transform.GetChild(1).Find("Floor").transform.SetParent(shelves.transform.Find("Info Board"), false);
             shelves.transform.Find("Info Board/Floor").localEulerAngles = new Vector3(0, 0, 352);
             shelves.transform.Find("Info Board/Floor").localPosition = new Vector3(0.5f, 0, 0);
+        }
 
-
+        void LegacyShopLoad()
+        {
             //old code for legacy shop
-            shopGameObject.modPref = ab.LoadAsset<GameObject>("Mod.prefab");
-            shopGameObject.catPref = ab.LoadAsset<GameObject>("Category.prefab");
-            shopGameObject.itemPref = ab.LoadAsset<GameObject>("Product.prefab");
-            shopGameObject.cartItemPref = ab.LoadAsset<GameObject>("CartItem.prefab");
-            GameObject te = ab.LoadAsset<GameObject>("Catalog_shelf.prefab");
-            GameObject fl = ab.LoadAsset<GameObject>("Catalog_shelf_F.prefab");
+            shopGameObject.modPref = assetBundle.LoadAsset<GameObject>("Mod.prefab");
+            shopGameObject.catPref = assetBundle.LoadAsset<GameObject>("Category.prefab");
+            shopGameObject.itemPref = assetBundle.LoadAsset<GameObject>("Product.prefab");
+            shopGameObject.cartItemPref = assetBundle.LoadAsset<GameObject>("CartItem.prefab");
+            GameObject te = assetBundle.LoadAsset<GameObject>("Catalog_shelf.prefab");
+            GameObject fl = assetBundle.LoadAsset<GameObject>("Catalog_shelf_F.prefab");
 
             //teimo catalog pos
             //-1550.65, 4.7, 1183.3
@@ -82,14 +84,14 @@ namespace ModsShop
             fl.transform.localEulerAngles = new Vector3(0, 40, 0);
             shopGameObject.fleetariCatalog = fl.transform.GetChild(1).GetComponent<BoxCollider>();
 
-            GameObject teimoUI = ab.LoadAsset("Teimo Catalog.prefab") as GameObject;
+            GameObject teimoUI = assetBundle.LoadAsset("Teimo Catalog.prefab") as GameObject;
             teimoUI = GameObject.Instantiate(teimoUI);
             teimoUI.name = "Teimo Catalog";
             teimoUI.transform.SetParent(GameObject.Find("MSCLoader Canvas").transform, false);
             teimoUI.SetActive(false);
             shopGameObject.shopCatalogUI = teimoUI;
             shopGameObject.Prepare();
-            ab.Unload(false);
+            assetBundle.Unload(false);
         }
 
         public override void ModSettings()

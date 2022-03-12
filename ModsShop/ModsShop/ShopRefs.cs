@@ -6,5 +6,6 @@ namespace ModsShop
     {
         public AutoShelves autoShelves;
         public CustomShelves customShelves;
+        public CashRegister cashRegister;
     }
 }

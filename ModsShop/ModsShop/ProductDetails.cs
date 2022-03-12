@@ -3,14 +3,6 @@ using UnityEngine;
 
 namespace ModsShop
 {
-    public class ProductDetails
-    {
-        public Sprite productIcon = null;
-        public string productName;
-        public string productCategory;
-        public float productPrice;
-        public bool multiplePurchases = true;
-    }
 
     public class ItemDetails
     {
@@ -21,6 +13,8 @@ namespace ModsShop
         public bool MultiplePurchases = true;
         public Action<Checkout> Checkout = null;
         public GameObject ItemPrefab;
+        public bool bought = false;
+        public ProductOnShelf product;
 
         public ItemDetails(string modName, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> checkout, GameObject itemPrefab)
         {
@@ -40,6 +34,15 @@ namespace ModsShop
         public GameObject gameObject = null;
     }
 
+    //Old
+    public class ProductDetails
+    {
+        public Sprite productIcon = null;
+        public string productName;
+        public string productCategory;
+        public float productPrice;
+        public bool multiplePurchases = true;
+    }
     public class PurchaseInfo
     {
         public GameObject gameObject = null;

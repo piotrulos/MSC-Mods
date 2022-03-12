@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutoShelves.cs" />
+    <Compile Include="CashRegister.cs" />
     <Compile Include="CustomShelves.cs" />
     <Compile Include="DebugCmd.cs" />
     <Compile Include="Door.cs" />

@@ -16,8 +16,7 @@ namespace ModsShop
 
         }
 
-        // Update is called once per frame
-        void FixedUpdate()
+        void Update()
         {
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 1f))
             {
