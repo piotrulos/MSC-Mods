@@ -40,25 +40,15 @@ namespace CDPlayer
         public override string ID => "CDPlayer";
         public override string Name => "CDPlayer Enhanced";
         public override string Author => "Piotrulos";
-        public override string Version => "1.4.3";
+        public override string Version => "1.4.4";
 
-        private readonly string readme = string.Format(
-            "This folder is used by CDPlayer Enhanced mod{0}{0}" +
-            "To create a new CD, create a new folder here, put your music or playlist file in that new folder.",
-            System.Environment.NewLine);
-
-        public override bool UseAssetsFolder => true;
+        private readonly string readme = $"This folder is used by CDPlayer Enhanced mod{System.Environment.NewLine}{System.Environment.NewLine}To create a new CD, create a new folder here, put your music or playlist file in that new folder.";
 
         public string path = Path.GetFullPath("CD");
 
-        Settings resetCds = new Settings("resetcd", "Reset CDs", ResetPosition);
-        public Settings debugInfo = new Settings("debugInfo", "Show debug info", false);
-        public Settings RDSsim = new Settings("RDSsim", "Simulate RDS", true);
-        public Settings channel3url = new Settings("ch3url", "Channel 3:", "http://185.33.21.112:11010");
-        public Settings channel4url = new Settings("ch4url", "Channel 4:", "http://185.33.21.112/90s_128");
-
-        static Settings bypassDis = new Settings("cdDisBypass", "Bypass distortion filters", false, FilterChange);
-
+        public static SettingsCheckBox bypassDis;
+        public SettingsCheckBox debugInfo, RDSsim;
+        public SettingsTextBox channel3url, channel4url;
         static List<GameObject> listOfCDs, listOfCases;
 
         static GameObject rack10, cdp, cdCaseP;
@@ -66,27 +56,27 @@ namespace CDPlayer
 
         public override void OnNewGame()
         {
-            string savepath = Path.Combine(ModLoader.GetModConfigFolder(this), "cdplayer.save");
+            string savepath = Path.Combine(ModLoader.GetModSettingsFolder(this), "cdplayer.save");
             if (File.Exists(savepath))
                 File.Delete(savepath);
         }
         public static void FilterChange()
         {
             if (GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/CDPlayer") != null)
-                GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/CDPlayer").GetComponent<AudioSource>().bypassEffects = (bool)bypassDis.GetValue();
+                GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/CDPlayer").GetComponent<AudioSource>().bypassEffects = bypassDis.GetValue();
         }
         public override void ModSettings()
         {
             Settings.AddHeader(this, "CD player settings", new Color32(0, 128, 0, 255));
             Settings.AddText(this, "Disable distortion filter on satsuma amplifier speakers");
-            Settings.AddCheckBox(this, bypassDis);
+            bypassDis = Settings.AddCheckBox(this, "cdDisBypass", "Bypass distortion filters", false, FilterChange);
             Settings.AddText(this, "Respawn purchased stuff on kitchen table");
-            Settings.AddButton(this, resetCds, new Color32(255, 66, 66, 255), new Color32(255, 86, 86, 255), new Color32(255, 106, 106, 255));
+            Settings.AddButton(this, "resetcd", "Reset CDs", ResetPosition, new Color32(255, 66, 66, 255),  Color.white);
             Settings.AddHeader(this, "Internet radio settings", new Color32(0, 128, 0, 255));
-            Settings.AddCheckBox(this, debugInfo);
-            Settings.AddCheckBox(this, RDSsim);
-            Settings.AddTextBox(this, channel3url, "Stream URL...");
-            Settings.AddTextBox(this, channel4url, "Stream URL...");
+            debugInfo = Settings.AddCheckBox(this, "debugInfo", "Show debug info", false);
+            RDSsim = Settings.AddCheckBox(this, "RDSsim", "Simulate RDS", true);
+            channel3url = Settings.AddTextBox(this, "ch3url", "Channel 3:", "http://185.33.21.112:11010", "Stream URL...");
+            channel4url = Settings.AddTextBox(this, "ch4url", "Channel 4:", "http://185.33.21.112/90s_128", "Stream URL...");
         }
 
         public override void OnSave()
@@ -339,8 +329,8 @@ namespace CDPlayer
 
         public void Load()
         {
-            string old_path = Path.Combine(ModLoader.GetModConfigFolder(this), "case.save");
-            string old_path2 = Path.Combine(ModLoader.GetModConfigFolder(this), "cd.save");
+            string old_path = Path.Combine(ModLoader.GetModSettingsFolder(this), "case.save");
+            string old_path2 = Path.Combine(ModLoader.GetModSettingsFolder(this), "cd.save");
 
             if (File.Exists(old_path))
                 File.Delete(old_path);
@@ -382,10 +372,6 @@ namespace CDPlayer
                         listOfCases[i].GetComponent<CDCase>().purchased = true;
                         listOfCases[i].SetActive(true);
                     }
-                }
-                if (new System.IO.FileInfo(@"mysummercar_Data\Managed\MSCLoader.dll").Length > 350000)
-                {
-                    throw new System.Exception("CDPlayer is not available for this loader, because Athlon of this loader told me to <b>Fuck off</b>");
                 }
                 for (int i = 0; i < listOfCDs.Count; i++)
                 {

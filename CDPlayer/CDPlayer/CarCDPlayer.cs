@@ -103,10 +103,10 @@ namespace CDPlayer
             switch (channel)
             {
                 case 1:
-                    url = (string)cdplayer.channel3url.GetValue();
+                    url = cdplayer.channel3url.GetValue();
                     break;
                 case 2:
-                    url = (string)cdplayer.channel4url.GetValue();
+                    url = cdplayer.channel4url.GetValue();
                     break;
             }
             PlayMakerFSM radioCh;
@@ -129,7 +129,7 @@ namespace CDPlayer
             if (url != null && url != string.Empty)
             {
                 //transform.FindChild("ButtonsCD/RadioVolume").GetComponent<PlayMakerFSM>().FsmVariables.FindFsmString("Channel").Value = string.Format("Channel ", streamingChannel + 2);
-                if ((bool)cdplayer.debugInfo.GetValue())
+                if (cdplayer.debugInfo.GetValue())
                     audioStreamPlayer.showDebug = true;
                 audioStreamPlayer.PlayStream(url);
                 radioCh.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmBool("OnStatic").Value = false;
