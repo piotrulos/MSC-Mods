@@ -13,12 +13,11 @@ namespace ModsShop
         public Shop shop;
         [HideInInspector]
         public ItemDetails ItemDetails;
-
+#if !Mini
         void Awake()
         {
-#if !Mini
+
             shop = ModsShop.GetShopReference();
-#endif
         }
 
         void Start()
@@ -39,10 +38,9 @@ namespace ModsShop
         {
             if (ItemDetails == null) return;
 
-#if !Mini
             PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy").Value = false;
             PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = string.Empty;
-#endif
+
 
         }
         void Cancel()
@@ -55,17 +53,17 @@ namespace ModsShop
         void Update()
         {
             if (ItemDetails == null) return;
+            if (Camera.main == null) return;
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 1f))
             {
                 if (hit.transform.gameObject == gameObject)
                 {
-#if !Mini
                     PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy").Value = true;
-                    PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = $"{ItemID} - {ItemDetails.ItemPrice} MK";
-#endif
+                    PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = $"{ItemDetails.ItemName} - {ItemDetails.ItemPrice} MK";
+
                     if (Input.GetMouseButtonDown(0))
                     {
-                        if (shop.shopRefs.cashRegister.AddToCart(ItemDetails) == 0) 
+                        if (shop.shopRefs.cashRegister.AddToCart(ItemDetails) == 0)
                         {
                             if (!ItemDetails.MultiplePurchases)
                             {
@@ -76,6 +74,7 @@ namespace ModsShop
                 }
             }
         }
+#endif
     }
 
 }

@@ -7,20 +7,21 @@ namespace ModsShop
 {
     public class CashRegister : MonoBehaviour
     {
+        public ShoppingCartUI shoppingCartUI;
         public TextMesh display;
         internal Dictionary<ItemDetails, int> shoppingCart = new Dictionary<ItemDetails, int>();
         private float totalPrice = 0f;
-
+#if !Mini
         void Start()
         {
             display.text = Math.Round(totalPrice, 2).ToString("0.00");
         }
         void OnMouseExit()
         {
-#if !Mini
+
             PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy").Value = false;
             PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = string.Empty;
-#endif
+
         }
         public byte AddToCart(ItemDetails item)
         {
@@ -58,19 +59,20 @@ namespace ModsShop
 
         void ShowCart()
         {
+            shoppingCartUI.gameObject.SetActive(true);
             ModConsole.Warning(shoppingCart.Count.ToString());
         }
 
         void Update()
         {
+            if (Camera.main == null) return;
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 1f))
             {
                 if(hit.transform.gameObject == gameObject)
                 {
-#if !Mini
                     PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy").Value = true;
                     PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = $"Preview items";
-#endif
+
                     if (Input.GetMouseButtonDown(0))
                     {
                         ShowCart();
@@ -78,5 +80,6 @@ namespace ModsShop
                 }
             }
         }
+        #endif
     }
 }

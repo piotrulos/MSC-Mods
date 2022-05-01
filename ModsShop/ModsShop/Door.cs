@@ -18,6 +18,8 @@ namespace ModsShop
 
         void Update()
         {
+            if (Camera.main == null) return;
+
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 1f))
             {
                 if (hit.transform.gameObject == gameObject)

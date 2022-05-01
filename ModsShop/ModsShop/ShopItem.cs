@@ -40,6 +40,7 @@ namespace ModsShop
         public bool purchashed = false;
     }
 
+    [Obsolete("ShopItem is no longer supported. Use Shop class instead")]
     public class ShopItem : MonoBehaviour
     {
         public List<ShopItems> teimoShopItems = new List<ShopItems>();

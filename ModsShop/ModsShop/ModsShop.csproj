@@ -76,6 +76,7 @@
     <Compile Include="ProductOnShelf.cs" />
     <Compile Include="Shop.cs" />
     <Compile Include="ShopItem.cs" />
+    <Compile Include="ShoppingCartUI.cs" />
     <Compile Include="ShopRefs.cs" />
     <Compile Include="Switch.cs" />
   </ItemGroup>

@@ -15,16 +15,18 @@ namespace ModsShop
         public GameObject ItemPrefab;
         public bool bought = false;
         public ProductOnShelf product;
+        public ObjectType ObjType;
 
-        public ItemDetails(string modName, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> checkout, GameObject itemPrefab)
+        public ItemDetails(string modName, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> checkout, GameObject itemPrefab, ObjectType objectType)
         {
             ModName = modName;
             ItemID = itemID;
             ItemName = itemName;
             ItemPrice = itemPrice;
-            MultiplePurchases = multiplePurchases; 
+            MultiplePurchases = multiplePurchases;
             Checkout = checkout;
             ItemPrefab = itemPrefab;
+            ObjType = objectType;
         }
 
     }

@@ -8,6 +8,11 @@ using UnityEngine;
 
 namespace ModsShop
 {
+    public enum ObjectType
+    {
+        Instantiated,
+        Prefab
+    }
     public class Shop : MonoBehaviour
     {
         public ShopRefs shopRefs;
@@ -16,20 +21,37 @@ namespace ModsShop
         void Awake()
         {
             items = new List<ItemDetails>();
+            
         }
 #if !Mini
-        public ItemDetails CreateShopItem(Mod mod, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> purchashedAction, GameObject itemPrefab)
+        public ItemDetails CreateShopItem(Mod mod, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> purchashedAction, GameObject itemObject, ObjectType objectType)
         {
-            ItemDetails itemDetails = new ItemDetails(mod.Name, $"{mod.ID}_{itemID}", itemName, itemPrice, multiplePurchases, purchashedAction, itemPrefab);
+            ItemDetails itemDetails = new ItemDetails(mod.Name, $"{mod.ID}_{itemID}", itemName, itemPrice, multiplePurchases, purchashedAction, itemObject, objectType);
             items.Add(itemDetails);
             return itemDetails;
         }
-#endif
-        public void AddDisplayItem(ItemDetails shopItem, GameObject displayItem)
+
+        public void AddDisplayItem(ItemDetails itemDetails, GameObject displayObject, ObjectType displayObjectType, Vector3 rotation, int gap)
         {
-            GameObject go = Instantiate(displayItem);
-            go.AddComponent<ProductOnShelf>().ItemDetails = shopItem;
-            shopRefs.autoShelves.SpawnItem(go, 1, 0);
+            GameObject go = null;
+            switch (displayObjectType)
+            {
+                case ObjectType.Instantiated:
+                    go = displayObject;
+                    go.SetActive(true);
+                    break;
+                case ObjectType.Prefab:
+                    go = Instantiate(displayObject);
+                    break;
+            }
+            if(go == null)
+            {
+                ModConsole.Error("[ModsShop] AddDisplayItem() - displayObject is null");
+                return;
+            }
+            go.AddComponent<ProductOnShelf>().ItemDetails = itemDetails;
+            go.transform.eulerAngles = rotation;
+            shopRefs.autoShelves.SpawnItem(itemDetails.ModName, go, gap, 0);
         }
 
         public void AddCustomShelf(GameObject customShelfPrefab)
@@ -48,6 +70,6 @@ namespace ModsShop
             }
             return null;
         }
-
+#endif
     }
 }
