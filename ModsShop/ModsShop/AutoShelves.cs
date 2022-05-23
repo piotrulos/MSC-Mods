@@ -16,14 +16,12 @@ namespace ModsShop
 #if !Mini
         public void SpawnItem(string modID, GameObject displayGos, int gap = 2, int yoffset = 0)
         {
-            if (currentShelf > 19)
+            ModConsole.Error(shelves.Length.ToString());
+            if (currentShelf > shelves.Length - 1)
             {
                 if (!displayedWarn)
                 {
-
                     ModConsole.Warning("[ModsShop] Can't fit more items, we're full.");
-
-
                     displayedWarn = true;
                 }
                 return;
@@ -40,7 +38,7 @@ namespace ModsShop
                 }
             }
             // Debug.Log(b);
-            if (Math.Abs(lastX - b.x) > 3f)
+            if (Math.Abs(lastX - b.x) > 4.3f)
             {
                 lastX = 0f;
                 currentShelf++;
@@ -48,13 +46,16 @@ namespace ModsShop
                 //   break;
             }
             displayGos.transform.SetParent(shelves[currentShelf].transform, false);
-            if (lastX < 0)
-                lastX -= b.x;
             var gaps = (float)Math.Round((gap / 50f), 2);
-            displayGos.transform.localPosition = new Vector3(lastX - gaps, b.y, 0f);
-            // Debug.Log((gap / 10));
-            lastX -= Math.Abs(b.x);
-            // lastX -= Math.Abs(b.x) + gaps;
+
+            if (lastX < 0)
+                lastX -= b.x+gaps;
+            displayGos.transform.localPosition = new Vector3(lastX, b.y, 0f);
+            if (currentShelf % 2 != 0)
+                displayGos.transform.localEulerAngles = new Vector3(displayGos.transform.localEulerAngles.x, displayGos.transform.localEulerAngles.y + 180f, displayGos.transform.localEulerAngles.z);
+                // Debug.Log((gap / 10));
+                lastX -= Math.Abs(b.x);
+             //lastX -= Math.Abs(b.x) + gaps;
             //  }
             // lastX -= 0.05f;
             lastModID = modID;

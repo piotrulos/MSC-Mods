@@ -8,10 +8,11 @@ using UnityEngine;
 
 namespace ModsShop
 {
-    public enum ObjectType
+    public enum SpawnMethod
     {
-        Instantiated,
-        Prefab
+        Instantiate,
+        SetActive,
+        Custom
     }
     public class Shop : MonoBehaviour
     {
@@ -24,34 +25,50 @@ namespace ModsShop
             
         }
 #if !Mini
-        public ItemDetails CreateShopItem(Mod mod, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> purchashedAction, GameObject itemObject, ObjectType objectType)
+        public ItemDetails CreateShopItem(Mod mod, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> purchashedAction) => CreateShopItem(mod, itemID, itemName, itemPrice, multiplePurchases, purchashedAction, null, SpawnMethod.Custom);
+        public ItemDetails CreateShopItem(Mod mod, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> purchashedAction, GameObject itemObject, SpawnMethod spawnMehod)
         {
-            ItemDetails itemDetails = new ItemDetails(mod.Name, $"{mod.ID}_{itemID}", itemName, itemPrice, multiplePurchases, purchashedAction, itemObject, objectType);
+            switch (spawnMehod)
+            {
+                case SpawnMethod.SetActive:
+                    if(multiplePurchases) ModConsole.Error("[ModsShop] CreateShopItem() - SetActive cannot be used for items that can be purchased multiple times.");
+                    break;
+                case SpawnMethod.Instantiate:
+                    break;
+                case SpawnMethod.Custom:
+                    break;
+
+            }
+            ItemDetails itemDetails = new ItemDetails(mod.ID, mod.Name, $"{itemID}", itemName, itemPrice, multiplePurchases, purchashedAction, itemObject, spawnMehod);
             items.Add(itemDetails);
             return itemDetails;
         }
 
-        public void AddDisplayItem(ItemDetails itemDetails, GameObject displayObject, ObjectType displayObjectType, Vector3 rotation, int gap)
+        public void AddDisplayItem(ItemDetails itemDetails, GameObject displayObject, SpawnMethod displayObjectSpawnMethod, Vector3 rotation, int gap)
         {
             GameObject go = null;
-            switch (displayObjectType)
+            switch (displayObjectSpawnMethod)
             {
-                case ObjectType.Instantiated:
+                case SpawnMethod.SetActive:
                     go = displayObject;
                     go.SetActive(true);
                     break;
-                case ObjectType.Prefab:
+                case SpawnMethod.Instantiate:
                     go = Instantiate(displayObject);
                     break;
+                case SpawnMethod.Custom:
+                    ModConsole.Error("Custom spawn method doesn't apply to display objects.");
+                    break;
+
             }
-            if(go == null)
+            if (go == null)
             {
-                ModConsole.Error("[ModsShop] AddDisplayItem() - displayObject is null");
+                ModConsole.Error("[ModsShop] AddDisplayItem() - displayObject is null, make sure you added displayObject and it has correct SpawnMethod");
                 return;
             }
-            go.AddComponent<ProductOnShelf>().ItemDetails = itemDetails;
+            go.AddComponent<ProductOnShelf>().itemDetails = itemDetails;
             go.transform.eulerAngles = rotation;
-            shopRefs.autoShelves.SpawnItem(itemDetails.ModName, go, gap, 0);
+            shopRefs.autoShelves.SpawnItem(itemDetails.ModID, go, gap, 0);
         }
 
         public void AddCustomShelf(GameObject customShelfPrefab)
@@ -60,11 +77,11 @@ namespace ModsShop
             shopRefs.customShelves.InsertSlelf(go);
         }
 
-        public ItemDetails GetItemDetailsByID(string ItemID)
+        public ItemDetails GetItemDetailsByID(string modID, string ItemID)
         {
             if(items != null)
             {
-                ItemDetails item = items.Where(x => x.ItemID == ItemID).FirstOrDefault();
+                ItemDetails item = items.Where(x => x.ItemID == ItemID && x.ModID == modID).FirstOrDefault();
                 if(item != null)
                     return item;
             }

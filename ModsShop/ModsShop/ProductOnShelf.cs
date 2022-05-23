@@ -12,7 +12,7 @@ namespace ModsShop
         [HideInInspector]
         public Shop shop;
         [HideInInspector]
-        public ItemDetails ItemDetails;
+        public ItemDetails itemDetails;
 #if !Mini
         void Awake()
         {
@@ -22,50 +22,50 @@ namespace ModsShop
 
         void Start()
         {
-            if (ItemDetails == null)
+            if (itemDetails == null)
             {
-                ItemDetails = shop.GetItemDetailsByID($"{ModID}_{ItemID}");
-                if (ItemDetails == null)
+                itemDetails = shop.GetItemDetailsByID(ModID, ItemID);
+                if (itemDetails == null)
                 {
                     ModConsole.Error($"Shop: Shop itemID <b>{ItemID}</b> not found in mod <b>{ModID}</b>");
                     return;
                 }
             }
-            ItemDetails.product = this;
+            itemDetails.product = this;
         }
 
         void OnMouseExit()
         {
-            if (ItemDetails == null) return;
+            if (itemDetails == null) return;
 
             PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy").Value = false;
             PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = string.Empty;
 
 
         }
-        void Cancel()
+        internal void Cancel()
         {
-            if (!ItemDetails.MultiplePurchases)
+            if (!itemDetails.MultiplePurchases)
             {
                 gameObject.SetActive(true);
             }
         }
         void Update()
         {
-            if (ItemDetails == null) return;
+            if (itemDetails == null) return;
             if (Camera.main == null) return;
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 1f))
             {
                 if (hit.transform.gameObject == gameObject)
                 {
                     PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy").Value = true;
-                    PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = $"{ItemDetails.ItemName} - {ItemDetails.ItemPrice} MK";
+                    PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = $"{itemDetails.ItemName} - {itemDetails.ItemPrice} MK";
 
                     if (Input.GetMouseButtonDown(0))
                     {
-                        if (shop.shopRefs.cashRegister.AddToCart(ItemDetails) == 0)
+                        if (shop.shopRefs.cashRegister.AddToCart(itemDetails) == 0)
                         {
-                            if (!ItemDetails.MultiplePurchases)
+                            if (!itemDetails.MultiplePurchases)
                             {
                                 gameObject.SetActive(false);
                             }

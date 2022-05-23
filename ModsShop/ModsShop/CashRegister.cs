@@ -10,7 +10,7 @@ namespace ModsShop
         public ShoppingCartUI shoppingCartUI;
         public TextMesh display;
         internal Dictionary<ItemDetails, int> shoppingCart = new Dictionary<ItemDetails, int>();
-        private float totalPrice = 0f;
+        internal float totalPrice = 0f;
 #if !Mini
         void Start()
         {
@@ -47,7 +47,7 @@ namespace ModsShop
             UpdateCart();
             return 0;
         }
-        void UpdateCart()
+        internal void UpdateCart()
         {
             totalPrice = 0;
             foreach (KeyValuePair<ItemDetails, int> cartItems in shoppingCart)
@@ -59,8 +59,10 @@ namespace ModsShop
 
         void ShowCart()
         {
+            PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerInMenu").Value = false; //unlock mouse
+            GameObject.Find("Systems").transform.GetChild(7).gameObject.SetActive(false); //can't clickthrough UI when menu is active.
             shoppingCartUI.gameObject.SetActive(true);
-            ModConsole.Warning(shoppingCart.Count.ToString());
+            shoppingCartUI.PopulateCart();
         }
 
         void Update()

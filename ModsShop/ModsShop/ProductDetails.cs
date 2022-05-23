@@ -7,6 +7,7 @@ namespace ModsShop
     public class ItemDetails
     {
         public string ModName;
+        public string ModID;
         public string ItemID;
         public string ItemName;
         public float ItemPrice;
@@ -15,10 +16,11 @@ namespace ModsShop
         public GameObject ItemPrefab;
         public bool bought = false;
         public ProductOnShelf product;
-        public ObjectType ObjType;
+        public SpawnMethod SpawnMethod;
 
-        public ItemDetails(string modName, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> checkout, GameObject itemPrefab, ObjectType objectType)
+        public ItemDetails(string modID, string modName, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> checkout, GameObject itemPrefab, SpawnMethod spawnMethod)
         {
+            ModID = modID;
             ModName = modName;
             ItemID = itemID;
             ItemName = itemName;
@@ -26,7 +28,7 @@ namespace ModsShop
             MultiplePurchases = multiplePurchases;
             Checkout = checkout;
             ItemPrefab = itemPrefab;
-            ObjType = objectType;
+            SpawnMethod = spawnMethod;
         }
 
     }
