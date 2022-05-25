@@ -9,6 +9,8 @@ namespace ModsShop
     {
         public ShoppingCartUI shoppingCartUI;
         public TextMesh display;
+        public ShopDudeAnim anims;
+        public Transform spawnPoint, spawnPoint1, spawnPoint2;
         internal Dictionary<ItemDetails, int> shoppingCart = new Dictionary<ItemDetails, int>();
         internal float totalPrice = 0f;
 #if !Mini
@@ -18,19 +20,21 @@ namespace ModsShop
         }
         void OnMouseExit()
         {
-
             PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy").Value = false;
             PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = string.Empty;
-
         }
         public byte AddToCart(ItemDetails item)
         {
+
             if (shoppingCart.ContainsKey(item))
             {
                 if (item.MultiplePurchases)
                 {
-                    shoppingCart[item] += 1;
-                    UpdateCart();
+                    if (shoppingCart[item] < 10)
+                    {
+                        shoppingCart[item] += 1;
+                        UpdateCart();
+                    }
                     return 0;
                 }
                 else
@@ -47,7 +51,7 @@ namespace ModsShop
             UpdateCart();
             return 0;
         }
-        internal void UpdateCart()
+        internal void UpdateCart(bool aud = true)
         {
             totalPrice = 0;
             foreach (KeyValuePair<ItemDetails, int> cartItems in shoppingCart)
@@ -55,13 +59,18 @@ namespace ModsShop
                 totalPrice += cartItems.Key.ItemPrice * cartItems.Value;
             }
             display.text = Math.Round(totalPrice, 2).ToString("0.00");
+            if(aud)
+                MasterAudio.PlaySound3DAndForget("Store", transform, variationName: "cash_register_1");
         }
-
+        internal void PlayCheckoutSound()
+        {
+            MasterAudio.PlaySound3DAndForget("Store", transform, variationName: "cash_register_2");
+        }
         void ShowCart()
         {
-            PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerInMenu").Value = false; //unlock mouse
-            GameObject.Find("Systems").transform.GetChild(7).gameObject.SetActive(false); //can't clickthrough UI when menu is active.
-            shoppingCartUI.gameObject.SetActive(true);
+            PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerInMenu").Value = true; //unlock mouse
+            GameObject.Find("Systems").transform.GetChild(7).gameObject.SetActive(true); //can't clickthrough UI when menu is active.
+            shoppingCartUI.ui.SetActive(true);
             shoppingCartUI.PopulateCart();
         }
 

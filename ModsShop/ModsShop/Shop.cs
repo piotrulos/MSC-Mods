@@ -21,9 +21,9 @@ namespace ModsShop
 
         void Awake()
         {
-            items = new List<ItemDetails>();
-            
+            items = new List<ItemDetails>();            
         }
+
 #if !Mini
         public ItemDetails CreateShopItem(Mod mod, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> purchashedAction) => CreateShopItem(mod, itemID, itemName, itemPrice, multiplePurchases, purchashedAction, null, SpawnMethod.Custom);
         public ItemDetails CreateShopItem(Mod mod, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> purchashedAction, GameObject itemObject, SpawnMethod spawnMehod)

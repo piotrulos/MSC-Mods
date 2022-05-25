@@ -9,6 +9,7 @@ namespace ModsShop
         public string ModID;
         [Header("Your item ID (case sensitive)")]
         public string ItemID;
+
         [HideInInspector]
         public Shop shop;
         [HideInInspector]
@@ -16,7 +17,6 @@ namespace ModsShop
 #if !Mini
         void Awake()
         {
-
             shop = ModsShop.GetShopReference();
         }
 
@@ -37,11 +37,8 @@ namespace ModsShop
         void OnMouseExit()
         {
             if (itemDetails == null) return;
-
             PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy").Value = false;
             PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = string.Empty;
-
-
         }
         internal void Cancel()
         {
@@ -53,10 +50,9 @@ namespace ModsShop
         void Update()
         {
             if (itemDetails == null) return;
-            if (Camera.main == null) return;
-            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 1f))
+            if (shop.shopRefs.hitted)
             {
-                if (hit.transform.gameObject == gameObject)
+                if (shop.shopRefs.hit.transform.gameObject == gameObject)
                 {
                     PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy").Value = true;
                     PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = $"{itemDetails.ItemName} - {itemDetails.ItemPrice} MK";

@@ -124,7 +124,7 @@ namespace ModsShop
         }
         public override void OnLoad()
         {
-            ModConsole.Error("ModsShop: Oudated MSCLoader version, please update modloader to version <b>1.2</b> or highier to use this mod.");
+            ModConsole.Error("ModsShop: Oudated MSCLoader version, please update modloader to version <b>1.2.5</b> or highier to use this mod.");
         }
 #endregion
     }

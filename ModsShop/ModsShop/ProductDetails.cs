@@ -36,6 +36,15 @@ namespace ModsShop
     public class Checkout
     {
         public GameObject gameObject = null;
+        public string itemID = string.Empty;
+        public Vector3 spawnLocation = Vector3.zero;
+
+        public Checkout(GameObject go, string id, Vector3 spawn)
+        {
+            gameObject = go;
+            itemID = id;
+            spawnLocation = spawn;
+        }
     }
 
     //Old

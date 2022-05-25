@@ -16,7 +16,6 @@ namespace ModsShop
 #if !Mini
         public void SpawnItem(string modID, GameObject displayGos, int gap = 2, int yoffset = 0)
         {
-            ModConsole.Error(shelves.Length.ToString());
             if (currentShelf > shelves.Length - 1)
             {
                 if (!displayedWarn)

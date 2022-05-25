@@ -32,11 +32,13 @@ namespace ModsShop
                         if (isOpen)
                         {
                             animation.Play("door close");
+                            MasterAudio.PlaySound3DAndForget("Store", transform, variationName: "door_close");
                             isOpen = false;
                         }
                         else
                         {
                             animation.Play("door open");
+                            MasterAudio.PlaySound3DAndForget("Store", transform, variationName: "door_open");
                             isOpen = true;
                         }
                     }
