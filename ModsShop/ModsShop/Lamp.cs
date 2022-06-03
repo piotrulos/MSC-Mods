@@ -7,20 +7,45 @@ namespace ModsShop
     {
         public GameObject[] bulbs = new GameObject[2];
         public Light light;
-        public float FullIntesity = 0.75f;
+        public float FullIntesity = 0.85f;
+        public bool outsideStuff = false;
 
         private MaterialPropertyBlock mpb;
         private Color matOff;
         private Color matOn;
         private bool halfOn = false;
-        private bool turnedOn = false;
+        private bool turnedOn = true;
 
         void Awake()
         {
             mpb = new MaterialPropertyBlock();
             matOff = new Color(0, 0, 0);
             matOn = new Color(1, 1, 1);
-            TurnOff();
+            if(outsideStuff)
+                TurnNormalOff();
+            else
+                TurnOff();
+        }
+
+        public void TurnNormalOn()
+        {
+            if (turnedOn)
+                return;
+            for (int i = 0; i < bulbs.Length; i++)
+            {
+                bulbs[i].GetComponent<Renderer>().material.EnableKeyword("_EMISSION");
+            }
+            turnedOn = true;
+        }
+        public void TurnNormalOff()
+        {
+            if (!turnedOn)
+                return;
+            for (int i = 0; i < bulbs.Length; i++)
+            {
+                bulbs[i].GetComponent<Renderer>().material.DisableKeyword("_EMISSION");
+            }
+            turnedOn = false;
         }
         IEnumerator TryToTurnOn(float delay, int tries, int halfAfter)
         {
@@ -88,7 +113,7 @@ namespace ModsShop
             light.gameObject.SetActive(true);
             light.intensity = FullIntesity / 2f;
         }
-        void TurnOn()
+       internal void TurnOn()
         {
             halfOn = false;
             turnedOn = true;

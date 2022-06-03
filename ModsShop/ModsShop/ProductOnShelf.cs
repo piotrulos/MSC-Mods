@@ -9,6 +9,8 @@ namespace ModsShop
         public string ModID;
         [Header("Your item ID (case sensitive)")]
         public string ItemID;
+        [Header("Single purchase settings (more info on wiki)")]
+        public bool IgnoreItemNotFound = false;
 
         [HideInInspector]
         public Shop shop;
@@ -27,7 +29,10 @@ namespace ModsShop
                 itemDetails = shop.GetItemDetailsByID(ModID, ItemID);
                 if (itemDetails == null)
                 {
-                    ModConsole.Error($"Shop: Shop itemID <b>{ItemID}</b> not found in mod <b>{ModID}</b>");
+                    if(IgnoreItemNotFound)
+                        ModConsole.Print($"Shop: Shop itemID <b>{ItemID}</b> not found in mod <b>{ModID}</b> [Ignored by mod setting]");
+                    else
+                        ModConsole.Error($"Shop: Shop itemID <b>{ItemID}</b> not found in mod <b>{ModID}</b>");
                     return;
                 }
             }

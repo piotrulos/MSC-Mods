@@ -13,9 +13,20 @@ namespace ModsShop
 #if !Mini
             PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse").Value = false;
 #endif
-
         }
-
+        public void CloseDoor()
+        {
+            animation.Play("door close");
+            MasterAudio.PlaySound3DAndForget("Store", transform, variationName: "door_close");
+            isOpen = false;
+        }
+        public void OpenDoor()
+        {
+            animation.Play("door open");
+            MasterAudio.PlaySound3DAndForget("Store", transform, variationName: "door_open");
+            isOpen = true;
+        }
+#if !Mini
         void Update()
         {
             if (Camera.main == null) return;
@@ -24,26 +35,28 @@ namespace ModsShop
             {
                 if (hit.transform.gameObject == gameObject)
                 {
-#if !Mini
+
                     PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse").Value = true;
-#endif
+
                     if (Input.GetMouseButtonDown(0))
                     {
+                        if (ModsShop.GetShopReference().shopRefs.isShopClosed)
+                        {
+                            MasterAudio.PlaySound3DAndForget("Store", transform, variationName: "door_locked");
+                            return;
+                        }
                         if (isOpen)
                         {
-                            animation.Play("door close");
-                            MasterAudio.PlaySound3DAndForget("Store", transform, variationName: "door_close");
-                            isOpen = false;
+                            CloseDoor();
                         }
                         else
                         {
-                            animation.Play("door open");
-                            MasterAudio.PlaySound3DAndForget("Store", transform, variationName: "door_open");
-                            isOpen = true;
+                            OpenDoor();
                         }
                     }
                 }
             }
         }
+#endif
     }
 }

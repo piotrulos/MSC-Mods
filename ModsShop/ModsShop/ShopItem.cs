@@ -72,14 +72,14 @@ namespace ModsShop
             leftListView = shopCatalogUI.transform.GetChild(0).GetChild(0).GetChild(1).GetChild(0).gameObject;
             selectSth = shopCatalogUI.transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetComponent<Text>();
             cartListView = shopCatalogUI.transform.GetChild(0).GetChild(1).GetChild(1).GetChild(0).gameObject;
-            shopCatalogUI.transform.GetChild(0).GetChild(1).GetChild(2).GetChild(2).GetComponent<Button>().onClick.AddListener(() => FinishOrder());
+            shopCatalogUI.transform.GetChild(0).GetChild(1).GetChild(2).GetChild(1).GetComponent<Button>().onClick.AddListener(() => FinishOrder());
             teimoCashSound = GameObject.Find("STORE/StoreCashRegister").AddComponent<AudioSource>();
             fleetariCashSound = GameObject.Find("REPAIRSHOP").transform.Find("LOD/Store/ShopCashRegister").gameObject.AddComponent<AudioSource>();
             teimoCashSound.playOnAwake = false; fleetariCashSound.playOnAwake = false;
             teimoCashSound.clip = GameObject.Find("MasterAudio/Store/cash_register_2").GetComponent<AudioSource>().clip;
             fleetariCashSound.clip = teimoCashSound.clip;
         }
-        #if !Mini
+#if !Mini
         public void Add(Mod mod, ProductDetails product, ShopType shopType, Action<PurchaseInfo> action, GameObject go)
         {
             ShopItems item = new ShopItems
@@ -97,9 +97,11 @@ namespace ModsShop
 #endif
         public void ShowCatalog(bool fleetari)
         {
+#if !Mini
             PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerInMenu").Value = true; //unlock mouse
             GameObject.Find("Systems").transform.GetChild(7).gameObject.SetActive(true); //can't clickthrough UI when menu is active.
             shopCatalogUI.transform.GetChild(0).gameObject.SetActive(false);
+            ModUI.ShowMessage($"This catalog is for <color=yellow>legacy items only</color>{Environment.NewLine}{Environment.NewLine}If you can't find what you are looking for here, go visit a <color=aqua>new shop</color> that is located near inspection.");
             if(fleetariLast != fleetari)
                 shoppingCart.Clear();
             if (!fleetari)
@@ -116,9 +118,10 @@ namespace ModsShop
             }
 
             shopCatalogUI.SetActive(true);
-        }
+#endif
+    }
 
-        public void HideCatalog()
+    public void HideCatalog()
         { 
             PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerInMenu").Value = false; //unlock mouse
             GameObject.Find("Systems").transform.GetChild(7).gameObject.SetActive(false); //can't clickthrough UI when menu is active.
@@ -226,6 +229,7 @@ namespace ModsShop
         public void ListOfMods(bool fleetari)
         {
             RemoveChildren(leftListView.transform);
+            leftListView.GetComponentInParent<ScrollRect>().verticalNormalizedPosition = 0;
             selectSth.text = "Select Mod:";
             Text numOfproductsText = null;
             int num = 1;

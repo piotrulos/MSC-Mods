@@ -55,6 +55,7 @@ namespace ModsShop
 #if !Mini
         IEnumerator SpawnStuff()
         {
+            int spawnP = 0;
             foreach (KeyValuePair<ItemDetails, int> cartItems in cashRegister.shoppingCart)
             {
                 GameObject spawnedObj = null;
@@ -66,41 +67,52 @@ namespace ModsShop
                             for (int i = 0; i < cartItems.Value; i++)
                             {
                                 spawnedObj = Instantiate(cartItems.Key.ItemPrefab);
-                                CheckoutCallback(spawnedObj, cartItems.Key);
-                                spawnedObj.transform.position = cashRegister.spawnPoint.position;
+                                CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
+                                spawnedObj.transform.position = cashRegister.spawnPoint[spawnP].position;
                                 yield return new WaitForSeconds(.2f);
                             }
                         }
                         else
                         {
                             spawnedObj = Instantiate(cartItems.Key.ItemPrefab);
-                            CheckoutCallback(spawnedObj, cartItems.Key);
+                            CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
                         }
                         break;
                     case SpawnMethod.SetActive:
                         spawnedObj = cartItems.Key.ItemPrefab.gameObject;
                         spawnedObj.SetActive(true);
-                        CheckoutCallback(spawnedObj, cartItems.Key);
-                        spawnedObj.transform.position = cashRegister.spawnPoint.position;
+                        CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
+                        spawnedObj.transform.position = cashRegister.spawnPoint[spawnP].position;
                         break;
                     case SpawnMethod.Custom:
                         spawnedObj = null;
-                        CheckoutCallback(spawnedObj, cartItems.Key);
+                        if (cartItems.Value > 1)
+                        {
+                            for (int i = 0; i < cartItems.Value; i++)
+                            {
+                                CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
+                                yield return new WaitForSeconds(.2f);
+                            }
+                        }
+                        else
+                            CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
                         break;
                 }
-                spawnedObj.transform.position = cashRegister.spawnPoint.position;
+                spawnedObj.transform.position = cashRegister.spawnPoint[spawnP].position;
                 yield return new WaitForSeconds(.2f);
+                spawnP++;
+                if (spawnP == cashRegister.spawnPoint.Length) spawnP = 0;
             }
             cashRegister.shoppingCart.Clear();
             PlayMakerGlobals.Instance.Variables.FindFsmFloat("PlayerMoney").Value -= cashRegister.totalPrice;
             cashRegister.UpdateCart(false);
         }
 
-        void CheckoutCallback(GameObject spawned, ItemDetails item)
+        void CheckoutCallback(GameObject spawned, ItemDetails item, int spawn)
         {
             try
             {
-                item.Checkout(new Checkout(spawned, item.ItemID, cashRegister.spawnPoint.position));
+                item.Checkout(new Checkout(spawned, item.ItemID, cashRegister.spawnPoint[spawn].position));
                 item.bought = true;
             }
             catch (Exception e)

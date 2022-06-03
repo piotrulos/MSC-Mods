@@ -46,7 +46,7 @@ namespace ModsShop
             inspection.transform.GetChild(1).GetChild(inspection.transform.GetChild(1).childCount - 1).GetComponent<MeshRenderer>().reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
             //Create new GameObject that will be parent for shop stuff
             modShop = new GameObject("Mod Shop");
-            modShop.transform.SetParent(inspection.transform, false);
+            modShop.transform.SetParent(inspection.transform.Find("LOD"), false);
             modShop.transform.localPosition = new Vector3(-4.5f, -32f, 0.2f);
             modShop.transform.localEulerAngles = new Vector3(90, 0, 0);
             shelves = GameObject.Instantiate(shelves);
@@ -55,6 +55,7 @@ namespace ModsShop
             inspection.transform.GetChild(1).Find("Floor").transform.SetParent(shelves.transform.Find("Info Board"), false);
             shelves.transform.Find("Info Board/Floor").localEulerAngles = new Vector3(0, 0, 352);
             shelves.transform.Find("Info Board/Floor").localPosition = new Vector3(0.5f, 0, 0);
+            inspection.transform.Find("LOD/inspection_windows").GetComponent<Renderer>().material.SetFloat("_Metallic", 0f);
         }
 
         void LegacyShopLoad()

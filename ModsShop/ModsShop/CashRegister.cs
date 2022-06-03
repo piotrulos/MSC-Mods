@@ -10,7 +10,7 @@ namespace ModsShop
         public ShoppingCartUI shoppingCartUI;
         public TextMesh display;
         public ShopDudeAnim anims;
-        public Transform spawnPoint, spawnPoint1, spawnPoint2;
+        public Transform[] spawnPoint;
         internal Dictionary<ItemDetails, int> shoppingCart = new Dictionary<ItemDetails, int>();
         internal float totalPrice = 0f;
 #if !Mini
@@ -59,11 +59,15 @@ namespace ModsShop
                 totalPrice += cartItems.Key.ItemPrice * cartItems.Value;
             }
             display.text = Math.Round(totalPrice, 2).ToString("0.00");
-            if(aud)
+            if (aud)
+            {
+                anims.CashRegisterAnim();
                 MasterAudio.PlaySound3DAndForget("Store", transform, variationName: "cash_register_1");
+            }
         }
         internal void PlayCheckoutSound()
         {
+            anims.CashRegisterAnim();
             MasterAudio.PlaySound3DAndForget("Store", transform, variationName: "cash_register_2");
         }
         void ShowCart()

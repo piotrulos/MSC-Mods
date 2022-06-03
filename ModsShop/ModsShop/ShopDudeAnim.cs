@@ -15,6 +15,5 @@ namespace ModsShop
         {
             anim.Play("teimo_cash_register");
         }
-
     }
 }

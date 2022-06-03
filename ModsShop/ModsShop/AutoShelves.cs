@@ -25,13 +25,11 @@ namespace ModsShop
                 }
                 return;
             }
-            //  for (int i = 0; i < displayGos.Length; i++)
-            //  {
-            //  GameObject go = Instantiate(displayGos);
+
             var b = displayGos.GetComponent<BoxCollider>().bounds.extents;
-            if(lastModID != string.Empty)
+            if (lastModID != string.Empty)
             {
-                if(lastModID != modID)
+                if (lastModID != modID)
                 {
                     lastX -= 0.05f;
                 }
@@ -41,22 +39,19 @@ namespace ModsShop
             {
                 lastX = 0f;
                 currentShelf++;
-                //if (currentShelf > 19)
-                //   break;
+                if (currentShelf > shelves.Length - 1)
+                    return;
             }
             displayGos.transform.SetParent(shelves[currentShelf].transform, false);
             var gaps = (float)Math.Round((gap / 50f), 2);
 
             if (lastX < 0)
-                lastX -= b.x+gaps;
+                lastX -= b.x + gaps;
             displayGos.transform.localPosition = new Vector3(lastX, b.y, 0f);
             if (currentShelf % 2 != 0)
                 displayGos.transform.localEulerAngles = new Vector3(displayGos.transform.localEulerAngles.x, displayGos.transform.localEulerAngles.y + 180f, displayGos.transform.localEulerAngles.z);
-                // Debug.Log((gap / 10));
-                lastX -= Math.Abs(b.x);
-             //lastX -= Math.Abs(b.x) + gaps;
-            //  }
-            // lastX -= 0.05f;
+            // Debug.Log((gap / 10));
+            lastX -= Math.Abs(b.x);
             lastModID = modID;
         }
 #endif
