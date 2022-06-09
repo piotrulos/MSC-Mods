@@ -43,16 +43,26 @@ namespace ModsShop
             PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerInMenu").Value = false; //unlock mouse
             GameObject.Find("Systems").transform.GetChild(7).gameObject.SetActive(false); //can't clickthrough UI when menu is active.
             ui.SetActive(false);
+            StartCoroutine(DelayMenu());
+
 #endif
         }
+
 
         public void CancelBtn()
         {            
             PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerInMenu").Value = false; //unlock mouse
             GameObject.Find("Systems").transform.GetChild(7).gameObject.SetActive(false); //can't clickthrough UI when menu is active.
             ui.SetActive(false);
+            StartCoroutine(DelayMenu());
+        }
+        IEnumerator DelayMenu()
+        {
+            yield return new WaitForSeconds(1f);
+            cashRegister.uiOpen = false;
         }
 #if !Mini
+
         IEnumerator SpawnStuff()
         {
             int spawnP = 0;

@@ -33,7 +33,7 @@ namespace ModsShop
                                 if (ModsShop.GetShopReference().items[i].ModID == args[1])
                                 {
                                     nay = false;
-                                    ModConsole.Print($"[<color=yellow>{ModsShop.GetShopReference().items[i].ItemID}</color>] <color=lime>{ModsShop.GetShopReference().items[i].ItemName}</color> (<color=aqua>{ModsShop.GetShopReference().items[i].SpawnMethod}</color>) - {ModsShop.GetShopReference().items[i].ItemPrice} MK {System.Environment.NewLine}");
+                                    ModConsole.Print($"[<color=yellow>{ModsShop.GetShopReference().items[i].ItemID}</color>] <color=lime>{ModsShop.GetShopReference().items[i].ItemName}</color> (<color=aqua>{ModsShop.GetShopReference().items[i].SpawnMethod}</color>) - {ModsShop.GetShopReference().items[i].ItemPrice} MK");
                                 }
                             }
                         }
@@ -42,7 +42,7 @@ namespace ModsShop
                             for (int i = 0; i < ModsShop.GetShopReference().items.Count; i++)
                             {
                                 nay = false;
-                                ModConsole.Print($"[<color=yellow>{ModsShop.GetShopReference().items[i].ItemID}</color>] <color=lime>{ModsShop.GetShopReference().items[i].ItemName}</color> (<color=aqua>{ModsShop.GetShopReference().items[i].SpawnMethod}</color>) - {ModsShop.GetShopReference().items[i].ItemPrice} MK {System.Environment.NewLine}");
+                                ModConsole.Print($"[<color=yellow>{ModsShop.GetShopReference().items[i].ItemID}</color>] <color=lime>{ModsShop.GetShopReference().items[i].ItemName}</color> (<color=aqua>{ModsShop.GetShopReference().items[i].SpawnMethod}</color>) - {ModsShop.GetShopReference().items[i].ItemPrice} MK");
                             }
                         }
                         if (nay) ModConsole.Print("Nothing...");

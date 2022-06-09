@@ -13,6 +13,7 @@ namespace ModsShop
         public Transform[] spawnPoint;
         internal Dictionary<ItemDetails, int> shoppingCart = new Dictionary<ItemDetails, int>();
         internal float totalPrice = 0f;
+        internal bool uiOpen = false;
 #if !Mini
         void Start()
         {
@@ -72,6 +73,7 @@ namespace ModsShop
         }
         void ShowCart()
         {
+            uiOpen = true;
             PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerInMenu").Value = true; //unlock mouse
             GameObject.Find("Systems").transform.GetChild(7).gameObject.SetActive(true); //can't clickthrough UI when menu is active.
             shoppingCartUI.ui.SetActive(true);
@@ -81,6 +83,7 @@ namespace ModsShop
         void Update()
         {
             if (Camera.main == null) return;
+            if (uiOpen) return;
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 1f))
             {
                 if(hit.transform.gameObject == gameObject)
