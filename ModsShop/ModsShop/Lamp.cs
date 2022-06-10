@@ -7,24 +7,15 @@ namespace ModsShop
     {
         public GameObject[] bulbs = new GameObject[2];
         public Light light;
-        public float FullIntesity = 0.85f;
         public bool outsideStuff = false;
 
-        private MaterialPropertyBlock mpb;
-        private Color matOff;
-        private Color matOn;
+        private float FullIntesity = 0.9f;
         private bool halfOn = false;
         private bool turnedOn = true;
 
         void Awake()
         {
-            mpb = new MaterialPropertyBlock();
-            matOff = new Color(0, 0, 0);
-            matOn = new Color(1, 1, 1);
-            if(outsideStuff)
-                TurnNormalOff();
-            else
-                TurnOff();
+            TurnOff();
         }
 
         public void TurnNormalOn()
@@ -36,16 +27,6 @@ namespace ModsShop
                 bulbs[i].GetComponent<Renderer>().material.EnableKeyword("_EMISSION");
             }
             turnedOn = true;
-        }
-        public void TurnNormalOff()
-        {
-            if (!turnedOn)
-                return;
-            for (int i = 0; i < bulbs.Length; i++)
-            {
-                bulbs[i].GetComponent<Renderer>().material.DisableKeyword("_EMISSION");
-            }
-            turnedOn = false;
         }
         IEnumerator TryToTurnOn(float delay, int tries, int halfAfter)
         {
@@ -91,19 +72,19 @@ namespace ModsShop
         }
         void SetOnOffEmmision(bool on, Renderer rnd)
         {
-            rnd.GetPropertyBlock(mpb);
             if (on)
-                mpb.SetColor("_EmissionColor", matOn);
+                rnd.material.EnableKeyword("_EMISSION");
             else
-                mpb.SetColor("_EmissionColor", matOff);
-            rnd.SetPropertyBlock(mpb);
+                rnd.material.DisableKeyword("_EMISSION");
         }
         public void TurnOff()
         {
             StopAllCoroutines();
             turnedOn = false;
-            SetOnOffEmmision(false, bulbs[0].GetComponent<Renderer>());
-            SetOnOffEmmision(false, bulbs[1].GetComponent<Renderer>());
+            for (int i = 0; i < bulbs.Length; i++)
+            {
+                SetOnOffEmmision(false, bulbs[i].GetComponent<Renderer>());
+            }
             light.gameObject.SetActive(false);
         }
         void TurnHalfOn()
@@ -113,12 +94,14 @@ namespace ModsShop
             light.gameObject.SetActive(true);
             light.intensity = FullIntesity / 2f;
         }
-       internal void TurnOn()
+        internal void TurnOn()
         {
             halfOn = false;
             turnedOn = true;
-            SetOnOffEmmision(true, bulbs[0].GetComponent<Renderer>());
-            SetOnOffEmmision(true, bulbs[1].GetComponent<Renderer>());
+            for (int i = 0; i < bulbs.Length; i++)
+            {
+                SetOnOffEmmision(true, bulbs[i].GetComponent<Renderer>());
+            }
             light.gameObject.SetActive(true);
             light.intensity = FullIntesity;
         }

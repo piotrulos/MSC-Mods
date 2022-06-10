@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 namespace ModsShop
 {
     public class ShopRefs : MonoBehaviour
@@ -62,6 +63,23 @@ namespace ModsShop
             {
                 lightSwitches[1].TurnOff();
                 lightSwitches[2].TurnOff();
+            }
+        }
+
+        internal void SetShadows()
+        {
+            for (int i = 0; i < lightSwitches[0].lamps.Length; i++)
+            {
+                if (ModsShop.instance.interiorShadows.GetValue())
+                {
+                    lightSwitches[0].lamps[i].light.shadows = LightShadows.None;
+                    lightSwitches[1].lamps[i].light.shadows = LightShadows.None;
+                }
+                else
+                {
+                    lightSwitches[0].lamps[i].light.shadows = LightShadows.Hard;
+                    lightSwitches[1].lamps[i].light.shadows = LightShadows.Hard;
+                }
             }
         }
 #endif

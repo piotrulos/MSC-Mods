@@ -8,17 +8,18 @@ namespace ModsShop
     public class ModsShop : Mod
     {
         public override string ID => "ModsShop";
-        public override string Name => "Shop for mods";
+        public override string Name => "Mods Shop (shop for mods)";
         public override string Author => "piotrulos";
-        public override string Version => "1.0";
+        public override string Version => "1.0.1";
 
         public override string Description => "Standalone shop that can be used to put stuff by mods. Shop is located near inspection building.";
 
         public GameObject modShop;
         private Shop mainShop;
         private ShopItem shopGameObject;
-        private static ModsShop instance;
+        internal static ModsShop instance;
         AssetBundle assetBundle;
+        internal SettingsCheckBox interiorShadows;
         public override void ModSetup()
         {
             instance = this; 
@@ -58,6 +59,7 @@ namespace ModsShop
             shelves.transform.Find("Info Board/Floor").localEulerAngles = new Vector3(0, 0, 352);
             shelves.transform.Find("Info Board/Floor").localPosition = new Vector3(0.5f, 0, 0);
             inspection.transform.Find("LOD/inspection_windows").GetComponent<Renderer>().material.SetFloat("_Metallic", 0f);
+            mainShop.shopRefs.SetShadows();
         }
 
         void LegacyShopLoad()
@@ -101,8 +103,13 @@ namespace ModsShop
         {
             if (wl) return;
             ConsoleCommand.Add(new DebugCmd());
+            interiorShadows = Settings.AddCheckBox(this, "interiorShadows", "Disable shadows from interior lights", false, ChangeShadows);
         }
-
+        void ChangeShadows()
+        {
+            if (mainShop.shopRefs == null) return;
+            mainShop.shopRefs.SetShadows();
+        }
         public static Shop GetShopReference()
         {
             if (instance.mainShop == null) return null;

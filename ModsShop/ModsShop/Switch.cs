@@ -62,10 +62,7 @@ namespace ModsShop
             isOff = true;
             for (int i = 0; i < lamps.Length; i++)
             {
-                if (!outside)
                     lamps[i].TurnOff();
-                else
-                    lamps[i].TurnNormalOff();
             }
             MasterAudio.PlaySound3DAndForget("HouseFoley", transform, variationName: "light_switch");
         }
