@@ -1,6 +1,7 @@
 ﻿#if !Mini
 using MSCLoader;
 using System;
+using System.IO;
 using UnityEngine;
 
 namespace ModsShop
@@ -10,16 +11,20 @@ namespace ModsShop
         public override string ID => "ModsShop";
         public override string Name => "Mods Shop (shop for mods)";
         public override string Author => "piotrulos";
-        public override string Version => "1.0.1";
+        public override string Version => "1.0.2";
 
         public override string Description => "Standalone shop that can be used to put stuff by mods. Shop is located near inspection building.";
 
         public GameObject modShop;
+        public static Camera mainCam = null;
         private Shop mainShop;
+#pragma warning disable CS0618 
         private ShopItem shopGameObject;
+#pragma warning restore CS0618
         internal static ModsShop instance;
         AssetBundle assetBundle;
         internal SettingsCheckBox interiorShadows;
+        bool noAss = false;
         public override void ModSetup()
         {
             instance = this; 
@@ -32,17 +37,27 @@ namespace ModsShop
         {
             GameObject go = new GameObject("Shop for mods");
             GameObject.DontDestroyOnLoad(go);
+#pragma warning disable CS0618
             shopGameObject = go.AddComponent<ShopItem>(); //Legacy shop
+#pragma warning restore CS0618
             mainShop = go.AddComponent<Shop>(); //Standalone shop
+            if (!File.Exists(Path.Combine(ModLoader.GetModAssetsFolder(this), "shopassets.unity3d")))
+            {
+                noAss = true;
+                ModUI.ShowMessage($"Asset files for <color=orange>Mods Shop</color> not found.{Environment.NewLine} Make sure you unpacked ALL files from zip into mods folder.", "Mods Shop - Fatal error");
+                return;
+            }
         }
 
         void BuildShop()
         {
+            if (noAss) return;
             assetBundle = LoadAssets.LoadBundle(this, "shopassets.unity3d");
+
             //Load standalone shop from bundle
             GameObject shelves = assetBundle.LoadAsset<GameObject>("Main Shop Area.prefab");
             GameObject inspection = GameObject.Find("INSPECTION");
-            //disable 2 random shelves and add anti-MOP enabler
+            //disable 2 random shelves and add anti-MOP enabler because MOP is so shit.
             inspection.transform.Find("LOD/garage_shelf_bars 1").gameObject.AddComponent<MopShelfHack>();
             inspection.transform.Find("LOD/garage_shelf_bars 2").gameObject.AddComponent<MopShelfHack>();
             //disable weird reflections on window
@@ -64,6 +79,7 @@ namespace ModsShop
 
         void LegacyShopLoad()
         {
+            if (noAss) return;
             //old code for legacy shop
             shopGameObject.modPref = assetBundle.LoadAsset<GameObject>("Mod.prefab");
             shopGameObject.catPref = assetBundle.LoadAsset<GameObject>("Category.prefab");
@@ -71,7 +87,7 @@ namespace ModsShop
             shopGameObject.cartItemPref = assetBundle.LoadAsset<GameObject>("CartItem.prefab");
             GameObject te = assetBundle.LoadAsset<GameObject>("Catalog_shelf.prefab");
             GameObject fl = assetBundle.LoadAsset<GameObject>("Catalog_shelf_F.prefab");
-
+            mainCam = HutongGames.PlayMaker.FsmVariables.GlobalVariables.FindFsmGameObject("POV").Value.GetComponent<Camera>();
             //teimo catalog pos
             //-1550.65, 4.7, 1183.3
             //0,345,0

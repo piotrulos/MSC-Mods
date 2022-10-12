@@ -29,9 +29,9 @@ namespace ModsShop
 #if !Mini
         void Update()
         {
-            if (Camera.main == null) return;
+            if (ModsShop.mainCam == null) return;
 
-            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 1f))
+            if (Physics.Raycast(ModsShop.mainCam.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 1f))
             {
                 if (hit.transform.gameObject == gameObject)
                 {

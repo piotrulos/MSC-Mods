@@ -95,6 +95,7 @@ namespace ModsShop
                 fleetariShopItems.Add(item);
         }
 #endif
+        bool uiOpen = false;
         public void ShowCatalog(bool fleetari)
         {
 #if !Mini
@@ -102,7 +103,7 @@ namespace ModsShop
             GameObject.Find("Systems").transform.GetChild(7).gameObject.SetActive(true); //can't clickthrough UI when menu is active.
             shopCatalogUI.transform.GetChild(0).gameObject.SetActive(false);
             ModUI.ShowMessage($"This catalog is for <color=yellow>legacy items only</color>{Environment.NewLine}{Environment.NewLine}If you can't find what you are looking for here, go visit a <color=aqua>new shop</color> that is located near inspection.");
-            if(fleetariLast != fleetari)
+            if (fleetariLast != fleetari)
                 shoppingCart.Clear();
             if (!fleetari)
             {
@@ -118,14 +119,17 @@ namespace ModsShop
             }
 
             shopCatalogUI.SetActive(true);
+            uiOpen = true;
 #endif
-    }
+        }
 
-    public void HideCatalog()
-        { 
+        public void HideCatalog()
+        {
             PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerInMenu").Value = false; //unlock mouse
             GameObject.Find("Systems").transform.GetChild(7).gameObject.SetActive(false); //can't clickthrough UI when menu is active.
             shopCatalogUI.SetActive(false);
+            uiOpen = false;
+
         }
 
         public void OpenCatalog(bool fleetari)
@@ -284,36 +288,35 @@ namespace ModsShop
 #endif
         private void Update()
         {
-            if (Camera.main != null)
+            if ((Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.F1)) && uiOpen)
             {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                RaycastHit[] hits = Physics.RaycastAll(ray, 1f);
-                foreach (RaycastHit hit in hits)
+                HideCatalog();
+            }
+            if (ModsShop.mainCam == null) return;
+            if (uiOpen) return;
+            Ray ray = ModsShop.mainCam.ScreenPointToRay(Input.mousePosition);
+            RaycastHit[] hits = Physics.RaycastAll(ray, 1f);
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.collider == teimoCatalog)
                 {
-                    if (hit.collider == teimoCatalog)
+                    PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy").Value = true;
+                    PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Open shop catalog";
+                    if (Input.GetMouseButtonDown(0))
                     {
-                        PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy").Value = true;
-                        PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Open shop catalog";
-                        if (Input.GetMouseButtonDown(0))
-                        {
-                            ShowCatalog(false);
-                        }
-                        break;
+                        ShowCatalog(false);
                     }
-                    if (hit.collider == fleetariCatalog)
-                    {
-                        PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy").Value = true;
-                        PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Open shop catalog";
-                        if (Input.GetMouseButtonDown(0))
-                        {
-                            ShowCatalog(true);
-                        }
-                        break;
-                    }
+                    break;
                 }
-                if (Input.GetKeyDown(KeyCode.Escape))
+                if (hit.collider == fleetariCatalog)
                 {
-                    HideCatalog();
+                    PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy").Value = true;
+                    PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Open shop catalog";
+                    if (Input.GetMouseButtonDown(0))
+                    {
+                        ShowCatalog(true);
+                    }
+                    break;
                 }
             }
         }

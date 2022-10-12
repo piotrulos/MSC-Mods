@@ -18,9 +18,9 @@ namespace ModsShop
 
         void Update()
         {
-            if (Camera.main == null) return;
+            if (ModsShop.mainCam == null) return;
             if (isShopClosed) return;
-            hitted = Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 1f);
+            hitted = Physics.Raycast(ModsShop.mainCam.ScreenPointToRay(Input.mousePosition), out hit, 1f);
         }
 
         void OnEnable()        
