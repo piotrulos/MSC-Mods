@@ -1,38 +1,37 @@
 ﻿using UnityEngine;
+using MSCLoader;
 
 namespace CDPlayer
 {
     public class CDCase : MonoBehaviour
     {
         public string CDName;
+        public Rigidbody rb;
+        public CDTrigger cdt;
+        public Animation animation;
         public bool isOpen = false;
         public bool ready = false;
-       // public CDPlayer cdp;
         public bool inRack;
         public int inRackNr = 0;
         public int inRackSlot = 0;
-        private CDTrigger cdt;
-        private Animation animation;
         public bool purchased;
 
         void Start()
         {
-            animation = transform.GetChild(0).GetComponent<Animation>();
-            cdt = transform.GetChild(2).gameObject.AddComponent<CDTrigger>();
             cdt.CDcase = this;
         }
         void FixedUpdate()
         {
             if (transform.parent == null && !gameObject.GetComponent<Rigidbody>().detectCollisions)
             {
-                gameObject.GetComponent<Rigidbody>().detectCollisions = true;
-                gameObject.GetComponent<Rigidbody>().isKinematic = false;
+                rb.detectCollisions = true;
+                rb.isKinematic = false;
                 inRack = false;
-                gameObject.name = "cd case(itemy)";
+                gameObject.name = "cd case(itemz)";
             }
             if (transform.parent == null && !gameObject.GetComponent<Rigidbody>().useGravity)
             {
-                gameObject.GetComponent<Rigidbody>().useGravity = true;
+                rb.useGravity = true;
             }
 
         }
@@ -55,9 +54,9 @@ namespace CDPlayer
                                 animation.Play("cd_close");
                                 isOpen = false;
 
-                                if (transform.GetChild(2).childCount > 0)
+                                if (cdt.transform.childCount > 0)
                                 {
-                                    transform.GetChild(2).GetChild(0).gameObject.layer = 0;
+                                    cdt.transform.GetChild(0).gameObject.layer = 0;
                                 }
                             }
                         }
@@ -70,9 +69,9 @@ namespace CDPlayer
                                 animation.Play("cd_open");
                                 isOpen = true;
 
-                                if (transform.GetChild(2).childCount > 0)
+                                if (cdt.transform.childCount > 0)
                                 {
-                                    MSCLoader.LoadAssets.MakeGameObjectPickable(transform.GetChild(2).GetChild(0).gameObject);
+                                   cdt.transform.GetChild(0).gameObject.MakePickable();
                                 }
                             }
                         }

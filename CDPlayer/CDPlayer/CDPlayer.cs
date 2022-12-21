@@ -40,7 +40,8 @@ namespace CDPlayer
         public override string ID => "CDPlayer";
         public override string Name => "CDPlayer Enhanced";
         public override string Author => "Piotrulos";
-        public override string Version => "1.4.4";
+        public override string Version => "1.4.5";
+        public override string Description => "Makes adding CDs much easier, no renaming, no converting. (supports <color=orage>*.mp3, *.ogg, *.flac, *.wav, *.aiff</color>";
 
         private readonly string readme = $"This folder is used by CDPlayer Enhanced mod{System.Environment.NewLine}{System.Environment.NewLine}To create a new CD, create a new folder here, put your music or playlist file in that new folder.";
 
@@ -49,12 +50,16 @@ namespace CDPlayer
         public static SettingsCheckBox bypassDis;
         public SettingsCheckBox debugInfo, RDSsim;
         public SettingsTextBox channel3url, channel4url;
-        static List<GameObject> listOfCDs, listOfCases;
+        static List<GameObject> listOfCDs, listOfCases, listOfDisplayCases;
 
-        static GameObject rack10, cdp, cdCaseP;
-        Sprite cd_icon, rack_icon;
-
-        public override void OnNewGame()
+        GameObject rack10_d, cdCaseP_d, rack10, cdCaseP;
+        public override void ModSetup()
+        {
+            SetupFunction(Setup.OnNewGame, CDPlayer_NewGame);
+            SetupFunction(Setup.OnLoad, CDPlayer_OnLoad);
+            SetupFunction(Setup.OnSave, CDPlayer_OnSave);
+        }
+        void CDPlayer_NewGame()
         {
             string savepath = Path.Combine(ModLoader.GetModSettingsFolder(this), "cdplayer.save");
             if (File.Exists(savepath))
@@ -79,7 +84,7 @@ namespace CDPlayer
             channel4url = Settings.AddTextBox(this, "ch4url", "Channel 4:", "http://185.33.21.112/90s_128", "Stream URL...");
         }
 
-        public override void OnSave()
+        void CDPlayer_OnSave()
         {
             CDSaveData sd = new CDSaveData();
 
@@ -132,21 +137,19 @@ namespace CDPlayer
         }
 
         //Called when mod is loading
-        public override void OnLoad()
+        void CDPlayer_OnLoad()
         {
             AssetBundle ab = LoadAssets.LoadBundle(this, "cdplayer.unity3d");
             rack10 = GameObject.Instantiate(ab.LoadAsset<GameObject>("rack10.prefab"));
-            cdp = ab.LoadAsset<GameObject>("cd.prefab");
+            rack10_d =ab.LoadAsset<GameObject>("rack10(display).prefab");
             cdCaseP = ab.LoadAsset<GameObject>("cd case.prefab");
-            cd_icon = ab.LoadAsset<Sprite>("cd.png");
-            rack_icon = ab.LoadAsset<Sprite>("rackicon.png");
+            cdCaseP_d = ab.LoadAsset<GameObject>("cd case(display).prefab");
             ab.Unload(false);
-
-            rack10.name = "CD Rack(itemy)";
+            rack10.name = "CD Rack(rackz)";
             LoadAssets.MakeGameObjectPickable(rack10);
             rack10.transform.position = new Vector3(-9.76f, 0.17f, 6.47f);
-            rack10.AddComponent<CDRack>();
             rack10.SetActive(false);
+
             if (!Directory.Exists(path)) //CD folder was renamed to CD1/2/3
                 Directory.CreateDirectory(path);
             if (!File.Exists(Path.Combine(path, "CD Player Enhanced.txt")))
@@ -154,38 +157,38 @@ namespace CDPlayer
             string[] dirs = Directory.GetDirectories(path);
             listOfCDs = new List<GameObject>();
             listOfCases = new List<GameObject>();
+            listOfDisplayCases = new List<GameObject>();
             for (int i = 0; i < dirs.Length; i++)
             {
-                GameObject cd = GameObject.Instantiate(cdp);
-                cd.layer = 0;
                 GameObject cdCase = GameObject.Instantiate(cdCaseP);
+                GameObject cdCaseD = GameObject.Instantiate(cdCaseP_d);
                 LoadAssets.MakeGameObjectPickable(cdCase);
-                cd.name = "cd(itemy)";
-                cdCase.name = "cd case(itemy)";
-                cd.AddComponent<CD>().CDName = new DirectoryInfo(dirs[i]).Name;
-                cdCase.AddComponent<CDCase>().CDName = new DirectoryInfo(dirs[i]).Name;
+                cdCase.name = "cd case(itemz)";
+               // cd.GetComponent<CD>().CDName = new DirectoryInfo(dirs[i]).Name;
+                cdCase.GetComponent<CDCase>().CDName = new DirectoryInfo(dirs[i]).Name;
+                CD cd = cdCase.GetComponent<CDCase>().cdt.transform.GetChild(0).GetComponent<CD>();
+                cd.CDName = new DirectoryInfo(dirs[i]).Name;
 
                 string[] pls = Directory.GetFiles(dirs[i], "*.*").Where(file => file.ToLower().EndsWith(".m3u", System.StringComparison.OrdinalIgnoreCase) ||
                                                                             file.ToLower().EndsWith(".m3u8", System.StringComparison.OrdinalIgnoreCase) ||
                                                                             file.ToLower().EndsWith(".pls", System.StringComparison.OrdinalIgnoreCase)).ToArray();
                 if (pls.Length > 0)
                 {
-                    cd.GetComponent<CD>().isPlaylist = true;
-                    cd.GetComponent<CD>().CDPath = Path.GetFullPath(pls[0]);
+                    cd.isPlaylist = true;
+                    cd.CDPath = Path.GetFullPath(pls[0]);
                 }
                 else
                 {
                     if (File.Exists(Path.Combine(dirs[i], "folder.txt")))
                     {
                         string[] txtDirs = File.ReadAllLines(Path.Combine(dirs[i], "folder.txt"));
-                        cd.GetComponent<CD>().CDPath = Path.GetFullPath(txtDirs[0]);
+                        cd.CDPath = Path.GetFullPath(txtDirs[0]);
                     }
                     else
-                        cd.GetComponent<CD>().CDPath = Path.GetFullPath(dirs[i]);
+                        cd.CDPath = Path.GetFullPath(dirs[i]);
                 }
-                cd.GetComponent<CD>().cdCase = cdCase.GetComponent<CDCase>();
-                cd.GetComponent<CD>().InCase();
-                cd.transform.SetParent(cdCase.transform.GetChild(2), false);
+                cd.cdCase = cdCase.GetComponent<CDCase>();
+                cd.InCase();
 
                 //Load coverart.png if exists, else leave default.
                 if (File.Exists(Path.Combine(dirs[i], "coverart.png")))
@@ -195,49 +198,38 @@ namespace CDPlayer
                     cd.transform.GetChild(0).GetComponent<MeshRenderer>().material.mainTexture = t2d;
                     cdCase.transform.GetChild(3).GetComponent<MeshRenderer>().material.mainTexture = t2d;
                     cdCase.transform.GetChild(0).GetChild(0).GetComponent<MeshRenderer>().material.mainTexture = t2d;
+                    cdCaseD.transform.GetChild(1).GetComponent<MeshRenderer>().material.mainTexture = t2d;
+                    cdCaseD.transform.GetChild(0).GetChild(0).GetComponent<MeshRenderer>().material.mainTexture = t2d;
                 }
-                listOfCDs.Add(cd);
+                listOfCDs.Add(cd.gameObject);
                 listOfCases.Add(cdCase);
+                listOfDisplayCases.Add(cdCaseD);
                 cdCase.SetActive(false);
             }
             Load();
-            if (GameObject.Find("Shop for mods") != null)
+            if (ModLoader.IsModPresent("ModsShop"))
             {
-                ModsShop.ShopItem shop;
+                ModsShop.Shop shop;
                 //Shop for mods is installed
-                shop = GameObject.Find("Shop for mods").GetComponent<ModsShop.ShopItem>();
+                shop = ModsShop.ModsShop.GetShopReference();
                 if (!rack10.activeSelf)
                 {
-                    ModsShop.ProductDetails cdRack = new ModsShop.ProductDetails
-                    {
-                        productName = "Rack for 10 CDs",
-                        multiplePurchases = false,
-                        productCategory = "Accesories",
-                        productIcon = rack_icon,
-                        productPrice = 50
-                    };
-                    shop.Add(this, cdRack, ModsShop.ShopType.Teimo, BuyCDRack, rack10);
+                    ModsShop.ItemDetails item = shop.CreateShopItem(this, "rack1", "Rack for 10 CDs", 50, false, BuyCDRack, rack10, ModsShop.SpawnMethod.SetActive);
+                    shop.AddDisplayItem(item, rack10_d, ModsShop.SpawnMethod.Instantiate);
                 }
                 for (int i = 0; i < listOfCases.Count; i++)
                 {
                     GameObject go = listOfCases[i];
                     if (!go.activeSelf)
                     {
-                        ModsShop.ProductDetails cases = new ModsShop.ProductDetails
-                        {
-                            productName = go.GetComponent<CDCase>().CDName,
-                            multiplePurchases = false,
-                            productCategory = "CDs",
-                            productIcon = cd_icon,
-                            productPrice = 100
-                        };
-                        shop.Add(this, cases, ModsShop.ShopType.Teimo, BuyCDs, go);
+                        ModsShop.ItemDetails item = shop.CreateShopItem(this, $"cd{i}", $"[CD] {go.GetComponent<CDCase>().CDName}", 100, false, BuyCDs, go, ModsShop.SpawnMethod.SetActive);
+                        shop.AddDisplayItem(item, listOfDisplayCases[i], ModsShop.SpawnMethod.SetActive, new Vector3(0, -90, 0), 0);
                     }
                 }
             }
             else
             {
-                //if no shop catalog installed.
+                //if no shop installed.
                 rack10.SetActive(true);
                 for (int i = 0; i < listOfCases.Count; i++)
                 {
@@ -259,20 +251,15 @@ namespace CDPlayer
             if (GameObject.Find("cd case(item3)") != null)
                 GameObject.Find("cd case(item3)").SetActive(false);
         }
-        public void BuyCDs(ModsShop.PurchaseInfo item)
+        public void BuyCDs(ModsShop.Checkout item)
         {
-            item.gameObject.transform.position = ModsShop.TeimoSpawnLocation.desk;
-            item.gameObject.SetActive(true);
             item.gameObject.GetComponent<CDCase>().purchased = true;
-
         }
-        public void BuyCDRack(ModsShop.PurchaseInfo item)
+        public void BuyCDRack(ModsShop.Checkout item)
         {
-            item.gameObject.transform.position = ModsShop.TeimoSpawnLocation.desk;
-            item.gameObject.SetActive(true);
             item.gameObject.GetComponent<CDRack>().purchased = true;
         }
-        public static void ResetPosition()
+        public void ResetPosition()
         {
             if (Application.loadedLevelName == "MainMenu")
             {
@@ -302,6 +289,7 @@ namespace CDPlayer
                     rack10.transform.position = new Vector3(-10.2f, 0.17f, 6.47f);
                     rack10.transform.transform.localEulerAngles = Vector3.zero;
                 }
+                ModUI.ShowMessage("CDs should be now on kitchen table.", "Reset CD positions");
             }
         }
 

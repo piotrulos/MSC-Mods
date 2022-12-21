@@ -5,6 +5,7 @@ namespace CDPlayer
 {
     public class CD : MonoBehaviour
     {
+        public Rigidbody rb;
         public string CDName;
         public string CDPath = null;
         public bool isPlaylist = false;
@@ -14,30 +15,30 @@ namespace CDPlayer
 
         void FixedUpdate()
         {
-            if (!gameObject.GetComponent<Rigidbody>().detectCollisions && transform.parent != null)
+            if (!rb.detectCollisions && transform.parent != null)
             {
                 if (transform.parent.name == "ItemPivot")
                 {
-                    gameObject.GetComponent<Rigidbody>().detectCollisions = true;
+                    rb.detectCollisions = true;
                     inPlayer = false;
                     inCase = false;
                 }
             }
-            if (!gameObject.GetComponent<Rigidbody>().detectCollisions && transform.parent == null)
+            if (!rb.detectCollisions && transform.parent == null)
             {
-                gameObject.GetComponent<Rigidbody>().detectCollisions = true;
+                rb.detectCollisions = true;
                 inPlayer = false;
                 inCase = false;
             }
-            if (transform.parent == null && !gameObject.GetComponent<Rigidbody>().useGravity)
+            if (transform.parent == null && !rb.useGravity)
             {
-                gameObject.GetComponent<Rigidbody>().useGravity = true;
+                rb.useGravity = true;
             }
         }
         public void InCase()
         {
-            gameObject.GetComponent<Rigidbody>().detectCollisions = false;
-            gameObject.GetComponent<Rigidbody>().isKinematic = true;
+            rb.detectCollisions = false;
+            rb.isKinematic = true;
             transform.localPosition = Vector3.zero;
             transform.localEulerAngles = Vector3.zero;
             inCase = true;

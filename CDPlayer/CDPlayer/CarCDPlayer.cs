@@ -31,7 +31,6 @@ namespace CDPlayer
         private bool isEmptyStreamingChannel = false;
         private bool scrollDone;
         private string DisplayRDS;
-        private SoundGroupVariation button_sound;
         private bool entered;
         private bool ready;
         private bool noAntenna = false;
@@ -59,7 +58,6 @@ namespace CDPlayer
             GameObject buttonsCD = rootCDplayer.GetChild(4).gameObject;
             eject = buttonsCD.transform.GetChild(3).GetComponent<SphereCollider>();
             nextTrack = buttonsCD.transform.GetChild(2).GetComponent<SphereCollider>();
-            button_sound = GameObject.Find("MasterAudio/CarFoley/cd_button").GetComponent<SoundGroupVariation>();
             radioVol = buttonsCD.transform.GetChild(0).gameObject;
             radioVol.FsmInject("On", TurnOn);
             radioVol.FsmInject("Off", TurnOff);
@@ -75,7 +73,7 @@ namespace CDPlayer
         }
         void PlayCDPlayerBeep()
         {
-            button_sound.Play(1f, 1f, gameObject.name, 1f, 1f, 1f, transform, false, 0f, false, true);
+            MasterAudio.PlaySound3DAndForget("CarFoley", transform, variationName: "cd_button");
         }
         void ChangeChannel()
         {
@@ -466,7 +464,7 @@ namespace CDPlayer
 
         void OnTriggerStay(Collider col)
         {
-            if (col.gameObject.name == "cd(itemy)" && col.transform.parent != null)
+            if (col.gameObject.name == "cd(itemz)" && col.transform.parent != null)
             {
                 entered = true;
                 if (!isPlayerOn)

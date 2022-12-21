@@ -32,7 +32,7 @@ namespace CDPlayer
 
         void OnTriggerStay(Collider col)
         {
-            if (col.name == "cd(itemy)" && CDcase.isOpen && col.transform.parent != null)
+            if (col.name == "cd(itemz)" && CDcase.isOpen && col.transform.parent != null)
             {
                 if (!col.GetComponent<CD>().inCase)
                 {

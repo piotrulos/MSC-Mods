@@ -9,17 +9,7 @@ namespace CDPlayer
         private GameObject cdcase;
         private int rackSlot;
         public bool purchased;
-        //SoundGroupVariation assembleSound;
-        AudioSource audioSource;
-        void Start()
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-            audioSource.clip = GameObject.Find("MasterAudio/CarBuilding/assemble").GetComponent<AudioSource>().clip;
-            audioSource.volume = 1f;
-            audioSource.playOnAwake = false;
-            audioSource.loop = false;
-           // assembleSound = GameObject.Find("MasterAudio/CarBuilding/assemble").GetComponent<SoundGroupVariation>();
-        }
+
         void FixedUpdate()
         {
             if (transform.parent == null && !gameObject.GetComponent<Rigidbody>().useGravity)
@@ -50,11 +40,11 @@ namespace CDPlayer
                     entered = false;
                     PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble").Value = false;
                     //assembleSound.Play(1f, 1f, gameObject.name, 1f, 1f, 1f, transform, false, 0f, false, true); //for whatever reason here doesn't work (just playmaker things...)
-                    audioSource.Play();
+                    MasterAudio.PlaySound3DAndForget("CarBuilding", transform, variationName: "assemble");
                     PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = string.Empty;
                     cdcase.GetComponent<CDCase>().inRack = true;
                     cdcase.GetComponent<CDCase>().inRackSlot = rackSlot;
-                    cdcase.name = "cd case (" + (rackSlot + 1).ToString() + ")(itemy)";
+                    cdcase.name = "cd case (" + (rackSlot + 1).ToString() + ")(itemz)";
                 }
             }
 
@@ -62,7 +52,7 @@ namespace CDPlayer
 
         private void OnTriggerStay(Collider other)
         {
-            if (other.name == "cd case(itemy)" && other.transform.parent != null)
+            if (other.name == "cd case(itemz)" && other.transform.parent != null)
             {
                 for (int i = 0; i < 10; i++)
                 {
