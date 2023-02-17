@@ -1,4 +1,5 @@
-﻿using MSCLoader;
+﻿using HutongGames.PlayMaker;
+using MSCLoader;
 using System;
 using System.Collections;
 using System.IO;
@@ -10,6 +11,7 @@ namespace CDPlayer
 {
     public class CarCDPlayer : MonoBehaviour
     {
+#if !Mini     
         public CDPlayer cdplayer;
 
         private ModAudio audioPlayer;
@@ -40,12 +42,13 @@ namespace CDPlayer
         private CD cd;
         private Transform rootCDplayer;
         private GameObject radioVol;
-
+        private Camera mainCam;
         public bool CDempty { get; private set; }
 
         void Start()
         {
-            if(transform.childCount > 0)
+            mainCam = FsmVariables.GlobalVariables.FindFsmGameObject("POV").Value.GetComponent<Camera>();
+            if (transform.childCount > 0)
             {
                 transform.GetChild(0).SetParent(null);
             }
@@ -145,7 +148,7 @@ namespace CDPlayer
         IEnumerator RDSsimulator()
         {
             scrollDone = false;
-            DisplayRDS = string.Format("Channel {0}", streamingChannel + 2);
+            DisplayRDS = $"Channel {streamingChannel + 2}";
             yield return new WaitForSeconds(5);
             string sas = new string(' ', 10) + audioStreamPlayer.songInfo;
             if (noAntenna)
@@ -161,7 +164,7 @@ namespace CDPlayer
             }
             yield return new WaitForSeconds(1f);
             scrollDone = true;
-            DisplayRDS = string.Format("Channel {0}", streamingChannel + 2);
+            DisplayRDS = $"Channel {streamingChannel + 2}";
         }
         void StopStream()
         {
@@ -279,10 +282,10 @@ namespace CDPlayer
             {
                 if (!waiting)
                 {
-                    if((bool)cdplayer.RDSsim.GetValue() && !isEmptyStreamingChannel)
+                    if(cdplayer.RDSsim.GetValue() && !isEmptyStreamingChannel)
                         rootCDplayer.GetChild(0).GetComponent<TextMesh>().text = DisplayRDS;
                     else
-                        rootCDplayer.GetChild(0).GetComponent<TextMesh>().text = string.Format("Channel {0}", streamingChannel + 2); 
+                        rootCDplayer.GetChild(0).GetComponent<TextMesh>().text = $"Channel {streamingChannel + 2}"; 
                 }
                 else
                     radioVol.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmString("Channel").Value = radioVol.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmString("Data2").Value;
@@ -305,7 +308,7 @@ namespace CDPlayer
             if (isCDplaying)
             {
                 if (!waiting)
-                    rootCDplayer.GetChild(0).GetComponent<TextMesh>().text = string.Format("{0} - {1:D2}:{2:D2}", currentSong + 1, audioPlayer.Time().Minutes, audioPlayer.Time().Seconds);
+                    rootCDplayer.GetChild(0).GetComponent<TextMesh>().text = $"{currentSong + 1} - {audioPlayer.Time().Minutes:D2}:{audioPlayer.Time().Seconds:D2}";
                 else
                     radioVol.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmString("Channel").Value = radioVol.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmString("Data2").Value;
             }
@@ -375,27 +378,32 @@ namespace CDPlayer
             currentSong = 0;
             StartCoroutine(LoadingCD());
         }
+        IEnumerator InsertCD()
+        {
+            yield return null;
+            cd = insertedCD.GetComponent<CD>();
+            cd.rb.isKinematic = true;
+            cd.rb.detectCollisions = false;
+            insertedCD.transform.SetParent(transform, false);
+            insertedCD.layer = 0;
+            insertedCD.transform.localPosition = Vector3.zero;
+            insertedCD.transform.localEulerAngles = Vector3.zero;
+            insertedCD.transform.GetComponentInParent<Animation>().Play("cd_sled_in");
+            PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble").Value = false;
+            PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIdisassemble").Value = false;
+            PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = string.Empty;
+            LoadCD();
+        }
         void Update()
         {
             if (entered && ready)
             {
                 if (Input.GetMouseButtonDown(0) && enteredCD != null)
                 {
-                    // carCDPlayer.isCDin = true;
-                    insertedCD = enteredCD.gameObject;
-                    cd = insertedCD.GetComponent<CD>();
-                    insertedCD.GetComponent<Rigidbody>().isKinematic = true;
-                    insertedCD.GetComponent<Rigidbody>().detectCollisions = false;
-                    insertedCD.transform.SetParent(transform, false);
-                    insertedCD.transform.localPosition = Vector3.zero;
-                    insertedCD.transform.localEulerAngles = Vector3.zero;
-                    insertedCD.transform.GetComponentInParent<Animation>().Play("cd_sled_in");
                     ready = false;
                     entered = false;
-                    PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble").Value = false;
-                    PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIdisassemble").Value = false;
-                    PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = string.Empty;
-                    LoadCD();
+                    insertedCD = enteredCD.gameObject;
+                    StartCoroutine(InsertCD());
                 }
             }
             if (isCDplaying && isPlayerOn)
@@ -406,8 +414,8 @@ namespace CDPlayer
                     Next();
                 }
             }
-
-            RaycastHit[] hits = Physics.RaycastAll(Camera.main.ScreenPointToRay(Input.mousePosition), 1f);
+            if (mainCam == null) return;
+            RaycastHit[] hits = Physics.RaycastAll(mainCam.ScreenPointToRay(Input.mousePosition), 1f);
             for (int i = 0; i < hits.Length; i++)
             {
                 if (hits[i].collider == eject && isPlayerOn)
@@ -419,9 +427,11 @@ namespace CDPlayer
                         isCDin = false;
                         PlayCDPlayerBeep();
                         eject.gameObject.SetActive(false);
+                        loadingCD = false;
                         transform.GetChild(0).localEulerAngles = new Vector3(0, 0, UnityEngine.Random.Range(0f, 359f));
                         gameObject.GetComponentInParent<Animation>().Play("cd_sled_out");
                         rootCDplayer.GetChild(0).GetComponent<TextMesh>().text = "NO CD";
+                        transform.GetChild(0).MakePickable();
                     }
                     break;
                 }
@@ -433,13 +443,13 @@ namespace CDPlayer
                     if (Input.GetMouseButtonDown(0))
                     {
                         PlayCDPlayerBeep();
-                        if (isCDin)
+                        if (isCDin && !loadingCD)
                             Next();
                     }
                     if (Input.GetMouseButtonDown(1))
                     {
                         PlayCDPlayerBeep();
-                        if (isCDin)
+                        if (isCDin && !loadingCD)
                             Previous();
                     }
                     break;
@@ -500,5 +510,6 @@ namespace CDPlayer
             entered = false;
             enteredCD = null;
         }
+#endif
     }
 }

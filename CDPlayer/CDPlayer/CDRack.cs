@@ -1,14 +1,25 @@
 ﻿using MSCLoader;
+using System.Collections;
 using UnityEngine;
 
 namespace CDPlayer
 {
     public class CDRack : MonoBehaviour
     {
+        public int rackNr = 0;
         private bool entered;
         private GameObject cdcase;
         private int rackSlot;
-        public bool purchased;
+#if !Mini
+        HutongGames.PlayMaker.FsmBool GUIassemble;
+        HutongGames.PlayMaker.FsmBool GUIdisassemble;
+        HutongGames.PlayMaker.FsmString GUIinteraction;
+        void Start()
+        {
+            GUIassemble = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble");
+            GUIdisassemble = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIdisassemble");
+            GUIinteraction = PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction");
+        }
 
         void FixedUpdate()
         {
@@ -17,34 +28,41 @@ namespace CDPlayer
                 gameObject.GetComponent<Rigidbody>().useGravity = true;
             }
         }
+        
+        IEnumerator PutCDinRack()
+        {
+            yield return null;
+            GUIassemble.Value = false;
+            GUIinteraction.Value = string.Empty;
+            cdcase.transform.SetParent(transform.GetChild(rackSlot), false);
+            cdcase.GetComponent<Rigidbody>().isKinematic = true;
+            cdcase.GetComponent<Rigidbody>().detectCollisions = false;
+            cdcase.transform.localPosition = Vector3.zero;
+            cdcase.transform.localEulerAngles = Vector3.zero;
+            cdcase.GetComponent<CDCase>().inRack = true;
+            cdcase.GetComponent<CDCase>().inRackNr = rackNr;
+            cdcase.GetComponent<CDCase>().inRackSlot = rackSlot;
+            cdcase.name = "cd case (" + (rackSlot + 1).ToString() + ")(itemz)";
+            MasterAudio.PlaySound3DAndForget("CarBuilding", transform, variationName: "assemble");
+        }
         void Update()
         {
             if (entered)
             {
-                PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble").Value = true;
-                PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Put case into rack";
+                GUIassemble.Value = true;
+                GUIinteraction.Value = "Put case into rack";
                 if (Input.GetMouseButtonDown(0))
                 {
                     if (cdcase.GetComponent<CDCase>().isOpen)
                     {
                         entered = false;
-                        PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble").Value = false;
-                        PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = string.Empty;
+                        GUIassemble.Value = false;
+                        GUIinteraction.Value = string.Empty;
                         return;
                     }
-                    cdcase.transform.SetParent(transform.GetChild(rackSlot), false);
-                    cdcase.GetComponent<Rigidbody>().isKinematic = true;
-                    cdcase.GetComponent<Rigidbody>().detectCollisions = false;
-                    cdcase.transform.localPosition = Vector3.zero;
-                    cdcase.transform.localEulerAngles = Vector3.zero;
                     entered = false;
-                    PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble").Value = false;
-                    //assembleSound.Play(1f, 1f, gameObject.name, 1f, 1f, 1f, transform, false, 0f, false, true); //for whatever reason here doesn't work (just playmaker things...)
-                    MasterAudio.PlaySound3DAndForget("CarBuilding", transform, variationName: "assemble");
-                    PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = string.Empty;
-                    cdcase.GetComponent<CDCase>().inRack = true;
-                    cdcase.GetComponent<CDCase>().inRackSlot = rackSlot;
-                    cdcase.name = "cd case (" + (rackSlot + 1).ToString() + ")(itemz)";
+                    StartCoroutine(PutCDinRack());
+
                 }
             }
 
@@ -52,33 +70,38 @@ namespace CDPlayer
 
         private void OnTriggerStay(Collider other)
         {
-            if (other.name == "cd case(itemz)" && other.transform.parent != null)
+            if (other.transform.parent == null) return;
+            if (other.name == "cd case(itemz)")
             {
+                if (other.transform.parent.name != "ItemPivot") return;
+
                 for (int i = 0; i < 10; i++)
                 {
                     if (transform.GetChild(i).childCount == 0)
                     {
                         cdcase = other.gameObject;
                         entered = true;
-                        PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble").Value = true;
-                        PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Put case into rack";
+                        GUIassemble.Value = true;
+                        GUIinteraction.Value = "Put case into rack";
                         rackSlot = i;
                         break;
                     }
                 }
                 if (!entered)
                 {
-                    PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIdisassemble").Value = true;
-                    PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Rack is full";
+                    GUIdisassemble.Value = true;
+                    GUIinteraction.Value = "Rack is full";
                 }
             }
         }
         private void OnTriggerExit()
         {
-            PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble").Value = false;
-            PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIdisassemble").Value = false;
-            PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = string.Empty;
+            GUIassemble.Value = false;
+            GUIdisassemble.Value = false;
+            GUIinteraction.Value = string.Empty;
             entered = false;
         }
+#endif
+
     }
 }

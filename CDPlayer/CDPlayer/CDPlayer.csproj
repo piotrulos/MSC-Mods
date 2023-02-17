@@ -30,9 +30,18 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Mini|AnyCPU'">
+    <OutputPath>bin\Mini\</OutputPath>
+    <DefineConstants>TRACE;Mini</DefineConstants>
+    <Optimize>true</Optimize>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="cInput">
       <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\cInput.dll</HintPath>
@@ -40,9 +49,11 @@
     </Reference>
     <Reference Include="ModsShop">
       <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\Mods\ModsShop.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="MSCLoader">
       <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\MSCLoader.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="PlayMaker">
       <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\PlayMaker.dll</HintPath>
@@ -57,6 +68,7 @@
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -64,6 +76,7 @@
     <Compile Include="CD.cs" />
     <Compile Include="CDCase.cs" />
     <Compile Include="CDPlayer.cs" />
+    <Compile Include="CDPSaveData.cs" />
     <Compile Include="CDRack.cs" />
     <Compile Include="CDTrigger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

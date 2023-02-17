@@ -12,7 +12,7 @@ namespace CDPlayer
         public bool inCase = false;
         public CDCase cdCase;
         public bool inPlayer = false;
-
+#if !Mini
         void FixedUpdate()
         {
             if (!rb.detectCollisions && transform.parent != null)
@@ -43,5 +43,6 @@ namespace CDPlayer
             transform.localEulerAngles = Vector3.zero;
             inCase = true;
         }
+#endif
     }
 }

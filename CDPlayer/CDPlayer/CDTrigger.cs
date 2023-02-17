@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 //Standard unity MonoBehaviour class
 namespace CDPlayer
@@ -9,46 +10,64 @@ namespace CDPlayer
         bool ready;
         Collider cd;
         public bool entered = false;
+#if !Mini
+        HutongGames.PlayMaker.FsmBool GUIassemble;
+        HutongGames.PlayMaker.FsmBool GUIdisassemble;
+        HutongGames.PlayMaker.FsmString GUIinteraction;
+        void Start()
+        {
+            GUIassemble = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble");
+            GUIdisassemble = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIdisassemble");
+            GUIinteraction = PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction");
+        }
 
+        IEnumerator PutCDBack()
+        {
+            yield return null;
+            //"MasterAudio/HouseFoley/cd_cdin"
+            cd.transform.SetParent(transform, false);
+            cd.GetComponent<CD>().InCase();
+            MasterAudio.PlaySound3DAndForget("HouseFoley", transform, variationName: "cd_cdin");
+            GUIassemble.Value = false;
+            GUIdisassemble.Value = false;
+            GUIinteraction.Value = string.Empty;
+        }
         void Update()
         {
             if (entered && ready)
             {
-                PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble").Value = true;
-                PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Put CD back";
+                GUIassemble.Value = true;
+                GUIinteraction.Value = "Put CD back";
                 if (Input.GetMouseButtonDown(0) && cd != null)
-                {
-                    cd.transform.SetParent(CDcase.transform.GetChild(2), false);
-                    cd.GetComponent<CD>().InCase();
+                {                     
                     ready = false;
                     entered = false;
-                    PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble").Value = false;
-                    PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIdisassemble").Value = false;
-                    PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = string.Empty;
-
+                    StartCoroutine(PutCDBack());                 
                 }
             }
         }
 
         void OnTriggerStay(Collider col)
         {
-            if (col.name == "cd(itemz)" && CDcase.isOpen && col.transform.parent != null)
+            if (col.transform.parent == null) return;
+            if (col.name == "cd(itemz)" && CDcase.isOpen)
             {
+                if (col.transform.parent.name != "ItemPivot") return;
                 if (!col.GetComponent<CD>().inCase)
                 {
                     entered = true;
                     if (col.GetComponent<CD>().CDName == CDcase.CDName)
                     {
-                        PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble").Value = true;
-                        PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Put CD back";
+                        GUIassemble.Value = true;
+                        GUIinteraction.Value = "Put CD back";
                         ready = true;
                         cd = col;
 
                     }
                     else
                     {
-                        PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIdisassemble").Value = true;
-                        PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Wrong Case";
+                        GUIdisassemble.Value = true;
+                        GUIinteraction.Value = "Wrong Case";
                         ready = false;
                         cd = null;
                     }
@@ -59,12 +78,13 @@ namespace CDPlayer
 
         void OnTriggerExit()
         {
-            PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble").Value = false;
-            PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIdisassemble").Value = false;
+            GUIassemble.Value = false;
+            GUIdisassemble.Value = false;
             ready = false;
             entered = false;
             cd = null;
         }
+#endif
 
     }
 }

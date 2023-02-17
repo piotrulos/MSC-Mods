@@ -12,9 +12,9 @@ namespace CDPlayer
         public float posX, posY, posZ;
         public float rotX, rotY, rotZ;
         public string CDName;
-        public bool inCase = true;
-        public int rackID = 0;
-        public byte RackSlot = 0;
-        public bool purchased;
+       // public bool inRack = true;
+        public int rackID = -1;
+        public byte RackSlot = 255;
+     //   public bool purchased = false;       
     }
 }
