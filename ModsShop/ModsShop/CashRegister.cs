@@ -1,5 +1,6 @@
 ﻿using MSCLoader;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -76,10 +77,24 @@ namespace ModsShop
             uiOpen = true;
             PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerInMenu").Value = true; //unlock mouse
             GameObject.Find("Systems").transform.GetChild(7).gameObject.SetActive(true); //can't clickthrough UI when menu is active.
+            if (shoppingCart.Count == 0)
+            {
+                MsgBoxBtn btn = ModUI.CreateMessageBoxBtn("Got it", delegate {
+                    PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerInMenu").Value = false; 
+                    GameObject.Find("Systems").transform.GetChild(7).gameObject.SetActive(false);
+                    StartCoroutine(DelayMenu());
+                });
+                ModUI.ShowCustomMessage($"Your shopping cart is empty{Environment.NewLine}To buy stuff just turn around and look at the store shelf to add stuff to your cart.", "Shopping cart", new MsgBoxBtn[] { btn });
+                return;
+            }
             shoppingCartUI.ui.SetActive(true);
             shoppingCartUI.PopulateCart();
         }
-
+        IEnumerator DelayMenu()
+        {
+            yield return new WaitForSeconds(1f);
+            uiOpen = false;
+        }
         void Update()
         {
             if (ModsShop.mainCam == null) return;

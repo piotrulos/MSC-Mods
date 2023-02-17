@@ -120,6 +120,7 @@ namespace ModsShop
 
         void CheckoutCallback(GameObject spawned, ItemDetails item, int spawn)
         {
+            if (item.Checkout == null) return;
             try
             {
                 item.Checkout(new Checkout(spawned, item.ItemID, cashRegister.spawnPoint[spawn].position));

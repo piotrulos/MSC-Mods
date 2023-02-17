@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace ModsShop
 {
+
     public class AutoShelves : MonoBehaviour
     {
         public GameObject[] shelves;

@@ -11,7 +11,7 @@ namespace ModsShop
         public override string ID => "ModsShop";
         public override string Name => "Mods Shop (shop for mods)";
         public override string Author => "piotrulos";
-        public override string Version => "1.0.2";
+        public override string Version => "1.0.3";
 
         public override string Description => "Standalone shop that can be used to put stuff by mods. Shop is located near inspection building.";
 
@@ -96,6 +96,8 @@ namespace ModsShop
             te.transform.position = new Vector3(-1550.65f, 4.7f, 1183.3f);
             te.transform.localEulerAngles = new Vector3(0, 345, 0);
             shopGameObject.teimoCatalog = te.transform.GetChild(1).GetComponent<BoxCollider>();
+            if(shopGameObject.teimoShopItems.Count == 0)
+                te.SetActive(false);
             //fleetari catalog pos
             //1554.1, 5.54, 739.7
             //0,90,0
@@ -104,6 +106,8 @@ namespace ModsShop
             fl.transform.position = new Vector3(1553.9f, 5.54f, 740.1f);
             fl.transform.localEulerAngles = new Vector3(0, 40, 0);
             shopGameObject.fleetariCatalog = fl.transform.GetChild(1).GetComponent<BoxCollider>();
+            if (shopGameObject.fleetariShopItems.Count == 0)
+                fl.SetActive(false);
 
             GameObject teimoUI = assetBundle.LoadAsset("Teimo Catalog.prefab") as GameObject;
             teimoUI = GameObject.Instantiate(teimoUI);
@@ -126,6 +130,11 @@ namespace ModsShop
             if (mainShop.shopRefs == null) return;
             mainShop.shopRefs.SetShadows();
         }
+
+        /// <summary>
+        /// Get valid reference to ModsShop
+        /// </summary>
+        /// <returns>Shop</returns>
         public static Shop GetShopReference()
         {
             if (instance.mainShop == null) return null;

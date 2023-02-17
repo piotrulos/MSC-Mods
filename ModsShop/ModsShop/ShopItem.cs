@@ -90,9 +90,16 @@ namespace ModsShop
                 gameObject = go
             };
             if (shopType == ShopType.Teimo)
+            {
                 teimoShopItems.Add(item);
+                teimoCatalog.transform.parent.gameObject.SetActive(true);
+            }
             else
+            {
                 fleetariShopItems.Add(item);
+                fleetariCatalog.transform.parent.gameObject.SetActive(true);
+
+            }
         }
 #endif
         bool uiOpen = false;
