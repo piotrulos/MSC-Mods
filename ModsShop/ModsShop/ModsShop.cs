@@ -11,7 +11,7 @@ namespace ModsShop
         public override string ID => "ModsShop";
         public override string Name => "Mods Shop (shop for mods)";
         public override string Author => "piotrulos";
-        public override string Version => "1.0.3";
+        public override string Version => "1.0.4";
 
         public override string Description => "Standalone shop that can be used to put stuff by mods. Shop is located near inspection building.";
 
@@ -112,7 +112,7 @@ namespace ModsShop
             GameObject teimoUI = assetBundle.LoadAsset("Teimo Catalog.prefab") as GameObject;
             teimoUI = GameObject.Instantiate(teimoUI);
             teimoUI.name = "Teimo Catalog";
-            teimoUI.transform.SetParent(GameObject.Find("MSCLoader Canvas").transform, false);
+            teimoUI.transform.SetParent(ModUI.GetCanvas().transform, false);
             teimoUI.SetActive(false);
             shopGameObject.shopCatalogUI = teimoUI;
             shopGameObject.Prepare();
