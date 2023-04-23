@@ -54,7 +54,7 @@ namespace CDPlayer
         {
             if (mainCam == null) return; //sometimes playmaker disable camera.main for whatever reason
 
-            if (Physics.Raycast(mainCam.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 1f))
+            if (Physics.Raycast(mainCam.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 1f, LayerMask.NameToLayer("Parts")))
             {
                 if (hit.collider == openColl && !cdt.entered && !inRack)
                 {

@@ -43,7 +43,7 @@ namespace CDPlayer
         public override string ID => "CDPlayer";
         public override string Name => "CDPlayer Enhanced";
         public override string Author => "Piotrulos";
-        public override string Version => "1.5";
+        public override string Version => "1.5.1";
         public override string Description => "Makes adding CDs much easier, no renaming, no converting. (supports <color=orage>*.mp3, *.ogg, *.flac, *.wav, *.aiff</color>";
 
         private readonly string readme = $"This folder is used by CDPlayer Enhanced mod{System.Environment.NewLine}{System.Environment.NewLine}To create a new CD, create a new folder here, put your music or playlist file in that new folder.";
@@ -309,11 +309,6 @@ namespace CDPlayer
             else
             {
                 //if no shop installed.
-                GameObject rack10 = GameObject.Instantiate(rack10P);
-                rack10.name = "CD Rack(rackz)";
-                rack10.MakePickable();
-                rack10.transform.position = new Vector3(-9.76f, 0.17f, 6.47f);
-                listOfRacks.Add(rack10);
                 for (int i = 0; i < listOfCases.Count; i++)
                 {
                     listOfCases[i].SetActive(true);
