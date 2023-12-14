@@ -43,7 +43,7 @@ namespace CDPlayer
         public override string ID => "CDPlayer";
         public override string Name => "CDPlayer Enhanced";
         public override string Author => "Piotrulos";
-        public override string Version => "1.5.1";
+        public override string Version => "1.5.2";
         public override string Description => "Makes adding CDs much easier, no renaming, no converting. (supports <color=orage>*.mp3, *.ogg, *.flac, *.wav, *.aiff</color>";
 
         private readonly string readme = $"This folder is used by CDPlayer Enhanced mod{System.Environment.NewLine}{System.Environment.NewLine}To create a new CD, create a new folder here, put your music or playlist file in that new folder.";
@@ -59,9 +59,26 @@ namespace CDPlayer
         public override void ModSetup()
         {
             SetupFunction(Setup.OnNewGame, CDPlayer_NewGame);
+            SetupFunction(Setup.OnMenuLoad, CDPlayer_OnMenuLoad);
             SetupFunction(Setup.OnLoad, CDPlayer_OnLoad);
             SetupFunction(Setup.OnSave, CDPlayer_OnSave);
            // SetupFunction(Setup.Update, test);
+        }
+        void CDPlayer_OnMenuLoad()
+        {
+            GameObject r = GameObject.Find("Radio");
+            r.transform.Find("CD").GetComponent<PlayMakerFSM>().enabled = false;
+            GameObject text = GameObject.Find("Interface/Songs/LoadingCD");
+            if (ModLoader.IsModPresent("Toiveradio_Enhanced"))
+            {
+                GameObject.Find("Interface/Songs/Button").GetComponent<BoxCollider>().enabled = false;
+                text.GetComponent<PlayMakerFSM>().enabled = false;
+                text.GetComponent<TextMesh>().text = "FULLY MODDED (NO IMPORT NEEDED)";
+            }
+            else
+            {
+                text.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmString("Text").Value = "CD IS MODDED (NO IMPORT NEEDED)";
+            }    
         }
         void test()
         {
@@ -90,12 +107,12 @@ namespace CDPlayer
         public override void ModSettings()
         {
             Settings.AddHeader(this, "CD player settings", new Color32(0, 128, 0, 255));
-            Settings.AddButton(this, "Open CD folder", delegate { Process.Start(Path.GetFullPath("CD")); });
+            Settings.AddButton(this, "Open CD folder", delegate { Process.Start(Path.GetFullPath("CD")); }, Color.black, Color.white);
             Settings.AddText(this, "Disable distortion filter on satsuma amplifier speakers");
             bypassDis = Settings.AddCheckBox(this, "cdDisBypass", "Bypass distortion filter on aftermarket speakers", false, FilterChange);
             Settings.AddHeader(this, "Reset Settings");
             Settings.AddText(this, "Respawn purchased stuff on kitchen table");
-            Settings.AddButton(this, "resetcd", "Reset CDs", ResetPosition);
+            Settings.AddButton(this, "resetcd", "Reset CDs", ResetPosition, Color.black, Color.white);
             Settings.AddHeader(this, "Internet radio settings", new Color32(0, 128, 0, 255));
             debugInfo = Settings.AddCheckBox(this, "debugInfo", "Show debug info", false);
             RDSsim = Settings.AddCheckBox(this, "RDSsim", "Simulate RDS", true);
