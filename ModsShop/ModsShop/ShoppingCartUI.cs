@@ -77,6 +77,7 @@ namespace ModsShop
                             for (int i = 0; i < cartItems.Value; i++)
                             {
                                 spawnedObj = Instantiate(cartItems.Key.ItemPrefab);
+                                spawnedObj.GetComponent<Rigidbody>().isKinematic = false;
                                 CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
                                 spawnedObj.transform.position = cashRegister.spawnPoint[spawnP].position;
                                 yield return new WaitForSeconds(.2f);
@@ -85,12 +86,15 @@ namespace ModsShop
                         else
                         {
                             spawnedObj = Instantiate(cartItems.Key.ItemPrefab);
+                            spawnedObj.GetComponent<Rigidbody>().isKinematic = false;
                             CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
                         }
+
                         break;
                     case SpawnMethod.SetActive:
                         spawnedObj = cartItems.Key.ItemPrefab.gameObject;
                         spawnedObj.SetActive(true);
+                        spawnedObj.GetComponent<Rigidbody>().isKinematic = false;
                         CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
                         spawnedObj.transform.position = cashRegister.spawnPoint[spawnP].position;
                         break;

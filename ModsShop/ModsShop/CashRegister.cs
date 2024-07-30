@@ -41,11 +41,13 @@ namespace ModsShop
                 }
                 else
                 {
+                    //not a multibuy item
                     return 1;
                 }
             }
-            else if (item.bought)
-            {
+            else if (item.bought && !item.MultiplePurchases)
+            {                
+                //item already bought and not multibuy so can't buy it again using cheating.
                 return 2;
             }
 
