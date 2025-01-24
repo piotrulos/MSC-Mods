@@ -72,47 +72,33 @@ namespace ModsShop
                 switch (cartItems.Key.SpawnMethod)
                 {
                     case SpawnMethod.Instantiate:
-                        if (cartItems.Value > 1)
-                        {
-                            for (int i = 0; i < cartItems.Value; i++)
-                            {
-                                spawnedObj = Instantiate(cartItems.Key.ItemPrefab);
-                                spawnedObj.GetComponent<Rigidbody>().isKinematic = false;
-                                CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
-                                spawnedObj.transform.position = cashRegister.spawnPoint[spawnP].position;
-                                yield return new WaitForSeconds(.2f);
-                            }
-                        }
-                        else
+                        for (int i = 0; i < cartItems.Value; i++)
                         {
                             spawnedObj = Instantiate(cartItems.Key.ItemPrefab);
                             spawnedObj.GetComponent<Rigidbody>().isKinematic = false;
                             CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
+                            spawnedObj.transform.position = cashRegister.spawnPoint[spawnP].position;
+                            yield return new WaitForSeconds(.2f);
                         }
-
                         break;
                     case SpawnMethod.SetActive:
-                        spawnedObj = cartItems.Key.ItemPrefab.gameObject;
+                        spawnedObj = cartItems.Key.ItemPrefab;
                         spawnedObj.SetActive(true);
                         spawnedObj.GetComponent<Rigidbody>().isKinematic = false;
                         CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
                         spawnedObj.transform.position = cashRegister.spawnPoint[spawnP].position;
+                        yield return new WaitForSeconds(.2f);
                         break;
                     case SpawnMethod.Custom:
-                        spawnedObj = null;
-                        if (cartItems.Value > 1)
+                        spawnedObj = cartItems.Key.ItemPrefab;
+                        for (int i = 0; i < cartItems.Value; i++)
                         {
-                            for (int i = 0; i < cartItems.Value; i++)
-                            {
-                                CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
-                                yield return new WaitForSeconds(.2f);
-                            }
-                        }
-                        else
                             CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
+                            yield return new WaitForSeconds(.2f);
+                        }
                         break;
                 }
-                spawnedObj.transform.position = cashRegister.spawnPoint[spawnP].position;
+              //  spawnedObj.transform.position = cashRegister.spawnPoint[spawnP].position;
                 yield return new WaitForSeconds(.2f);
                 spawnP++;
                 if (spawnP == cashRegister.spawnPoint.Length) spawnP = 0;

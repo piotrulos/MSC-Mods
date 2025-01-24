@@ -92,11 +92,6 @@
     <Compile Include="ShopRefs.cs" />
     <Compile Include="Switch.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\.editorconfig">
-      <Link>.editorconfig</Link>
-    </None>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if "$(ConfigurationName)" == "Debug" (

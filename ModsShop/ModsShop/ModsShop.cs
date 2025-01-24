@@ -12,15 +12,13 @@ namespace ModsShop
         public override string Name => "Mods Shop (shop for mods)";
         public override string Author => "piotrulos";
         public override string Version => "1.0.5";
-
         public override string Description => "Standalone shop that can be used to put stuff by mods. Shop is located near inspection building.";
 
         public GameObject modShop;
         public static Camera mainCam = null;
         private Shop mainShop;
-#pragma warning disable CS0618 
+        [Obsolete]
         private ShopItem shopGameObject;
-#pragma warning restore CS0618
         internal static ModsShop instance;
         AssetBundle assetBundle;
         internal SettingsCheckBox interiorShadows;
@@ -31,22 +29,29 @@ namespace ModsShop
             SetupFunction(Setup.OnMenuLoad, InitializeShop);
             SetupFunction(Setup.PreLoad, BuildShop);
             SetupFunction(Setup.OnLoad, LegacyShopLoad);
+            SetupFunction(Setup.ModSettings, Mod_Settings);
         }
 
         void InitializeShop()
         {
-            GameObject go = new GameObject("Shop for mods");
-            GameObject.DontDestroyOnLoad(go);
-#pragma warning disable CS0618
-            shopGameObject = go.AddComponent<ShopItem>(); //Legacy shop
-#pragma warning restore CS0618
-            mainShop = go.AddComponent<Shop>(); //Standalone shop
             if (!File.Exists(Path.Combine(ModLoader.GetModAssetsFolder(this), "shopassets.unity3d")))
             {
                 noAss = true;
                 ModUI.ShowMessage($"Asset files for <color=orange>Mods Shop</color> not found.{Environment.NewLine} Make sure you unpacked ALL files from zip into mods folder.", "Mods Shop - Fatal error");
                 return;
             }
+            GameObject go = new GameObject("Shop for mods");
+            GameObject.DontDestroyOnLoad(go);
+#pragma warning disable CS0612 // Type or member is obsolete
+            LegacyShop(go);
+#pragma warning restore CS0612 // Type or member is obsolete
+            mainShop = go.AddComponent<Shop>(); //Standalone shop
+
+        }
+        [Obsolete]
+        void LegacyShop(GameObject go)
+        {
+            shopGameObject = go.AddComponent<ShopItem>();
         }
 
         void BuildShop()
@@ -81,47 +86,15 @@ namespace ModsShop
         {
             if (noAss) return;
             //old code for legacy shop
-            shopGameObject.modPref = assetBundle.LoadAsset<GameObject>("Mod.prefab");
-            shopGameObject.catPref = assetBundle.LoadAsset<GameObject>("Category.prefab");
-            shopGameObject.itemPref = assetBundle.LoadAsset<GameObject>("Product.prefab");
-            shopGameObject.cartItemPref = assetBundle.LoadAsset<GameObject>("CartItem.prefab");
-            GameObject te = assetBundle.LoadAsset<GameObject>("Catalog_shelf.prefab");
-            GameObject fl = assetBundle.LoadAsset<GameObject>("Catalog_shelf_F.prefab");
+#pragma warning disable CS0612 // Type or member is obsolete
+            shopGameObject.legacyDisplay = assetBundle.LoadAsset<GameObject>("LegacyDisplayItem.prefab");
+#pragma warning restore CS0612 // Type or member is obsolete
             mainCam = HutongGames.PlayMaker.FsmVariables.GlobalVariables.FindFsmGameObject("POV").Value.GetComponent<Camera>();
-            //teimo catalog pos
-            //-1550.65, 4.7, 1183.3
-            //0,345,0
-            te = GameObject.Instantiate(te);
-            te.name = "Catalog shelf";
-            te.transform.position = new Vector3(-1550.65f, 4.7f, 1183.3f);
-            te.transform.localEulerAngles = new Vector3(0, 345, 0);
-            shopGameObject.teimoCatalog = te.transform.GetChild(1).GetComponent<BoxCollider>();
-            if(shopGameObject.teimoShopItems.Count == 0)
-                te.SetActive(false);
-            //fleetari catalog pos
-            //1554.1, 5.54, 739.7
-            //0,90,0
-            fl = GameObject.Instantiate(fl);
-            fl.name = "Catalog shelf (Fleetari)";
-            fl.transform.position = new Vector3(1553.9f, 5.54f, 740.1f);
-            fl.transform.localEulerAngles = new Vector3(0, 40, 0);
-            shopGameObject.fleetariCatalog = fl.transform.GetChild(1).GetComponent<BoxCollider>();
-            if (shopGameObject.fleetariShopItems.Count == 0)
-                fl.SetActive(false);
-
-            GameObject teimoUI = assetBundle.LoadAsset("Teimo Catalog.prefab") as GameObject;
-            teimoUI = GameObject.Instantiate(teimoUI);
-            teimoUI.name = "Teimo Catalog";
-            teimoUI.transform.SetParent(ModUI.GetCanvas().transform, false);
-            teimoUI.SetActive(false);
-            shopGameObject.shopCatalogUI = teimoUI;
-            shopGameObject.Prepare();
             assetBundle.Unload(false);
         }
 
-        public override void ModSettings()
+        private void Mod_Settings()
         {
-            if (wl) return;
             ConsoleCommand.Add(new DebugCmd());
             interiorShadows = Settings.AddCheckBox(this, "interiorShadows", "Disable shadows from interior lights", false, ChangeShadows);
         }
@@ -140,28 +113,6 @@ namespace ModsShop
             if (instance.mainShop == null) return null;
             return instance.mainShop;
         }
-#region BS
-        bool wl = false;
-        public override void OnMenuLoad()
-        {
-            ModUI.ShowYesNoMessage($"ModsShop: <color=aqua>To use this version of mod you need to <color=orange>Update MSCLoader to version 1.2+</color></color>{System.Environment.NewLine}{System.Environment.NewLine}Open download page?", "Outdated MSCloader Version".ToUpper(), delegate
-            {
-                Application.OpenURL("https://www.nexusmods.com/mysummercar/mods/147?tab=files");
-            });
-            if (GameObject.Find("MSCLoader Canvas") != null)
-            {
-                GameObject mp = GameObject.Find("MSCLoader Canvas").transform.Find("ModPrompt(Clone)").gameObject;
-                if (mp != null)
-                    mp.transform.localScale = Vector3.one;
-            }
-            wl = true;
-            return;
-        }
-        public override void OnLoad()
-        {
-            ModConsole.Error("ModsShop: Oudated MSCLoader version, please update modloader to version <b>1.2.5</b> or highier to use this mod.");
-        }
-#endregion
     }
 }
 #endif

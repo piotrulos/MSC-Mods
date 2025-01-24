@@ -55,6 +55,19 @@ namespace ModsShop
             return itemDetails;
         }
         /// <summary>
+        /// Create a shop item
+        /// </summary>
+        /// <param name="mod">Your mod</param>
+        /// <param name="itemID">Unique item ID</param>
+        /// <param name="itemName">Displayed name of the item</param>
+        /// <param name="itemPrice">Price of the item</param>
+        /// <param name="multiplePurchases">Allow multiple purchases of this item</param>
+        /// <param name="purchashedAction">Function to execute after item is purchashed</param>
+        /// <param name="itemObject">GameObject to spawn after item is purchashed</param>
+        /// <param name="spawnMehod">How to spawn itemObject</param>
+        /// <returns>ItemDetails</returns>
+        public ItemDetails AddShopItem(Mod mod, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> purchashedAction, GameObject itemObject, SpawnMethod spawnMehod) => CreateShopItem(mod, itemID, itemName, itemPrice, multiplePurchases, purchashedAction, itemObject, spawnMehod);
+        /// <summary>
         /// Add display item on shelf  
         /// </summary>
         /// <param name="itemDetails">ItemDetails of item that was created using CreateShopItem()</param>

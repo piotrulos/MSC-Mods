@@ -48,6 +48,7 @@ namespace ModsShop
     }
 
     //Old
+    [Obsolete("Old Shop Catalog is no longer supported", true)]
     public class ProductDetails
     {
         public Sprite productIcon = null;
@@ -56,6 +57,7 @@ namespace ModsShop
         public float productPrice;
         public bool multiplePurchases = true;
     }
+    [Obsolete("Old Shop Catalog is no longer supported", true)]
     public class PurchaseInfo
     {
         public GameObject gameObject = null;
