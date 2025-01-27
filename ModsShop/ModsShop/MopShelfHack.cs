@@ -1,13 +1,9 @@
 ﻿using UnityEngine;
-
-namespace ModsShop
+namespace ModsShop;
+public class MopShelfHack : MonoBehaviour
 {
-    public class MopShelfHack : MonoBehaviour
+    void OnEnable()
     {
-        void OnEnable()
-        {
-            gameObject.SetActive(false);
-        }
-
+        gameObject.SetActive(false);
     }
 }

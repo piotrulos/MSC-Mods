@@ -1,62 +1,64 @@
-﻿using MSCLoader;
+﻿using HutongGames.PlayMaker;
+using MSCLoader;
 using UnityEngine;
 
-namespace ModsShop
+namespace ModsShop;
+
+public class Door : MonoBehaviour
 {
-    public class Door : MonoBehaviour
+    public Animation animation;
+    public bool isOpen = false;
+    public Collider coll;
+#if !Mini
+    private FsmBool GUIuse;
+
+    void Start()
     {
-        public Animation animation;
-        public bool isOpen = false;
+        GUIuse = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse");
+    }
 
-        void OnMouseExit()
-        {
-#if !Mini
-            PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse").Value = false;
-#endif
-        }
-        public void CloseDoor()
-        {
-            animation.Play("door close");
-            MasterAudio.PlaySound3DAndForget("Store", transform, variationName: "door_close");
-            isOpen = false;
-        }
-        public void OpenDoor()
-        {
-            animation.Play("door open");
-            MasterAudio.PlaySound3DAndForget("Store", transform, variationName: "door_open");
-            isOpen = true;
-        }
-#if !Mini
-        void Update()
-        {
-            if (ModsShop.mainCam == null) return;
+    void OnMouseExit()
+    {
+        GUIuse.Value = false;
+    }
 
-            if (Physics.Raycast(ModsShop.mainCam.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 1f))
+    public void CloseDoor()
+    {
+        animation.Play("door close");
+
+        MasterAudio.PlaySound3DAndForget("Store", transform, variationName: "door_close");
+        isOpen = false;
+    }
+    public void OpenDoor()
+    {
+        animation.Play("door open");
+        MasterAudio.PlaySound3DAndForget("Store", transform, variationName: "door_open");
+        isOpen = true;
+    }
+
+    void Update()
+    {
+        if (UnifiedRaycast.GetHit(coll))
+        {
+            GUIuse.Value = true;
+
+            if (Input.GetMouseButtonDown(0))
             {
-                if (hit.transform.gameObject == gameObject)
+                if (ModsShop.GetShopReference().shopRefs.isShopClosed)
                 {
-
-                    PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse").Value = true;
-
-                    if (Input.GetMouseButtonDown(0))
-                    {
-                        if (ModsShop.GetShopReference().shopRefs.isShopClosed)
-                        {
-                            MasterAudio.PlaySound3DAndForget("Store", transform, variationName: "door_locked");
-                            return;
-                        }
-                        if (isOpen)
-                        {
-                            CloseDoor();
-                        }
-                        else
-                        {
-                            OpenDoor();
-                        }
-                    }
+                    MasterAudio.PlaySound3DAndForget("Store", transform, variationName: "door_locked");
+                    return;
+                }
+                if (isOpen)
+                {
+                    CloseDoor();
+                }
+                else
+                {
+                    OpenDoor();
                 }
             }
         }
+    }             
 #endif
-    }
 }

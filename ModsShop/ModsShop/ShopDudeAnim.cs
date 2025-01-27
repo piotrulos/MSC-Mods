@@ -1,19 +1,18 @@
 ﻿using UnityEngine;
 
-namespace ModsShop
+namespace ModsShop;
+
+public class ShopDudeAnim : MonoBehaviour
 {
-    public class ShopDudeAnim : MonoBehaviour
+    public Animation anim;
+
+    void Start()
     {
-        public Animation anim;
+        anim.Play("teimo_lean_table_in");
+    }
 
-        void Start()
-        {
-            anim.Play("teimo_lean_table_in");
-        }
-
-        public void CashRegisterAnim()
-        {
-            anim.Play("teimo_cash_register");
-        }
+    public void CashRegisterAnim()
+    {
+        anim.Play("teimo_cash_register");
     }
 }

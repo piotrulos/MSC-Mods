@@ -3,30 +3,28 @@ using MSCLoader;
 #endif
 using UnityEngine;
 
-namespace ModsShop
+namespace ModsShop;
+public class CustomShelves : MonoBehaviour
 {
-    public class CustomShelves : MonoBehaviour
-    {
-        public GameObject[] placeAreas;
-        int lastShelf = 0;
-        bool displayedWarn = false;
+    public GameObject[] placeAreas;
+    private int lastShelf = 0;
+    private bool displayedWarn = false;
 
-        public void InsertSlelf(GameObject placeArea)
+    public void InsertSlelf(GameObject placeArea)
+    {
+        if (lastShelf > placeAreas.Length - 1)
         {
-            if(lastShelf > placeAreas.Length - 1)
+            if (!displayedWarn)
             {
-                if (!displayedWarn)
-                {
 #if !Mini
                 ModConsole.Warning("[ModsShop] Can't fit more items, we're full.");
 #endif
 
-                    displayedWarn = true;
-                }
-                return;
+                displayedWarn = true;
             }
-            placeArea.transform.SetParent(placeAreas[lastShelf].transform, false);
-            lastShelf++;
+            return;
         }
+        placeArea.transform.SetParent(placeAreas[lastShelf].transform, false);
+        lastShelf++;
     }
 }
