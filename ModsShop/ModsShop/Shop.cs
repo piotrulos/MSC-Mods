@@ -107,7 +107,7 @@ public class Shop : MonoBehaviour
         }
         go.AddComponent<ProductOnShelf>().itemDetails = itemDetails;
         go.transform.eulerAngles = rotation;
-        shopRefs.autoShelves.SpawnItem(itemDetails.ModID, go, gap, 0);
+        shopRefs.autoShelves.SpawnItem(itemDetails.ModID, itemDetails.ModName, go, gap, 0);
     }
     /// <summary>
     /// Add custom shelf from prefab

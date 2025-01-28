@@ -9,6 +9,9 @@ public class ShopRefs : MonoBehaviour
     public Switch[] lightSwitches;
     public Door door;
     public bool isShopClosed = false;
+    public Camera stickerGeneratorCam;
+    public TextMesh stickerGeneratorText;
+
 #if !Mini
 
     HutongGames.PlayMaker.FsmBool nightFSM;

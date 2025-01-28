@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutoShelves.cs" />
+    <Compile Include="CamSticker.cs" />
     <Compile Include="CashRegister.cs" />
     <Compile Include="CustomShelves.cs" />
     <Compile Include="DebugCmd.cs" />

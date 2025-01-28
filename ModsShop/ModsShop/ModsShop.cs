@@ -29,9 +29,13 @@ public class ModsShop : Mod
         SetupFunction(Setup.OnMenuLoad, InitializeShop);
         SetupFunction(Setup.PreLoad, BuildShop);
         SetupFunction(Setup.OnLoad, LegacyShopLoad);
+        SetupFunction(Setup.PostLoad, PostLoad);
         SetupFunction(Setup.ModSettings, Mod_Settings);
     }
-
+    void PostLoad()
+    {
+        mainShop.shopRefs.autoShelves.UpdateLastSticker();
+    }
     void InitializeShop()
     {
         if (!File.Exists(Path.Combine(ModLoader.GetModAssetsFolder(this), "shopassets.unity3d")))
