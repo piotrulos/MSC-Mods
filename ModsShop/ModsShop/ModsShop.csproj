@@ -45,6 +45,9 @@
       <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="cInput">
+      <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\cInput.dll</HintPath>
+    </Reference>
     <Reference Include="MSCLoader, Version=0.4.6.145, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\MSCLoader.dll</HintPath>
@@ -88,6 +91,7 @@
     <Compile Include="Shop.cs" />
     <Compile Include="ShopDudeAnim.cs" />
     <Compile Include="ShopItem.cs" />
+    <Compile Include="ShoppingBag.cs" />
     <Compile Include="ShoppingCartUIItem.cs" />
     <Compile Include="ShoppingCartUI.cs" />
     <Compile Include="ShopRefs.cs" />

@@ -14,6 +14,8 @@ public class CashRegister : MonoBehaviour
     public TextMesh display;
     public ShopDudeAnim anims;
     public Transform[] spawnPoint;
+    public Transform[] bagSpawnPoint;
+    public GameObject bagPrefab;
     public Collider coll;
     internal Dictionary<ItemDetails, int> shoppingCart = new Dictionary<ItemDetails, int>();
     internal float totalPrice = 0f;

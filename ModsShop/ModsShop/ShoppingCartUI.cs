@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -39,6 +40,7 @@ public class ShoppingCartUI : MonoBehaviour
             return;
         }
         StartCoroutine(SpawnStuff());
+
         cashRegister.PlayCheckoutSound();
         PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerInMenu").Value = false; //unlock mouse
         GameObject.Find("Systems").transform.GetChild(7).gameObject.SetActive(false); //can't clickthrough UI when menu is active.
@@ -71,6 +73,14 @@ public class ShoppingCartUI : MonoBehaviour
         cashRegister.shoppingCart.Clear();
         PlayMakerGlobals.Instance.Variables.FindFsmFloat("PlayerMoney").Value -= cashRegister.totalPrice;
         cashRegister.UpdateCart(false);
+        /*
+                 GameObject bag = Instantiate(cashRegister.bagPrefab);
+        bag.transform.position = cashRegister.bagSpawnPoint[0].position;
+        bag.MakePickable();
+         */
+        //Don't put custom spawn items in the bag
+        ModConsole.Warning(cartItemsSpawn.Where(x => x.Key.SpawnMethod != SpawnMethod.Custom).Select(x => x.Value).Sum().ToString());
+
         //Start Spawning
         foreach (KeyValuePair<ItemDetails, int> cartItems in cartItemsSpawn)
         {
