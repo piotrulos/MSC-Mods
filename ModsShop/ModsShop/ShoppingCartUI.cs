@@ -16,6 +16,7 @@ public class ShoppingCartUI : MonoBehaviour
     public Text priceText;
     public GameObject ui;
 
+    private byte bagSpawnPoint = 0;
     public void RemoveChildren(Transform parent)
     {
         foreach (Transform child in parent)
@@ -40,7 +41,6 @@ public class ShoppingCartUI : MonoBehaviour
             return;
         }
         StartCoroutine(SpawnStuff());
-
         cashRegister.PlayCheckoutSound();
         PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerInMenu").Value = false; //unlock mouse
         GameObject.Find("Systems").transform.GetChild(7).gameObject.SetActive(false); //can't clickthrough UI when menu is active.
@@ -68,23 +68,25 @@ public class ShoppingCartUI : MonoBehaviour
     IEnumerator SpawnStuff()
     {
         int spawnP = 0;
+        int baggableItems = 0;
         Dictionary<ItemDetails, int> cartItemsSpawn = new Dictionary<ItemDetails, int>(cashRegister.shoppingCart);
         yield return null;
         cashRegister.shoppingCart.Clear();
         PlayMakerGlobals.Instance.Variables.FindFsmFloat("PlayerMoney").Value -= cashRegister.totalPrice;
         cashRegister.UpdateCart(false);
-        /*
-                 GameObject bag = Instantiate(cashRegister.bagPrefab);
-        bag.transform.position = cashRegister.bagSpawnPoint[0].position;
-        bag.MakePickable();
-         */
-        //Don't put custom spawn items in the bag
-        ModConsole.Warning(cartItemsSpawn.Where(x => x.Key.SpawnMethod != SpawnMethod.Custom).Select(x => x.Value).Sum().ToString());
 
-        //Start Spawning
-        foreach (KeyValuePair<ItemDetails, int> cartItems in cartItemsSpawn)
+        //Don't put custom spawn items in the bag
+        baggableItems = cartItemsSpawn.Where(x => x.Key.SpawnMethod != SpawnMethod.Custom && !x.Key.ExcludeFromShoppingBag).Select(x => x.Value).Sum();
+        ModConsole.Warning(baggableItems.ToString());
+        int baggedItems = 0;
+        GameObject bag = null;
+
+        //Start Spawning       
+        foreach (KeyValuePair<ItemDetails, int> cartItems in cartItemsSpawn.Where(x => x.Key.SpawnMethod != SpawnMethod.Custom))
         {
-            GameObject spawnedObj = null;
+            GameObject spawnedObj = cartItems.Key.ItemPrefab;
+            bool canBag = baggableItems > 2 && !cartItems.Key.ExcludeFromShoppingBag;
+            if (baggedItems >= 20) baggedItems = 0;
             switch (cartItems.Key.SpawnMethod)
             {
                 case SpawnMethod.Instantiate:
@@ -92,30 +94,61 @@ public class ShoppingCartUI : MonoBehaviour
                     {
                         spawnedObj = Instantiate(cartItems.Key.ItemPrefab);
                         spawnedObj.GetComponent<Rigidbody>().isKinematic = false;
+                        if (canBag)
+                        {
+                            if (baggedItems >= 20) baggedItems = 0;
+                            CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
+                            if(bag == null || baggedItems == 0)
+                            {
+                                bag = SpawnBag();
+                            }
+                            spawnedObj.transform.SetParent(bag.transform, false);
+                            spawnedObj.SetActive(false);
+                            baggedItems++;
+                        }
+                        else
+                        {
+                            CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
+                            spawnedObj.transform.position = cashRegister.spawnPoint[spawnP].position;
+                            yield return new WaitForSeconds(.2f);
+                        }
+                    }
+                    break;
+                case SpawnMethod.SetActive:
+                    spawnedObj.GetComponent<Rigidbody>().isKinematic = false;
+                    if (canBag)
+                    {
+                        CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
+                        if (bag == null || baggedItems == 0)
+                        {
+                            bag = SpawnBag();
+                        }
+                        spawnedObj.transform.SetParent(bag.transform, false);
+                        spawnedObj.SetActive(false);
+                        baggedItems++;
+                    }
+                    else
+                    {
+                        spawnedObj.SetActive(true);
                         CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
                         spawnedObj.transform.position = cashRegister.spawnPoint[spawnP].position;
                         yield return new WaitForSeconds(.2f);
                     }
                     break;
-                case SpawnMethod.SetActive:
-                    spawnedObj = cartItems.Key.ItemPrefab;
-                    spawnedObj.SetActive(true);
-                    spawnedObj.GetComponent<Rigidbody>().isKinematic = false;
-                    CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
-                    spawnedObj.transform.position = cashRegister.spawnPoint[spawnP].position;
-                    yield return new WaitForSeconds(.2f);
-                    break;
-                case SpawnMethod.Custom:
-                    spawnedObj = cartItems.Key.ItemPrefab;
-                    for (int i = 0; i < cartItems.Value; i++)
-                    {
-                        CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
-                        yield return new WaitForSeconds(.2f);
-                    }
-                    break;
             }
-            //  spawnedObj.transform.position = cashRegister.spawnPoint[spawnP].position;
-            yield return new WaitForSeconds(.2f);
+            if(!canBag)
+                yield return new WaitForSeconds(.1f);
+            spawnP++;
+            if (spawnP == cashRegister.spawnPoint.Length) spawnP = 0;
+        }
+        //Spawn Custom last
+        foreach (KeyValuePair<ItemDetails, int> cartItems in cartItemsSpawn.Where(x => x.Key.SpawnMethod == SpawnMethod.Custom))
+        {
+            for (int i = 0; i < cartItems.Value; i++)
+            {
+                CheckoutCallback(cartItems.Key.ItemPrefab, cartItems.Key, spawnP);
+                yield return new WaitForSeconds(.2f);
+            }
             spawnP++;
             if (spawnP == cashRegister.spawnPoint.Length) spawnP = 0;
         }
@@ -135,6 +168,15 @@ public class ShoppingCartUI : MonoBehaviour
             ModConsole.Error($"{e.Message}");
             Console.WriteLine(e);
         }
+    }
+    private GameObject SpawnBag()
+    {
+        GameObject bag = Instantiate(cashRegister.bagPrefab);
+        bag.transform.position = cashRegister.bagSpawnPoint[bagSpawnPoint].position;
+        bag.MakePickable();
+        bagSpawnPoint++;
+        if (bagSpawnPoint == cashRegister.bagSpawnPoint.Length) bagSpawnPoint = 0;
+        return bag;
     }
     internal void PopulateCart()
     {

@@ -11,13 +11,14 @@ public class ItemDetails
     public string ItemName;
     public float ItemPrice;
     public bool MultiplePurchases = true;
+    public bool ExcludeFromShoppingBag = false;
     public Action<Checkout> Checkout = null;
     public GameObject ItemPrefab;
     public bool bought = false;
     public ProductOnShelf product;
     public SpawnMethod SpawnMethod;
 
-    public ItemDetails(string modID, string modName, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> checkout, GameObject itemPrefab, SpawnMethod spawnMethod)
+    public ItemDetails(string modID, string modName, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> checkout, GameObject itemPrefab, SpawnMethod spawnMethod, bool excludeFromShoppingBag)
     {
         ModID = modID;
         ModName = modName;
@@ -28,6 +29,7 @@ public class ItemDetails
         Checkout = checkout;
         ItemPrefab = itemPrefab;
         SpawnMethod = spawnMethod;
+        ExcludeFromShoppingBag = excludeFromShoppingBag;
     }
 
 }

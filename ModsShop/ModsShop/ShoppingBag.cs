@@ -5,7 +5,7 @@ using UnityEngine;
 namespace ModsShop;
 internal class ShoppingBag : MonoBehaviour
 {
-    public BoxCollider GetItemsTrigger;
+    public BoxCollider GetItemsTrigger = null;
 
 #if !Mini
     private FsmBool GUIUse;

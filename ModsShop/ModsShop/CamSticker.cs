@@ -6,8 +6,8 @@ namespace ModsShop;
 //Just a way to "Bake" TextMesh into a texture.
 internal class CamSticker : MonoBehaviour
 {
-    public Camera stickerGeneratorCam;
-    public TextMesh stickerGeneratorText;
+    public Camera stickerGeneratorCam = null;
+    public TextMesh stickerGeneratorText = null;
     public bool doIt = false;
     public Texture2D sticker;
     void Awake()
@@ -16,9 +16,9 @@ internal class CamSticker : MonoBehaviour
     }
     internal void Generate(string name, int num, MeshRenderer mr)
     {
-        stickerGeneratorText.text = $"{name}{System.Environment.NewLine}Items: {num}";
+        stickerGeneratorText.text = $"{name}{System.Environment.NewLine}Items: {(num == -1 ? "???" : num)}";
         doIt = true;
-        StartCoroutine(TestShit(mr));
+        StartCoroutine(ApplySticker(mr));
     }
     private Texture2D GenerateSticker()
     {
@@ -37,9 +37,9 @@ internal class CamSticker : MonoBehaviour
         Destroy(rt);
         return tex;
     }
-    IEnumerator TestShit(MeshRenderer mr)
+    IEnumerator ApplySticker(MeshRenderer mr)
     {
-        while (doIt) yield return null;
+        while (doIt) yield return null; //Wait for single frame to be sure it's done.
         Texture2D t = sticker;
         mr.material.mainTexture = t;
     }

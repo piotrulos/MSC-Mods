@@ -37,7 +37,22 @@ public class Shop : MonoBehaviour
     /// <param name="itemObject">GameObject to spawn after item is purchashed</param>
     /// <param name="spawnMehod">How to spawn itemObject</param>
     /// <returns>ItemDetails</returns>
-    public ItemDetails CreateShopItem(Mod mod, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> purchashedAction, GameObject itemObject, SpawnMethod spawnMehod)
+    public ItemDetails CreateShopItem(Mod mod, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> purchashedAction, GameObject itemObject, SpawnMethod spawnMehod) => CreateShopItem(mod, itemID, itemName, itemPrice, multiplePurchases, purchashedAction, itemObject, spawnMehod, false);
+
+    /// <summary>
+    /// Create a shop item
+    /// </summary>
+    /// <param name="mod">Your mod</param>
+    /// <param name="itemID">Unique item ID</param>
+    /// <param name="itemName">Displayed name of the item</param>
+    /// <param name="itemPrice">Price of the item</param>
+    /// <param name="multiplePurchases">Allow multiple purchases of this item</param>
+    /// <param name="purchashedAction">Function to execute after item is purchashed</param>
+    /// <param name="itemObject">GameObject to spawn after item is purchashed</param>
+    /// <param name="spawnMehod">How to spawn itemObject</param>
+    /// <param name="excludeFromShoppingBag">Exclude this item from the shopping bag</param>
+    /// <returns>ItemDetails</returns>
+    public ItemDetails CreateShopItem(Mod mod, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> purchashedAction, GameObject itemObject, SpawnMethod spawnMehod, bool excludeFromShoppingBag)
     {
         switch (spawnMehod)
         {
@@ -50,7 +65,7 @@ public class Shop : MonoBehaviour
                 break;
 
         }
-        ItemDetails itemDetails = new ItemDetails(mod.ID, mod.Name, $"{itemID}", itemName, itemPrice, multiplePurchases, purchashedAction, itemObject, spawnMehod);
+        ItemDetails itemDetails = new ItemDetails(mod.ID, mod.Name, $"{itemID}", itemName, itemPrice, multiplePurchases, purchashedAction, itemObject, spawnMehod, excludeFromShoppingBag);
         items.Add(itemDetails);
         return itemDetails;
     }
@@ -65,8 +80,9 @@ public class Shop : MonoBehaviour
     /// <param name="purchashedAction">Function to execute after item is purchashed</param>
     /// <param name="itemObject">GameObject to spawn after item is purchashed</param>
     /// <param name="spawnMehod">How to spawn itemObject</param>
+    /// <param name="excludeFromShoppingBag">Exclude this item from the shopping bag</param>
     /// <returns>ItemDetails</returns>
-    public ItemDetails AddShopItem(Mod mod, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> purchashedAction, GameObject itemObject, SpawnMethod spawnMehod) => CreateShopItem(mod, itemID, itemName, itemPrice, multiplePurchases, purchashedAction, itemObject, spawnMehod);
+    public ItemDetails AddShopItem(Mod mod, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> purchashedAction, GameObject itemObject, SpawnMethod spawnMehod, bool excludeFromShoppingBag = false) => CreateShopItem(mod, itemID, itemName, itemPrice, multiplePurchases, purchashedAction, itemObject, spawnMehod, excludeFromShoppingBag);
     /// <summary>
     /// Add display item on shelf  
     /// </summary>
