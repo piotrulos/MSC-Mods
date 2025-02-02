@@ -1,4 +1,5 @@
 ﻿#if !Mini
+using HutongGames.PlayMaker;
 using MSCLoader;
 using System;
 using System.IO;
@@ -10,12 +11,12 @@ public class ModsShop : Mod
     public override string ID => "ModsShop";
     public override string Name => "Mods Shop (shop for mods)";
     public override string Author => "piotrulos";
-    public override string Version => "1.0.5";
+    public override string Version => "1.1";
     public override string Description => "Standalone shop that can be used to put stuff by mods. Shop is located near inspection building.";
 
     public GameObject modShop;
-    public static Camera mainCam = null;
     internal SettingsCheckBox interiorShadows;
+    internal FsmBool shadowsHouse;
     internal static ModsShop instance;
     private bool noAss = false;
     private AssetBundle assetBundle;
@@ -35,6 +36,7 @@ public class ModsShop : Mod
     void PostLoad()
     {
         mainShop.shopRefs.autoShelves.UpdateLastSticker();
+        ModsShop.GetShopReference().shopRefs.finished = true;
     }
     void InitializeShop()
     {
@@ -93,14 +95,15 @@ public class ModsShop : Mod
 #pragma warning disable CS0612 // Type or member is obsolete
         shopGameObject.legacyDisplay = assetBundle.LoadAsset<GameObject>("LegacyDisplayItem.prefab");
 #pragma warning restore CS0612 // Type or member is obsolete
-        mainCam = HutongGames.PlayMaker.FsmVariables.GlobalVariables.FindFsmGameObject("POV").Value.GetComponent<Camera>();
         assetBundle.Unload(false);
+        shadowsHouse = GameObject.Find("Systems/Options").GetPlayMaker("GFX").FsmVariables.FindFsmBool("ShadowsHouse");
     }
 
     private void Mod_Settings()
     {
         ConsoleCommand.Add(new DebugCmd());
-        interiorShadows = Settings.AddCheckBox(this, "interiorShadows", "Disable shadows from interior lights", false, ChangeShadows);
+        Settings.AddText($"By default it uses {"House Shadows"} game setting to enable/disable shops interior shadows.{Environment.NewLine}Below option will force disable shadows in shops interior. (despite your game settings)");
+        interiorShadows = Settings.AddCheckBox("MS_interiorShadows", "Disable shadows from interior lights", false, ChangeShadows);
     }
     void ChangeShadows()
     {

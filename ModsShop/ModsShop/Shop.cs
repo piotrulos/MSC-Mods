@@ -50,7 +50,7 @@ public class Shop : MonoBehaviour
     /// <param name="purchashedAction">Function to execute after item is purchashed</param>
     /// <param name="itemObject">GameObject to spawn after item is purchashed</param>
     /// <param name="spawnMehod">How to spawn itemObject</param>
-    /// <param name="excludeFromShoppingBag">Exclude this item from the shopping bag</param>
+    /// <param name="excludeFromShoppingBag">Exclude this item from being added to the shopping bag</param>
     /// <returns>ItemDetails</returns>
     public ItemDetails CreateShopItem(Mod mod, string itemID, string itemName, float itemPrice, bool multiplePurchases, Action<Checkout> purchashedAction, GameObject itemObject, SpawnMethod spawnMehod, bool excludeFromShoppingBag)
     {

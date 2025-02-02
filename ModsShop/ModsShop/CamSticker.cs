@@ -10,15 +10,22 @@ internal class CamSticker : MonoBehaviour
     public TextMesh stickerGeneratorText = null;
     public bool doIt = false;
     public Texture2D sticker;
+    Coroutine delayed = null;
     void Awake()
     {
         transform.SetParent(null);
     }
     internal void Generate(string name, int num, MeshRenderer mr)
     {
+        if (delayed != null)
+            StopCoroutine(delayed);
         stickerGeneratorText.text = $"{name}{System.Environment.NewLine}Items: {(num == -1 ? "???" : num)}";
         doIt = true;
         StartCoroutine(ApplySticker(mr));
+    }
+    internal void GenerateDelayed(string name, int num, MeshRenderer mr)
+    {
+        delayed = StartCoroutine(Delayed(name, num, mr));
     }
     private Texture2D GenerateSticker()
     {
@@ -36,6 +43,12 @@ internal class CamSticker : MonoBehaviour
         RenderTexture.active = null;
         Destroy(rt);
         return tex;
+    }
+    IEnumerator Delayed(string name, int num, MeshRenderer mr)
+    {
+        if (!ModsShop.GetShopReference().shopRefs.finished) yield return null;
+        yield return new WaitForSeconds(2f);
+        Generate(name, num, mr);
     }
     IEnumerator ApplySticker(MeshRenderer mr)
     {

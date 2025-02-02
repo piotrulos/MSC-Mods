@@ -71,7 +71,7 @@ public class AutoShelves : MonoBehaviour
             }
             prevMesh = sticker.transform.GetChild(0).GetComponent<MeshRenderer>();
             prevMod = modName;
-            ModsShop.GetShopReference().shopRefs.stickerGeneratorCam.GetComponent<CamSticker>().Generate(prevMod, -1, prevMesh);
+            ModsShop.GetShopReference().shopRefs.stickerGeneratorCam.GetComponent<CamSticker>().GenerateDelayed(modName, -1, sticker.transform.GetChild(0).GetComponent<MeshRenderer>()); //If last sticker wasnt generated
 
         }
         numberOfItems++;

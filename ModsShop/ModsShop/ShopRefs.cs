@@ -11,6 +11,7 @@ public class ShopRefs : MonoBehaviour
     public bool isShopClosed = false;
     public Camera stickerGeneratorCam;
     public TextMesh stickerGeneratorText;
+    internal bool finished = false;
 
 #if !Mini
 
@@ -77,8 +78,16 @@ public class ShopRefs : MonoBehaviour
             }
             else
             {
-                lightSwitches[0].lamps[i].light.shadows = LightShadows.Soft;
-                lightSwitches[1].lamps[i].light.shadows = LightShadows.Soft;
+                if (ModsShop.instance.shadowsHouse.Value)
+                {
+                    lightSwitches[0].lamps[i].light.shadows = LightShadows.Soft;
+                    lightSwitches[1].lamps[i].light.shadows = LightShadows.Soft;
+                }
+                else
+                {
+                    lightSwitches[0].lamps[i].light.shadows = LightShadows.None;
+                    lightSwitches[1].lamps[i].light.shadows = LightShadows.None;
+                }
             }
         }
     }

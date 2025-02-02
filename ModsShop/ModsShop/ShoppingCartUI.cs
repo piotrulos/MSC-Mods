@@ -77,7 +77,6 @@ public class ShoppingCartUI : MonoBehaviour
 
         //Don't put custom spawn items in the bag
         baggableItems = cartItemsSpawn.Where(x => x.Key.SpawnMethod != SpawnMethod.Custom && !x.Key.ExcludeFromShoppingBag).Select(x => x.Value).Sum();
-        ModConsole.Warning(baggableItems.ToString());
         int baggedItems = 0;
         GameObject bag = null;
 
@@ -86,7 +85,7 @@ public class ShoppingCartUI : MonoBehaviour
         {
             GameObject spawnedObj = cartItems.Key.ItemPrefab;
             bool canBag = baggableItems > 2 && !cartItems.Key.ExcludeFromShoppingBag;
-            if (baggedItems >= 20) baggedItems = 0;
+            if (baggedItems >= 25) baggedItems = 0;
             switch (cartItems.Key.SpawnMethod)
             {
                 case SpawnMethod.Instantiate:
@@ -96,7 +95,7 @@ public class ShoppingCartUI : MonoBehaviour
                         spawnedObj.GetComponent<Rigidbody>().isKinematic = false;
                         if (canBag)
                         {
-                            if (baggedItems >= 20) baggedItems = 0;
+                            if (baggedItems >= 25) baggedItems = 0;
                             CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
                             if(bag == null || baggedItems == 0)
                             {
@@ -172,7 +171,7 @@ public class ShoppingCartUI : MonoBehaviour
     private GameObject SpawnBag()
     {
         GameObject bag = Instantiate(cashRegister.bagPrefab);
-        bag.transform.position = cashRegister.bagSpawnPoint[bagSpawnPoint].position;
+        bag.transform.SetParent(cashRegister.bagSpawnPoint[bagSpawnPoint], false);
         bag.MakePickable();
         bagSpawnPoint++;
         if (bagSpawnPoint == cashRegister.bagSpawnPoint.Length) bagSpawnPoint = 0;
