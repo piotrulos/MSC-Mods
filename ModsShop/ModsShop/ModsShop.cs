@@ -85,7 +85,6 @@ public class ModsShop : Mod
         shelves.transform.Find("Info Board/Floor").localEulerAngles = new Vector3(0, 0, 352);
         shelves.transform.Find("Info Board/Floor").localPosition = new Vector3(0.5f, 0, 0);
         inspection.transform.Find("LOD/inspection_windows").GetComponent<Renderer>().material.SetFloat("_Metallic", 0f);
-        mainShop.shopRefs.SetShadows();
     }
 
     void LegacyShopLoad()
@@ -97,6 +96,7 @@ public class ModsShop : Mod
 #pragma warning restore CS0612 // Type or member is obsolete
         assetBundle.Unload(false);
         shadowsHouse = GameObject.Find("Systems/Options").GetPlayMaker("GFX").FsmVariables.FindFsmBool("ShadowsHouse");
+        mainShop.shopRefs.SetShadows();
     }
 
     private void Mod_Settings()
