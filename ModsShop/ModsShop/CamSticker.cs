@@ -11,9 +11,9 @@ internal class CamSticker : MonoBehaviour
     public bool doIt = false;
     public Texture2D sticker;
     Coroutine delayed = null;
-    void Awake()
+    void Start()
     {
-        transform.SetParent(null);
+        transform.SetParent(null, true);
     }
     internal void Generate(string name, int num, MeshRenderer mr)
     {

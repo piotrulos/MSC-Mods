@@ -11,7 +11,7 @@ public class ModsShop : Mod
     public override string ID => "ModsShop";
     public override string Name => "Mods Shop (shop for mods)";
     public override string Author => "piotrulos";
-    public override string Version => "1.1";
+    public override string Version => "1.1.1";
     public override string Description => "Standalone shop that can be used to put stuff by mods. Shop is located near inspection building.";
 
     public GameObject modShop;
