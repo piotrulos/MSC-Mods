@@ -5,13 +5,16 @@ namespace CDPlayer
 {
     public class CD : MonoBehaviour
     {
-        public Rigidbody rb;
+        public CDCase cdCase;
         public string CDName;
         public string CDPath = null;
         public bool isPlaylist = false;
         public bool inCase = false;
-        public CDCase cdCase;
         public bool inPlayer = false;
+        public Rigidbody rb;
+        public BoxCollider coll;
+        public BoxCollider trig;
+
 #if !Mini
         void FixedUpdate()
         {
@@ -35,7 +38,7 @@ namespace CDPlayer
                 rb.useGravity = true;
             }
         }
-        public void InCase()
+        public void PutInCase()
         {
             rb.detectCollisions = false;
             rb.isKinematic = true;

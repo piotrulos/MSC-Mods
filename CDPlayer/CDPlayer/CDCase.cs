@@ -6,6 +6,7 @@ namespace CDPlayer
 {
     public class CDCase : MonoBehaviour
     {
+        public CD cd;
         public string CDName;
         public Rigidbody rb;
         public CDTrigger cdt;
@@ -15,9 +16,8 @@ namespace CDPlayer
         public bool isOpen = false;
         public bool inRack = false;
         public int inRackNr = 0;
-        public int inRackSlot = 0;
-
-        private Camera mainCam;
+        public byte inRackSlot = 0;
+        public TextMesh[] labelsText;
 #if !Mini
         FsmBool GUIuse;
         FsmString GUIinteraction;
@@ -26,7 +26,6 @@ namespace CDPlayer
         {
             GUIuse = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse");
             GUIinteraction = PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction");
-            mainCam = FsmVariables.GlobalVariables.FindFsmGameObject("POV").Value.GetComponent<Camera>();
         }
         void FixedUpdate()
         {
@@ -43,6 +42,18 @@ namespace CDPlayer
             }
 
         }
+        internal void LoadInRack(GameObject rack, byte rackSlot, int rackNr)
+        {
+            rb.isKinematic = true;
+            rb.detectCollisions = false;
+            transform.SetParent(rack.transform.GetChild(rackSlot), false);
+            transform.localPosition = Vector3.zero;
+            transform.localEulerAngles = Vector3.zero;
+            inRack = true;
+            inRackSlot = rackSlot;
+            inRackNr = rackNr;
+            name = "cd case (" + (rackSlot + 1).ToString() + ")(itemz)";
+        }
         public void ChangeLabels(Texture2D t2d)
         {
             for (int i = 0; i < labels.Length; i++)
@@ -50,48 +61,57 @@ namespace CDPlayer
                 labels[i].material.mainTexture = t2d;
             }
         }
+        public void SetTextLabels()
+        {
+            if (CDName.Length <= 30)
+                labelsText[0].text = CDName;
+            else
+                labelsText[0].text = CDName.Substring(0, 27) + "...";
+            if (CDName.Length <= 22)
+                labelsText[1].text = CDName;
+            else
+                labelsText[1].text = CDName.Substring(0, 19) + "...";
+            labelsText[0].gameObject.SetActive(true);
+            labelsText[1].gameObject.SetActive(true);
+        }
         void Update()
         {
-            if (mainCam == null) return; //sometimes playmaker disable camera.main for whatever reason
-
-            if (Physics.Raycast(mainCam.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 1f, LayerMask.NameToLayer("Parts")))
+            if (UnifiedRaycast.GetHitAll(openColl) && !cdt.entered && !inRack)
             {
-                if (hit.collider == openColl && !cdt.entered && !inRack)
+                if (isOpen)
                 {
-                    if (isOpen)
+                    GUIuse.Value = true;
+                    GUIinteraction.Value = "Close Case";
+                    if (cInput.GetButtonDown("Use"))
                     {
-                        GUIuse.Value = true;
-                        GUIinteraction.Value = "Close Case";
-                        if (cInput.GetButtonDown("Use"))
+                        animation.Play("cd_close");
+                        isOpen = false;
+                        MasterAudio.PlaySound3DAndForget("HouseFoley", transform, variationName: "cd_caseclose");
+                        //"MasterAudio/HouseFoley/cd_caseopen"
+                        if (cdt.transform.childCount > 0)
                         {
-                            animation.Play("cd_close");
-                            isOpen = false;
-                            MasterAudio.PlaySound3DAndForget("HouseFoley", transform, variationName: "cd_caseclose");
-                            //"MasterAudio/HouseFoley/cd_caseopen"
-                            if (cdt.transform.childCount > 0)
-                            {
-                                cdt.transform.GetChild(0).gameObject.layer = 0;
-                            }
+                            cdt.transform.GetChild(0).gameObject.layer = 0;
                         }
                     }
-                    else
+                }
+                else
+                {
+                    GUIuse.Value = true;
+                    GUIinteraction.Value = "Open Case";
+                    if (cInput.GetButtonDown("Use"))
                     {
-                        GUIuse.Value = true;
-                        GUIinteraction.Value = "Open Case";
-                        if (cInput.GetButtonDown("Use"))
+                        animation.Play("cd_open");
+                        isOpen = true;
+                        MasterAudio.PlaySound3DAndForget("HouseFoley", transform, variationName: "cd_caseopen");
+                        //"MasterAudio/HouseFoley/cd_caseopen"
+                        if (cdt.transform.childCount > 0)
                         {
-                            animation.Play("cd_open");
-                            isOpen = true;
-                            MasterAudio.PlaySound3DAndForget("HouseFoley", transform, variationName: "cd_caseopen");
-                            //"MasterAudio/HouseFoley/cd_caseopen"
-                            if (cdt.transform.childCount > 0)
-                            {
-                                cdt.transform.GetChild(0).gameObject.MakePickable();
-                            }
+                            cdt.transform.GetChild(0).gameObject.MakePickable();
                         }
                     }
                 }
             }
+
         }
 #endif
 

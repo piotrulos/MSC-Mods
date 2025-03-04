@@ -7,8 +7,8 @@ namespace CDPlayer
     public class CDTrigger : MonoBehaviour
     {
         public CDCase CDcase;
+        public CD cd;
         bool ready;
-        Collider cd;
         public bool entered = false;
 #if !Mini
         HutongGames.PlayMaker.FsmBool GUIassemble;
@@ -26,7 +26,7 @@ namespace CDPlayer
             yield return null;
             //"MasterAudio/HouseFoley/cd_cdin"
             cd.transform.SetParent(transform, false);
-            cd.GetComponent<CD>().InCase();
+            cd.PutInCase();
             MasterAudio.PlaySound3DAndForget("HouseFoley", transform, variationName: "cd_cdin");
             GUIassemble.Value = false;
             GUIdisassemble.Value = false;
@@ -38,11 +38,11 @@ namespace CDPlayer
             {
                 GUIassemble.Value = true;
                 GUIinteraction.Value = "Put CD back";
-                if (Input.GetMouseButtonDown(0) && cd != null)
-                {                     
+                if (Input.GetMouseButtonDown(0))
+                {
                     ready = false;
                     entered = false;
-                    StartCoroutine(PutCDBack());                 
+                    StartCoroutine(PutCDBack());
                 }
             }
         }
@@ -50,39 +50,31 @@ namespace CDPlayer
         void OnTriggerStay(Collider col)
         {
             if (col.transform.parent == null) return;
+            if (!col.isTrigger) return;
             if (col.name == "cd(itemz)" && CDcase.isOpen)
             {
                 if (col.transform.parent.name != "ItemPivot") return;
-                if (!col.GetComponent<CD>().inCase)
+                entered = true;
+                if (col != cd.trig)
                 {
-                    entered = true;
-                    if (col.GetComponent<CD>().CDName == CDcase.CDName)
-                    {
-                        GUIassemble.Value = true;
-                        GUIinteraction.Value = "Put CD back";
-                        ready = true;
-                        cd = col;
-
-                    }
-                    else
-                    {
-                        GUIdisassemble.Value = true;
-                        GUIinteraction.Value = "Wrong Case";
-                        ready = false;
-                        cd = null;
-                    }
+                    GUIdisassemble.Value = true;
+                    GUIinteraction.Value = "Wrong Case";
+                    ready = false;
+                    return;
                 }
+                GUIassemble.Value = true;
+                GUIinteraction.Value = "Put CD back";
+                ready = true;
             }
-
         }
 
         void OnTriggerExit()
         {
             GUIassemble.Value = false;
             GUIdisassemble.Value = false;
+            GUIinteraction.Value = string.Empty;
             ready = false;
             entered = false;
-            cd = null;
         }
 #endif
 

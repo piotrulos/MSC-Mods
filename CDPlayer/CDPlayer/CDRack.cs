@@ -1,5 +1,4 @@
-﻿using MSCLoader;
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 namespace CDPlayer
@@ -9,7 +8,7 @@ namespace CDPlayer
         public int rackNr = 0;
         private bool entered;
         private GameObject cdcase;
-        private int rackSlot;
+        private byte rackSlot;
 #if !Mini
         HutongGames.PlayMaker.FsmBool GUIassemble;
         HutongGames.PlayMaker.FsmBool GUIdisassemble;
@@ -28,7 +27,7 @@ namespace CDPlayer
                 gameObject.GetComponent<Rigidbody>().useGravity = true;
             }
         }
-        
+
         IEnumerator PutCDinRack()
         {
             yield return null;
@@ -75,7 +74,7 @@ namespace CDPlayer
             {
                 if (other.transform.parent.name != "ItemPivot") return;
 
-                for (int i = 0; i < 10; i++)
+                for (byte i = 0; i < 10; i++)
                 {
                     if (transform.GetChild(i).childCount == 0)
                     {

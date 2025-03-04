@@ -2,6 +2,7 @@
 using MSCLoader;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
@@ -16,7 +17,7 @@ namespace CDPlayer
 
         private ModAudio audioPlayer;
         private bool isPlayerOn;
-        private bool isOnCD;
+        //  private bool isOnCD;
         private bool isCDin;
         private Collider eject, nextTrack;
         private string[] audioFiles;
@@ -37,42 +38,70 @@ namespace CDPlayer
         private bool ready;
         private bool noAntenna = false;
 
-        private GameObject insertedCD;
+        private GameObject insertedCD, RadioChannels, CDPlayerSpeaker;
         private Collider enteredCD;
         private CD cd;
         private Transform rootCDplayer;
         private GameObject radioVol;
-        private Camera mainCam;
-        public bool CDempty { get; private set; }
-
+        private FsmBool isOnRadio, subwooferInstalled;
+        private PlayMakerFSM radioVolFSM;
+        internal bool CDempty;
+        private HashSet<string> allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".ogg", ".mp3", ".flac", ".wav", ".aiff" };
+        public string[] wtf;
         void Start()
         {
-            mainCam = FsmVariables.GlobalVariables.FindFsmGameObject("POV").Value.GetComponent<Camera>();
-            if (transform.childCount > 0)
-            {
-                transform.GetChild(0).SetParent(null);
-            }
             rootCDplayer = transform.parent.parent;
             audioPlayer = gameObject.AddComponent<ModAudio>();
             audioStreamPlayer = gameObject.AddComponent<ModAudioStream>();
             gameObject.AddComponent<BoxCollider>().isTrigger = true;
             gameObject.GetComponent<BoxCollider>().size = new Vector3(0.15f, 0.12f, 0.049f);
-            gameObject.GetComponent<BoxCollider>().center = new Vector3(-0.003f, -0.005f, 0.0015f);
+            gameObject.GetComponent<BoxCollider>().center = new Vector3(0f, 0.05f, 0f);
             GameObject buttonsCD = rootCDplayer.GetChild(4).gameObject;
             eject = buttonsCD.transform.GetChild(3).GetComponent<SphereCollider>();
             nextTrack = buttonsCD.transform.GetChild(2).GetComponent<SphereCollider>();
+            isOnRadio = buttonsCD.transform.GetChild(1).GetPlayMaker("Use").FsmVariables.FindFsmBool("RadioOn");
+            RadioChannels = buttonsCD.transform.GetChild(1).GetPlayMaker("Use").FsmVariables.FindFsmGameObject("RadioChannels").Value;
             radioVol = buttonsCD.transform.GetChild(0).gameObject;
-            radioVol.FsmInject("On", TurnOn);
-            radioVol.FsmInject("Off", TurnOff);
-            radioVol.FsmInject("Off 2", TurnOff);
+            radioVol.FsmInject("Knob", "On", TurnOn);
+            radioVol.FsmInject("Knob", "Decrease", VolDec);
+            radioVol.FsmInject("Knob", "Off", TurnOff);
+            radioVol.FsmInject("Knob", "Off 2", TurnOff);
+            radioVolFSM = radioVol.GetComponent<PlayMakerFSM>();
+            subwooferInstalled = GameObject.Find("Database/PartsStatus/Subwoofers").GetPlayMaker("Subwoofer").FsmVariables.GetFsmBool("Suboowers");
+            CDPlayerSpeaker = GameObject.Find("Database/PartsStatus/Subwoofers").GetPlayMaker("Subwoofer").FsmVariables.GetFsmGameObject("CD").Value;
+            audioPlayer.audioSource = CDPlayerSpeaker.GetComponent<AudioSource>();
+            audioStreamPlayer.audioSource = CDPlayerSpeaker.GetComponent<AudioSource>();
         }
         void TurnOn()
         {
+            if (isPlayerOn)
+            {
+                if (volumeWait != null)
+                    StopCoroutine(volumeWait);
+                volumeWait = StartCoroutine(volChangedWait());
+            }
             isPlayerOn = true;
         }
         void TurnOff()
         {
             isPlayerOn = false;
+        }
+        Coroutine volumeWait;
+        IEnumerator volChangedWait()
+        {
+            waiting = true;
+            yield return new WaitForSeconds(3f);
+            waiting = false;
+            volumeWait = null;
+        }
+        void VolDec()
+        {
+            if (isPlayerOn)
+            {
+                if (volumeWait != null)
+                    StopCoroutine(volumeWait);
+                volumeWait = StartCoroutine(volChangedWait());
+            }
         }
         void PlayCDPlayerBeep()
         {
@@ -110,18 +139,10 @@ namespace CDPlayer
                     url = cdplayer.channel4url.GetValue();
                     break;
             }
-            PlayMakerFSM radioCh;
-            if (GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/CDPlayer") != null)
-            {
-                audioStreamPlayer.audioSource = GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/CDPlayer").GetComponent<AudioSource>();
-                radioCh = GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/RadioChannels").GetComponent<PlayMakerFSM>();
-            }
-            else
-            {
+            PlayMakerFSM radioCh = RadioChannels.GetComponent<PlayMakerFSM>();
+            if (subwooferInstalled.Value)
                 CDPlayer.FilterChange();
-                audioStreamPlayer.audioSource = GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/CDPlayer").GetComponent<AudioSource>();
-                radioCh = GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/RadioChannels").GetComponent<PlayMakerFSM>();
-            }
+
             radioCh.FsmVariables.FindFsmBool("OnMuteChannel1").Value = true;
             radioCh.FsmVariables.FindFsmBool("OnMuteFolk").Value = true;
             radioCh.FsmVariables.FindFsmBool("OnStatic").Value = true;
@@ -133,7 +154,7 @@ namespace CDPlayer
                 if (cdplayer.debugInfo.GetValue())
                     audioStreamPlayer.showDebug = true;
                 audioStreamPlayer.PlayStream(url);
-                radioCh.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmBool("OnStatic").Value = false;
+                radioCh.FsmVariables.FindFsmBool("OnStatic").Value = false;
 
                 isStreamPlaying = true;
                 isEmptyStreamingChannel = false;
@@ -142,38 +163,66 @@ namespace CDPlayer
             else
             {
                 isEmptyStreamingChannel = true;
-                radioCh.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmBool("OnStatic").Value = true;
+                radioCh.FsmVariables.FindFsmBool("OnStatic").Value = true;
             }
         }
+        Coroutine RDS = null;
         IEnumerator RDSsimulator()
         {
             scrollDone = false;
             DisplayRDS = $"Channel {streamingChannel + 2}";
             yield return new WaitForSeconds(5);
-            string sas = new string(' ', 10) + audioStreamPlayer.songInfo;
+            string oldText = audioStreamPlayer.songInfo;
+            string currentText = audioStreamPlayer.songInfo;
+            // string sas = new string(' ', 10) + audioStreamPlayer.songInfo;
+            //TEST
+            //  List<string> res = new List<string>();
+
+            /*    for (int i = 0; i < audioStreamPlayer.songInfo.Length; i += 10)
+                {
+                    int l = 10;
+                    if (audioStreamPlayer.songInfo.Length - i < 10)
+                    {
+                        l = audioStreamPlayer.songInfo.Length - i;
+                        res.Add(audioStreamPlayer.songInfo.Substring(i, l) + new string(' ', 10 - l));
+                    }
+                    else
+                        res.Add(audioStreamPlayer.songInfo.Substring(i, 10));
+
+                }*/
             if (noAntenna)
             {
+                //Garbage text
                 System.Random r = new System.Random();
-                string random = new string(audioStreamPlayer.songInfo.ToCharArray().OrderBy(s => (r.Next(2) % 2) == 0).ToArray());
-                sas = new string(' ', 10) + random;
+                currentText = new string(audioStreamPlayer.songInfo.ToCharArray().OrderBy(s => (r.Next(2) % 2) == 0).ToArray());
             }
-            for (int i = 0; i <= sas.Length - 10; i++)
+            for (int i = 0; i < currentText.Length; i += 10)
             {
-                DisplayRDS = sas.Substring(i, 10);
-                yield return new WaitForSeconds(.3f);
+                if (oldText != audioStreamPlayer.songInfo) break;
+                int l = 10;
+                if (currentText.Length - i < 10)
+                {
+                    l = currentText.Length - i;
+                    DisplayRDS = currentText.Substring(i, l) + new string(' ', 10 - l) +".";
+                }
+                else
+                    DisplayRDS = currentText.Substring(i, 10);
+                yield return new WaitForSeconds(2f);
             }
             yield return new WaitForSeconds(1f);
             scrollDone = true;
             DisplayRDS = $"Channel {streamingChannel + 2}";
+            RDS = null;
         }
         void StopStream()
         {
             if (isEmptyStreamingChannel)
                 isEmptyStreamingChannel = false;
-            if(isStreamPlaying)
+            if (isStreamPlaying)
             {
                 isStreamPlaying = false;
-                StopCoroutine("RDSsimulator");
+                if (RDS != null)
+                    StopCoroutine(RDS);
                 audioStreamPlayer.StopStream();
                 audioStreamPlayer.showDebug = false;
             }
@@ -187,13 +236,8 @@ namespace CDPlayer
                 {
                     CDempty = false;
                     isCDplaying = true;
-                    if (GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/CDPlayer") != null)
-                        audioPlayer.audioSource = GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/CDPlayer").GetComponent<AudioSource>();
-                    else
-                    {
+                    if (subwooferInstalled.Value)
                         CDPlayer.FilterChange();
-                        audioPlayer.audioSource = GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/CDPlayer").GetComponent<AudioSource>();
-                    }
                     audioPlayer.LoadAudioFromFile(Path.GetFullPath(audioFiles[currentSong]), true, true);
                     audioPlayer.Play();
                 }
@@ -248,54 +292,50 @@ namespace CDPlayer
             {
                 if (isCDplaying)
                     Stop();
-                if (isStreamPlaying || isEmptyStreamingChannel)               
-                    StopStream();                
+                if (isStreamPlaying || isEmptyStreamingChannel)
+                    StopStream();
                 return;
             }
-            if (!waiting && volChanged != radioVol.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmFloat("Volume").Value)
-            {
-                waiting = true;
-                StartCoroutine(volChangedWait());
-            }
-            if (!rootCDplayer.Find("ButtonsCD/RadioCDSwitch").GetComponent<PlayMakerFSM>().FsmVariables.FindFsmBool("RadioOn").Value)
-                isOnCD = true;
-            else
-                isOnCD = false;
+
+            /*  if (!rootCDplayer.Find("ButtonsCD/RadioCDSwitch").GetComponent<PlayMakerFSM>().FsmVariables.FindFsmBool("RadioOn").Value)
+                  isOnCD = true;
+              else
+                  isOnCD = false;*/
 
             if (loadingCD)
             {
                 if (!waiting)
                     rootCDplayer.GetChild(0).GetComponent<TextMesh>().text = "Loading...";
                 else
-                    radioVol.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmString("Channel").Value = radioVol.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmString("Data2").Value;
+                    radioVolFSM.FsmVariables.FindFsmString("Channel").Value = radioVolFSM.FsmVariables.FindFsmString("Data2").Value;
 
             }
             if (isStreamPlaying)
             {
                 if (scrollDone)
                 {
-                    StartCoroutine("RDSsimulator");
+                    RDS = StartCoroutine(RDSsimulator());
                     scrollDone = false;
                 }
             }
-            if ((isStreamPlaying || isEmptyStreamingChannel) && !isOnCD)
+            if ((isStreamPlaying || isEmptyStreamingChannel) && isOnRadio.Value)
             {
                 if (!waiting)
                 {
-                    if(cdplayer.RDSsim.GetValue() && !isEmptyStreamingChannel)
+                    if (cdplayer.RDSsim.GetValue() && !isEmptyStreamingChannel)
                         rootCDplayer.GetChild(0).GetComponent<TextMesh>().text = DisplayRDS;
                     else
-                        rootCDplayer.GetChild(0).GetComponent<TextMesh>().text = $"Channel {streamingChannel + 2}"; 
+                        rootCDplayer.GetChild(0).GetComponent<TextMesh>().text = $"Channel {streamingChannel + 2}";
                 }
                 else
-                    radioVol.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmString("Channel").Value = radioVol.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmString("Data2").Value;
+                    radioVolFSM.FsmVariables.FindFsmString("Channel").Value = radioVolFSM.FsmVariables.FindFsmString("Data2").Value;
             }
-            if(isOnCD && (isStreamPlaying || isEmptyStreamingChannel))
+            if (!isOnRadio.Value && (isStreamPlaying || isEmptyStreamingChannel))
             {
                 StopStream();
             }
 
-            if (isOnCD && isCDin && eject.gameObject.activeSelf && !loadingCD)
+            if (!isOnRadio.Value && isCDin && eject.gameObject.activeSelf && !loadingCD)
             {
                 Play();
             }
@@ -308,14 +348,14 @@ namespace CDPlayer
             if (isCDplaying)
             {
                 if (!waiting)
-                    rootCDplayer.GetChild(0).GetComponent<TextMesh>().text = $"{currentSong + 1} - {audioPlayer.Time().Minutes:D2}:{audioPlayer.Time().Seconds:D2}";
+                    rootCDplayer.GetChild(0).GetComponent<TextMesh>().text = $"{currentSong + 1}   {audioPlayer.Time().Minutes:D1}'{audioPlayer.Time().Seconds:D2}";
                 else
-                    radioVol.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmString("Channel").Value = radioVol.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmString("Data2").Value;
+                    radioVolFSM.FsmVariables.FindFsmString("Channel").Value = radioVolFSM.FsmVariables.FindFsmString("Data2").Value;
             }
             else
             {
-                if (volChanged != radioVol.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmFloat("Volume").Value)
-                    volChanged = radioVol.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmFloat("Volume").Value;
+                if (volChanged != radioVolFSM.FsmVariables.FindFsmFloat("Volume").Value)
+                    volChanged = radioVolFSM.FsmVariables.FindFsmFloat("Volume").Value;
             }
 
             if (CDempty)
@@ -323,33 +363,18 @@ namespace CDPlayer
                 if (!waiting)
                     rootCDplayer.GetChild(0).GetComponent<TextMesh>().text = "CD Empty";
                 else
-                    radioVol.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmString("Channel").Value = radioVol.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmString("Data2").Value;
+                    radioVolFSM.FsmVariables.FindFsmString("Channel").Value = radioVolFSM.FsmVariables.FindFsmString("Data2").Value;
             }
 
         }
-        IEnumerator volChangedWait()
-        {
-            yield return new WaitForSeconds(2f);
-            waiting = false;
-            volChanged = radioVol.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmFloat("Volume").Value;
-        }
+
         IEnumerator LoadingCD()
         {
             yield return new WaitForSeconds(1f);
-            rootCDplayer.Find("ButtonsCD/RadioCDSwitch").GetComponent<PlayMakerFSM>().FsmVariables.FindFsmBool("RadioOn").Value = false;
-            if (GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/RadioChannels") != null)
-                GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerDash/RadioChannels").transform.SetParent(GameObject.Find("RADIO").transform, false);
-            if (GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/RadioChannels") != null)
-                GameObject.Find("SATSUMA(557kg, 248)/Electricity/SpeakerBass/RadioChannels").transform.SetParent(GameObject.Find("RADIO").transform, false);
-            PlayMakerFSM[] trackSwitch = rootCDplayer.Find("ButtonsCD/TrackChannelSwitch").GetComponents<PlayMakerFSM>();
-            for (int i = 0; i < trackSwitch.Length; i++)
-            {
-                if (trackSwitch[i].FsmName == "ChangeTrack")
-                    trackSwitch[i].enabled = true;
-                if (trackSwitch[i].FsmName == "ChangeChannel")
-                    trackSwitch[i].enabled = false;
-            }
-            //Really?
+            isOnRadio.Value = false;
+            RadioChannels.transform.SetParent(GameObject.Find("RADIO").transform, false);
+            nextTrack.gameObject.GetPlayMaker("ChangeTrack").enabled = true;
+            nextTrack.gameObject.GetPlayMaker("ChangeChannel").enabled = false;
             yield return new WaitForSeconds(4f);
             loadingCD = false;
         }
@@ -364,12 +389,9 @@ namespace CDPlayer
             }
             else
             {
-                audioFiles = Directory.GetFiles(cd.CDPath, "*.*").
-                    Where(file => file.ToLower().EndsWith(".ogg", StringComparison.OrdinalIgnoreCase) ||
-                                  file.ToLower().EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) ||
-                                  file.ToLower().EndsWith(".flac", StringComparison.OrdinalIgnoreCase) ||
-                                  file.ToLower().EndsWith(".wav", StringComparison.OrdinalIgnoreCase) ||
-                                  file.ToLower().EndsWith(".aiff", StringComparison.OrdinalIgnoreCase)).ToArray();
+                audioFiles = Directory.GetFiles(cd.CDPath, "*.*")
+                    .Where(file => allowedExtensions.Contains(Path.GetExtension(file)))
+                    .ToArray();
             }
             eject.gameObject.SetActive(true);
             cd.inPlayer = true;
@@ -388,11 +410,45 @@ namespace CDPlayer
             insertedCD.layer = 0;
             insertedCD.transform.localPosition = Vector3.zero;
             insertedCD.transform.localEulerAngles = Vector3.zero;
-            insertedCD.transform.GetComponentInParent<Animation>().Play("cd_sled_in");
+            transform.GetComponent<Animation>().Play("cd_sled_in");
             PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble").Value = false;
             PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIdisassemble").Value = false;
             PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = string.Empty;
             LoadCD();
+        }
+        IEnumerator LoadSavedCD()
+        {
+            yield return null;
+            insertedCD = transform.GetChild(0).gameObject;
+            cd = insertedCD.GetComponent<CD>();
+            cd.rb.isKinematic = true;
+            cd.rb.detectCollisions = false;
+            insertedCD.transform.SetParent(transform, false);
+            insertedCD.layer = 0;
+            insertedCD.transform.localPosition = Vector3.zero;
+            insertedCD.transform.localEulerAngles = Vector3.zero;
+            transform.GetComponent<Animation>().Play("cd_sled_in");
+            if (cd.isPlaylist)
+            {
+                if (cd.CDPath.ToLower().EndsWith(".m3u", StringComparison.OrdinalIgnoreCase) || cd.CDPath.ToLower().EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase))
+                    audioFiles = Playlists.m3uPlaylist(cd.CDPath).ToArray();
+                if (cd.CDPath.ToLower().EndsWith(".pls", StringComparison.OrdinalIgnoreCase))
+                    audioFiles = Playlists.plsPlaylist(cd.CDPath).ToArray();
+            }
+            else
+            {
+                audioFiles = Directory.GetFiles(cd.CDPath, "*.*")
+                    .Where(file => allowedExtensions.Contains(Path.GetExtension(file)))
+                    .ToArray();
+            }
+            eject.gameObject.SetActive(true);
+            cd.inPlayer = true;
+            isCDin = true;
+            currentSong = 0;
+        }
+        internal void LoadCDFromSave()
+        {
+            StartCoroutine(LoadSavedCD());
         }
         void Update()
         {
@@ -414,8 +470,8 @@ namespace CDPlayer
                     Next();
                 }
             }
-            if (mainCam == null) return;
-            RaycastHit[] hits = Physics.RaycastAll(mainCam.ScreenPointToRay(Input.mousePosition), 1f);
+
+            RaycastHit[] hits = UnifiedRaycast.GetRaycastHits();
             for (int i = 0; i < hits.Length; i++)
             {
                 if (hits[i].collider == eject && isPlayerOn)
@@ -436,7 +492,7 @@ namespace CDPlayer
                     break;
                 }
 
-                if (hits[i].collider == nextTrack && isOnCD && isPlayerOn)
+                if (hits[i].collider == nextTrack && !isOnRadio.Value && isPlayerOn)
                 {
                     PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse").Value = true;
                     PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Next/Previous Song";
@@ -454,7 +510,7 @@ namespace CDPlayer
                     }
                     break;
                 }
-                if (hits[i].collider == nextTrack && !isOnCD && isPlayerOn)
+                if (hits[i].collider == nextTrack && isOnRadio.Value && isPlayerOn)
                 {
                     if (Input.GetMouseButtonDown(0))
                     {
