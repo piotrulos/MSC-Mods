@@ -67,8 +67,8 @@ namespace CDPlayer
             radioVol.FsmInject("Knob", "Off", TurnOff);
             radioVol.FsmInject("Knob", "Off 2", TurnOff);
             radioVolFSM = radioVol.GetComponent<PlayMakerFSM>();
-            subwooferInstalled = GameObject.Find("Database/PartsStatus/Subwoofers").GetPlayMaker("Subwoofer").FsmVariables.GetFsmBool("Suboowers");
-            CDPlayerSpeaker = GameObject.Find("Database/PartsStatus/Subwoofers").GetPlayMaker("Subwoofer").FsmVariables.GetFsmGameObject("CD").Value;
+            subwooferInstalled = GameObject.Find("Database/PartsStatus/Subwoofers").GetPlayMaker("Subwoofer").FsmVariables.FindFsmBool("Subwoofers");
+            CDPlayerSpeaker = GameObject.Find("Database/PartsStatus/Subwoofers").GetPlayMaker("Subwoofer").FsmVariables.FindFsmGameObject("CD").Value;
             audioPlayer.audioSource = CDPlayerSpeaker.GetComponent<AudioSource>();
             audioStreamPlayer.audioSource = CDPlayerSpeaker.GetComponent<AudioSource>();
         }
@@ -236,7 +236,7 @@ namespace CDPlayer
                 {
                     CDempty = false;
                     isCDplaying = true;
-                    if (subwooferInstalled.Value)
+                    if(subwooferInstalled.Value)
                         CDPlayer.FilterChange();
                     audioPlayer.LoadAudioFromFile(Path.GetFullPath(audioFiles[currentSong]), true, true);
                     audioPlayer.Play();

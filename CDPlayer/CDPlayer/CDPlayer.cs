@@ -41,7 +41,7 @@ namespace CDPlayer
         public override string ID => "CDPlayer";
         public override string Name => "CDPlayer Enhanced";
         public override string Author => "piotrulos";
-        public override string Version => "1.6";
+        public override string Version => "1.6.1";
         public override string Description => "Makes adding CDs much easier, no renaming, no converting. (supports <color=orage>*.mp3, *.ogg, *.flac, *.wav, *.aiff</color>";
 
         private readonly string readme = $"This folder is used by CDPlayer Enhanced mod{System.Environment.NewLine}{System.Environment.NewLine}To create a new CD, create a new folder here, put your music or playlist file in that new folder.";
@@ -60,7 +60,7 @@ namespace CDPlayer
             SetupFunction(Setup.OnLoad, CDPlayer_OnLoad);
             SetupFunction(Setup.OnSave, CDPlayer_OnSave);
             SetupFunction(Setup.ModSettings, CDPlayer_Settings);
-            SetupFunction(Setup.Update, test);
+           // SetupFunction(Setup.Update, test);
         }
         void CDPlayer_OnMenuLoad()
         {
