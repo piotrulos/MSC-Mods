@@ -12,7 +12,6 @@ namespace CDPlayer
         public bool inCase = false;
         public bool inPlayer = false;
         public Rigidbody rb;
-        public BoxCollider coll;
         public BoxCollider trig;
 
 #if !Mini

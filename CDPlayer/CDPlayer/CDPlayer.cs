@@ -41,7 +41,7 @@ namespace CDPlayer
         public override string ID => "CDPlayer";
         public override string Name => "CDPlayer Enhanced";
         public override string Author => "piotrulos";
-        public override string Version => "1.6.1";
+        public override string Version => "1.6.2";
         public override string Description => "Makes adding CDs much easier, no renaming, no converting. (supports <color=orage>*.mp3, *.ogg, *.flac, *.wav, *.aiff</color>";
 
         private readonly string readme = $"This folder is used by CDPlayer Enhanced mod{System.Environment.NewLine}{System.Environment.NewLine}To create a new CD, create a new folder here, put your music or playlist file in that new folder.";
@@ -54,10 +54,13 @@ namespace CDPlayer
         static List<GameObject> listOfCDs, listOfCases, listOfDisplayCases, listOfRacks;
 
         GameObject rack10_d, cdCaseP_d, cdCaseP, rack10P;
+        bool cdloadedinplayer = false;
+
         public override void ModSetup()
         {
             SetupFunction(Setup.OnMenuLoad, CDPlayer_OnMenuLoad);
             SetupFunction(Setup.OnLoad, CDPlayer_OnLoad);
+            SetupFunction(Setup.PostLoad, CDPlayer_PostLoad);
             SetupFunction(Setup.OnSave, CDPlayer_OnSave);
             SetupFunction(Setup.ModSettings, CDPlayer_Settings);
            // SetupFunction(Setup.Update, test);
@@ -113,6 +116,14 @@ namespace CDPlayer
             channel3url = Settings.AddTextBox("ch3url", "Channel 3:", "http://185.33.21.112:11010", "Stream URL...");
             channel4url = Settings.AddTextBox("ch4url", "Channel 4:", "http://185.33.21.112/90s_128", "Stream URL...");
         }
+        void CDPlayer_PostLoad()
+        {
+            if (cdloadedinplayer)
+            {
+                Transform cdpl = GameObject.Find("Database/DatabaseOrders/CD_player").GetComponent<PlayMakerFSM>().FsmVariables.FindFsmGameObject("ThisPart").Value.transform.Find("Sled/cd_sled_pivot");
+                cdpl.GetComponent<CarCDPlayer>().LoadCDFromSave();
+            }
+        }
         void LoadUnifiedSave()
         {
             CDPSaveData save = SaveLoad.DeserializeClass<CDPSaveData>(this, "SaveData", true);
@@ -138,7 +149,7 @@ namespace CDPlayer
                 }
                 if (go != null)
                 {
-                    if (cdsavelist.inPlayer && cdsavelist.goType == 0)
+                    if (cdsavelist.inPlayer && cdsavelist.goType == 0 && !cdloadedinplayer)
                     {
                         Transform cdpl = GameObject.Find("Database/DatabaseOrders/CD_player").GetComponent<PlayMakerFSM>().FsmVariables.FindFsmGameObject("ThisPart").Value.transform.Find("Sled/cd_sled_pivot");
                         go.GetComponent<CD>().inPlayer = true;
@@ -146,7 +157,7 @@ namespace CDPlayer
                         go.transform.SetParent(cdpl, false);
                         go.transform.localPosition = Vector3.zero;
                         go.transform.localEulerAngles = Vector3.zero;
-                        cdpl.GetComponent<CarCDPlayer>().LoadCDFromSave();
+                        cdloadedinplayer = true;
                         continue;
                     }
                     if (cdsavelist.rackID != -1 && cdsavelist.RackSlot != 255)
@@ -178,20 +189,19 @@ namespace CDPlayer
             }
             for (int i = 0; i < listOfCases.Count; i++)
             {
-                if (listOfCases[i].activeSelf)
-                {
-                    if (listOfCases[i].GetComponent<CDCase>().inRack)
-                    {
-                        CDPSaveList csl = new CDPSaveList(1, listOfCases[i].GetComponent<CDCase>().CDName, listOfCases[i].GetComponent<CDCase>().inRackNr, listOfCases[i].GetComponent<CDCase>().inRackSlot);
-                        save.goSaveList.Add(csl);
-                    }
-                    else
-                    {
-                        CDPSaveList csl = new CDPSaveList(1, listOfCases[i].GetComponent<CDCase>().CDName, listOfCases[i].transform.position, listOfCases[i].transform.localEulerAngles);
-                        save.goSaveList.Add(csl);
+                if (listOfCases[i].activeSelf) continue;
 
-                    }
+                if (listOfCases[i].GetComponent<CDCase>().inRack)
+                {
+                    CDPSaveList csl = new CDPSaveList(1, listOfCases[i].GetComponent<CDCase>().CDName, listOfCases[i].GetComponent<CDCase>().inRackNr, listOfCases[i].GetComponent<CDCase>().inRackSlot);
+                    save.goSaveList.Add(csl);
                 }
+                else
+                {
+                    CDPSaveList csl = new CDPSaveList(1, listOfCases[i].GetComponent<CDCase>().CDName, listOfCases[i].transform.position, listOfCases[i].transform.localEulerAngles);
+                    save.goSaveList.Add(csl);
+                }
+
             }
             for (int i = 0; i < listOfCDs.Count; i++)
             {
