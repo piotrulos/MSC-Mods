@@ -41,7 +41,7 @@ namespace CDPlayer
         public override string ID => "CDPlayer";
         public override string Name => "CDPlayer Enhanced";
         public override string Author => "piotrulos";
-        public override string Version => "1.6.3";
+        public override string Version => "1.6.4";
         public override string Description => "Makes adding CDs much easier, no renaming, no converting. (supports <color=orage>*.mp3, *.ogg, *.flac, *.wav, *.aiff</color>";
 
         private readonly string readme = $"This folder is used by CDPlayer Enhanced mod{System.Environment.NewLine}{System.Environment.NewLine}To create a new CD, create a new folder here, put your music or playlist file in that new folder.";
@@ -60,10 +60,9 @@ namespace CDPlayer
         {
             SetupFunction(Setup.OnMenuLoad, CDPlayer_OnMenuLoad);
             SetupFunction(Setup.OnLoad, CDPlayer_OnLoad);
-            SetupFunction(Setup.PostLoad, CDPlayer_PostLoad);
             SetupFunction(Setup.OnSave, CDPlayer_OnSave);
             SetupFunction(Setup.ModSettings, CDPlayer_Settings);
-           // SetupFunction(Setup.Update, test);
+            // SetupFunction(Setup.Update, test);
         }
         void CDPlayer_OnMenuLoad()
         {
@@ -118,11 +117,7 @@ namespace CDPlayer
         }
         void CDPlayer_PostLoad()
         {
-            if (cdloadedinplayer)
-            {
-                Transform cdpl = GameObject.Find("Database/DatabaseOrders/CD_player").GetComponent<PlayMakerFSM>().FsmVariables.FindFsmGameObject("ThisPart").Value.transform.Find("Sled/cd_sled_pivot");
-                cdpl.GetComponent<CarCDPlayer>().LoadCDFromSave();
-            }
+
         }
         void LoadUnifiedSave()
         {
@@ -291,6 +286,7 @@ namespace CDPlayer
                 listOfCases.Add(cdCase);
                 listOfDisplayCases.Add(cdCaseD);
                 cdCase.SetActive(false);
+                cdCaseD.SetActive(false);
             }
             FindPlayer();
             if (SaveLoad.ValueExists(this, "SaveData"))
@@ -300,6 +296,11 @@ namespace CDPlayer
             else
             {
                 Load();
+            }
+            if (cdloadedinplayer)
+            {
+                Transform cdpl = GameObject.Find("Database/DatabaseOrders/CD_player").GetComponent<PlayMakerFSM>().FsmVariables.FindFsmGameObject("ThisPart").Value.transform.Find("Sled/cd_sled_pivot");
+                cdpl.GetComponent<CarCDPlayer>().LoadCDFromSave();
             }
             if (ModLoader.IsModPresent("ModsShop"))
             {

@@ -46,8 +46,9 @@ namespace CDPlayer
         private FsmBool isOnRadio, subwooferInstalled;
         private PlayMakerFSM radioVolFSM;
         internal bool CDempty;
-        private HashSet<string> allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".ogg", ".mp3", ".flac", ".wav", ".aiff" };
-        public string[] wtf;
+        private HashSet<string> allowedExtensions = ModAudio.allowedExtensions;
+        private bool isCDLoadingFromSave = false;
+        private bool LoadCdFromSaveRoutine = false;
         void Start()
         {
             rootCDplayer = transform.parent.parent;
@@ -203,7 +204,7 @@ namespace CDPlayer
                 if (currentText.Length - i < 10)
                 {
                     l = currentText.Length - i;
-                    DisplayRDS = currentText.Substring(i, l) + new string(' ', 10 - l) +".";
+                    DisplayRDS = currentText.Substring(i, l) + new string(' ', 10 - l) + ".";
                 }
                 else
                     DisplayRDS = currentText.Substring(i, 10);
@@ -236,7 +237,7 @@ namespace CDPlayer
                 {
                     CDempty = false;
                     isCDplaying = true;
-                    if(subwooferInstalled.Value)
+                    if (subwooferInstalled.Value)
                         CDPlayer.FilterChange();
                     audioPlayer.LoadAudioFromFile(Path.GetFullPath(audioFiles[currentSong]), true, true);
                     audioPlayer.Play();
@@ -416,8 +417,18 @@ namespace CDPlayer
             PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = string.Empty;
             LoadCD();
         }
+        void OnEnable()
+        {
+            if (LoadCdFromSaveRoutine && !isCDLoadingFromSave)
+            {
+                //  StopCoroutine(LoadCdFromSaveRoutine);
+                StartCoroutine(LoadSavedCD());
+            }
+
+        }
         IEnumerator LoadSavedCD()
         {
+            isCDLoadingFromSave = true;
             yield return null;
             insertedCD = transform.GetChild(0).gameObject;
             cd = insertedCD.GetComponent<CD>();
@@ -445,9 +456,13 @@ namespace CDPlayer
             cd.inPlayer = true;
             isCDin = true;
             currentSong = 0;
+            LoadCdFromSaveRoutine = false;
+            isCDLoadingFromSave = false;
         }
+
         internal void LoadCDFromSave()
         {
+            LoadCdFromSaveRoutine = true;
             StartCoroutine(LoadSavedCD());
         }
         void Update()
