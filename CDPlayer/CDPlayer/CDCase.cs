@@ -76,7 +76,7 @@ namespace CDPlayer
         }
         void Update()
         {
-            if (UnifiedRaycast.GetHitAll(openColl) && !cdt.entered && !inRack)
+            if (UnifiedRaycast.GetHitInteraction(openColl) && !cdt.entered && !inRack)
             {
                 if (isOpen)
                 {

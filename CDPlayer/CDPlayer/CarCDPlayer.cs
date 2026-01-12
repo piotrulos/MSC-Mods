@@ -175,22 +175,7 @@ namespace CDPlayer
             yield return new WaitForSeconds(5);
             string oldText = audioStreamPlayer.songInfo;
             string currentText = audioStreamPlayer.songInfo;
-            // string sas = new string(' ', 10) + audioStreamPlayer.songInfo;
-            //TEST
-            //  List<string> res = new List<string>();
 
-            /*    for (int i = 0; i < audioStreamPlayer.songInfo.Length; i += 10)
-                {
-                    int l = 10;
-                    if (audioStreamPlayer.songInfo.Length - i < 10)
-                    {
-                        l = audioStreamPlayer.songInfo.Length - i;
-                        res.Add(audioStreamPlayer.songInfo.Substring(i, l) + new string(' ', 10 - l));
-                    }
-                    else
-                        res.Add(audioStreamPlayer.songInfo.Substring(i, 10));
-
-                }*/
             if (noAntenna)
             {
                 //Garbage text
@@ -381,19 +366,7 @@ namespace CDPlayer
         }
         void LoadCD()
         {
-            if (cd.isPlaylist)
-            {
-                if (cd.CDPath.ToLower().EndsWith(".m3u", StringComparison.OrdinalIgnoreCase) || cd.CDPath.ToLower().EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase))
-                    audioFiles = Playlists.m3uPlaylist(cd.CDPath).ToArray();
-                if (cd.CDPath.ToLower().EndsWith(".pls", StringComparison.OrdinalIgnoreCase))
-                    audioFiles = Playlists.plsPlaylist(cd.CDPath).ToArray();
-            }
-            else
-            {
-                audioFiles = Directory.GetFiles(cd.CDPath, "*.*")
-                    .Where(file => allowedExtensions.Contains(Path.GetExtension(file)))
-                    .ToArray();
-            }
+            ReadFiles(cd.isPlaylist, cd.CDPath);
             eject.gameObject.SetActive(true);
             cd.inPlayer = true;
             loadingCD = true;
@@ -439,19 +412,8 @@ namespace CDPlayer
             insertedCD.transform.localPosition = Vector3.zero;
             insertedCD.transform.localEulerAngles = Vector3.zero;
             transform.GetComponent<Animation>().Play("cd_sled_in");
-            if (cd.isPlaylist)
-            {
-                if (cd.CDPath.ToLower().EndsWith(".m3u", StringComparison.OrdinalIgnoreCase) || cd.CDPath.ToLower().EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase))
-                    audioFiles = Playlists.m3uPlaylist(cd.CDPath).ToArray();
-                if (cd.CDPath.ToLower().EndsWith(".pls", StringComparison.OrdinalIgnoreCase))
-                    audioFiles = Playlists.plsPlaylist(cd.CDPath).ToArray();
-            }
-            else
-            {
-                audioFiles = Directory.GetFiles(cd.CDPath, "*.*")
-                    .Where(file => allowedExtensions.Contains(Path.GetExtension(file)))
-                    .ToArray();
-            }
+            ReadFiles(cd.isPlaylist, cd.CDPath);
+
             eject.gameObject.SetActive(true);
             cd.inPlayer = true;
             isCDin = true;
@@ -464,6 +426,24 @@ namespace CDPlayer
         {
             LoadCdFromSaveRoutine = true;
             StartCoroutine(LoadSavedCD());
+        }
+
+        internal void ReadFiles(bool isPlaylist, string path)
+        {
+            if (isPlaylist)
+            {
+                if (path.ToLower().EndsWith(".m3u", StringComparison.OrdinalIgnoreCase) || path.ToLower().EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase))
+                    audioFiles = Playlists.m3uPlaylist(path).ToArray();
+                if (path.ToLower().EndsWith(".pls", StringComparison.OrdinalIgnoreCase))
+                    audioFiles = Playlists.plsPlaylist(path).ToArray();
+            }
+            else
+            {
+
+                audioFiles = Directory.GetFiles(path, "*.*")
+                    .Where(file => allowedExtensions.Contains(Path.GetExtension(file)))
+                    .ToArray();
+            }
         }
         void Update()
         {
@@ -486,59 +466,52 @@ namespace CDPlayer
                 }
             }
 
-            RaycastHit[] hits = UnifiedRaycast.GetRaycastHits();
-            for (int i = 0; i < hits.Length; i++)
+            RaycastHit hit = UnifiedRaycast.GetRaycastHitInteraction();
+            if (hit.collider == eject && isPlayerOn)
             {
-                if (hits[i].collider == eject && isPlayerOn)
+                PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse").Value = true;
+                PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Eject CD";
+                if (Input.GetMouseButtonDown(0))
                 {
-                    PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse").Value = true;
-                    PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Eject CD";
-                    if (Input.GetMouseButtonDown(0))
-                    {
-                        isCDin = false;
-                        PlayCDPlayerBeep();
-                        eject.gameObject.SetActive(false);
-                        loadingCD = false;
-                        transform.GetChild(0).localEulerAngles = new Vector3(0, 0, UnityEngine.Random.Range(0f, 359f));
-                        gameObject.GetComponentInParent<Animation>().Play("cd_sled_out");
-                        rootCDplayer.GetChild(0).GetComponent<TextMesh>().text = "NO CD";
-                        transform.GetChild(0).MakePickable();
-                    }
-                    break;
+                    isCDin = false;
+                    PlayCDPlayerBeep();
+                    eject.gameObject.SetActive(false);
+                    loadingCD = false;
+                    transform.GetChild(0).localEulerAngles = new Vector3(0, 0, UnityEngine.Random.Range(0f, 359f));
+                    gameObject.GetComponentInParent<Animation>().Play("cd_sled_out");
+                    rootCDplayer.GetChild(0).GetComponent<TextMesh>().text = "NO CD";
+                    transform.GetChild(0).MakePickable();
                 }
+            }
 
-                if (hits[i].collider == nextTrack && !isOnRadio.Value && isPlayerOn)
+            if (hit.collider == nextTrack && !isOnRadio.Value && isPlayerOn)
+            {
+                PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse").Value = true;
+                PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Next/Previous Song";
+                if (Input.GetMouseButtonDown(0))
                 {
-                    PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse").Value = true;
-                    PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction").Value = "Next/Previous Song";
-                    if (Input.GetMouseButtonDown(0))
-                    {
-                        PlayCDPlayerBeep();
-                        if (isCDin && !loadingCD)
-                            Next();
-                    }
-                    if (Input.GetMouseButtonDown(1))
-                    {
-                        PlayCDPlayerBeep();
-                        if (isCDin && !loadingCD)
-                            Previous();
-                    }
-                    break;
+                    PlayCDPlayerBeep();
+                    if (isCDin && !loadingCD)
+                        Next();
                 }
-                if (hits[i].collider == nextTrack && isOnRadio.Value && isPlayerOn)
+                if (Input.GetMouseButtonDown(1))
                 {
-                    if (Input.GetMouseButtonDown(0))
-                    {
-                        PlayCDPlayerBeep();
-                        StopStream();
-                    }
-                    if (Input.GetMouseButtonDown(1))
-                    {
-                        PlayCDPlayerBeep();
-                        ChangeChannel();
-                    }
-                    break;
-
+                    PlayCDPlayerBeep();
+                    if (isCDin && !loadingCD)
+                        Previous();
+                }
+            }
+            if (hit.collider == nextTrack && isOnRadio.Value && isPlayerOn)
+            {
+                if (Input.GetMouseButtonDown(0))
+                {
+                    PlayCDPlayerBeep();
+                    StopStream();
+                }
+                if (Input.GetMouseButtonDown(1))
+                {
+                    PlayCDPlayerBeep();
+                    ChangeChannel();
                 }
             }
         }
