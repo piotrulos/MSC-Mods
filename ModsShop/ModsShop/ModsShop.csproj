@@ -79,6 +79,7 @@
     <Compile Include="AutoShelves.cs" />
     <Compile Include="CamSticker.cs" />
     <Compile Include="CashRegister.cs" />
+    <Compile Include="CashRegisterMWC.cs" />
     <Compile Include="CustomShelves.cs" />
     <Compile Include="DebugCmd.cs" />
     <Compile Include="Door.cs" />
@@ -100,12 +101,12 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if "$(ConfigurationName)" == "Debug" (
-copy "$(TargetPath)" "D:\Steam\steamapps\common\My Summer Car\Mods" /y
-copy "$(TargetDir)$(TargetName).pdb" "D:\Steam\steamapps\common\My Summer Car\Mods" /y
-cd "D:\Steam\steamapps\common\My Summer Car\Mods"
-call "D:\Steam\steamapps\common\My Summer Car\Mods\debug.bat"
+copy "$(TargetPath)" "D:\Steam\steamapps\common\My Winter Car\Mods" /y
+copy "$(TargetDir)$(TargetName).pdb" "D:\Steam\steamapps\common\My Winter Car\Mods" /y
+cd "D:\Steam\steamapps\common\My Winter Car\Mods"
+call "D:\Steam\steamapps\common\My Winter Car\Mods\debug.bat"
 ) ELSE (
-copy "$(TargetPath)" "D:\Steam\steamapps\common\My Summer Car\Mods" /y
+copy "$(TargetPath)" "D:\Steam\steamapps\common\My Winter Car\Mods" /y
 )
 </PostBuildEvent>
   </PropertyGroup>

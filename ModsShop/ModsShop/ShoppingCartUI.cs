@@ -30,7 +30,7 @@ public class ShoppingCartUI : MonoBehaviour
     public void PurchaseBtn()
     {
 #if !Mini 
-        if (cashRegister.shoppingCart.Count == 0)
+        if (cashRegister.shopRefs.shoppingCart.Count == 0)
         {
             ModUI.ShowMessage("Your shopping cart is empty", "Shopping cart");
             return;
@@ -69,9 +69,9 @@ public class ShoppingCartUI : MonoBehaviour
     {
         int spawnP = 0;
         int baggableItems = 0;
-        Dictionary<ItemDetails, int> cartItemsSpawn = new Dictionary<ItemDetails, int>(cashRegister.shoppingCart);
+        Dictionary<ItemDetails, int> cartItemsSpawn = new Dictionary<ItemDetails, int>(cashRegister.shopRefs.shoppingCart);
         yield return null;
-        cashRegister.shoppingCart.Clear();
+        cashRegister.shopRefs.shoppingCart.Clear();
         PlayMakerGlobals.Instance.Variables.FindFsmFloat("PlayerMoney").Value -= cashRegister.totalPrice;
         cashRegister.UpdateCart(false);
 
@@ -97,7 +97,7 @@ public class ShoppingCartUI : MonoBehaviour
                         {
                             if (baggedItems >= 25) baggedItems = 0;
                             CheckoutCallback(spawnedObj, cartItems.Key, spawnP);
-                            if(bag == null || baggedItems == 0)
+                            if (bag == null || baggedItems == 0)
                             {
                                 bag = SpawnBag();
                             }
@@ -135,7 +135,7 @@ public class ShoppingCartUI : MonoBehaviour
                     }
                     break;
             }
-            if(!canBag)
+            if (!canBag)
                 yield return new WaitForSeconds(.1f);
             spawnP++;
             if (spawnP == cashRegister.spawnPoint.Length) spawnP = 0;
@@ -184,21 +184,21 @@ public class ShoppingCartUI : MonoBehaviour
 
     internal void MoreLess(ItemDetails item, bool more)
     {
-        if (cashRegister.shoppingCart.ContainsKey(item))
+        if (cashRegister.shopRefs.shoppingCart.ContainsKey(item))
         {
             if (more)
             {
                 if (item.MultiplePurchases)
                 {
-                    if (cashRegister.shoppingCart[item] < 10)
-                        cashRegister.shoppingCart[item] += 1;
+                    if (cashRegister.shopRefs.shoppingCart[item] < 10)
+                        cashRegister.shopRefs.shoppingCart[item] += 1;
                     else return;
                 }
             }
             else
             {
-                if (cashRegister.shoppingCart[item] > 1)
-                    cashRegister.shoppingCart[item] -= 1;
+                if (cashRegister.shopRefs.shoppingCart[item] > 1)
+                    cashRegister.shopRefs.shoppingCart[item] -= 1;
                 else return;
             }
             UpdateCart(true);
@@ -208,7 +208,7 @@ public class ShoppingCartUI : MonoBehaviour
     private void UpdateCart(bool aud)
     {
         RemoveChildren(listView.transform);
-        foreach (KeyValuePair<ItemDetails, int> cartItems in cashRegister.shoppingCart)
+        foreach (KeyValuePair<ItemDetails, int> cartItems in cashRegister.shopRefs.shoppingCart)
         {
             GameObject itm = Instantiate(cartItem);
             itm.GetComponent<ShoppingCartUIItem>().SetupElement(this, cartItems);
@@ -221,8 +221,8 @@ public class ShoppingCartUI : MonoBehaviour
 
     internal void RemoveItem(ItemDetails det)
     {
-        if (cashRegister.shoppingCart.ContainsKey(det))
-            cashRegister.shoppingCart.Remove(det);
+        if (cashRegister.shopRefs.shoppingCart.ContainsKey(det))
+            cashRegister.shopRefs.shoppingCart.Remove(det);
         det.product.Cancel();
         UpdateCart(true);
     }

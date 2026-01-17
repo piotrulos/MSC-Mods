@@ -11,8 +11,9 @@ public class ModsShop : Mod
     public override string ID => "ModsShop";
     public override string Name => "Mods Shop (shop for mods)";
     public override string Author => "piotrulos";
-    public override string Version => "1.1.1";
-    public override string Description => "Standalone shop that can be used to put stuff by mods. Shop is located near inspection building.";
+    public override string Version => "1.2";
+    public override string Description => description;
+    public override Game SupportedGames => Game.MySummerCar_And_MyWinterCar;
 
     public GameObject modShop;
     internal SettingsCheckBox interiorShadows;
@@ -21,22 +22,57 @@ public class ModsShop : Mod
     private bool noAss = false;
     private AssetBundle assetBundle;
     private Shop mainShop;
-
+    private string description;
     [Obsolete]
     private ShopItem shopGameObject;
     public override void ModSetup()
     {
         instance = this;
+        if(ModLoader.CurrentGame == Game.MyWinterCar)
+            description = "Standalone shop that can be used to put stuff by mods. Shop is integrated in PSK shop. <color=orange>It's empty if no mods that uses it are installed.</color>";
+        if (ModLoader.CurrentGame == Game.MySummerCar)
+            description = "Standalone shop that can be used to put stuff by mods. Shop is located near inspection building. <color=orange>It's empty if no mods that uses it are installed.</color>";
         SetupFunction(Setup.OnMenuLoad, InitializeShop);
-        SetupFunction(Setup.PreLoad, BuildShop);
-        SetupFunction(Setup.OnLoad, LegacyShopLoad);
+        if (ModLoader.CurrentGame == Game.MySummerCar)
+            SetupFunction(Setup.PreLoad, BuildShop);
+        if (ModLoader.CurrentGame == Game.MyWinterCar)
+            SetupFunction(Setup.PreLoad, BuildShop_MWC);
+        if (ModLoader.CurrentGame == Game.MySummerCar)
+            SetupFunction(Setup.OnLoad, LegacyShopLoad);
+
+
         SetupFunction(Setup.PostLoad, PostLoad);
-        SetupFunction(Setup.ModSettings, Mod_Settings);
+
+        if (ModLoader.CurrentGame == Game.MySummerCar)
+            SetupFunction(Setup.ModSettings, Mod_Settings);
+        if (ModLoader.CurrentGame == Game.MyWinterCar)
+            SetupFunction(Setup.ModSettings, Mod_Settings_MWC);
     }
     void PostLoad()
     {
+        if (noAss) return;
         mainShop.shopRefs.autoShelves.UpdateLastSticker();
         ModsShop.GetShopReference().shopRefs.finished = true;
+    }
+    void BuildShop_MWC()
+    {
+        if (noAss) return;
+        assetBundle = LoadAssets.LoadBundle(this, "shopassets.unity3d");
+        GameObject shelves = assetBundle.LoadAsset<GameObject>("Main Shop Area (psk).prefab");
+
+        GameObject psk = GameObject.Find("PERAPORTTI");
+        modShop = new GameObject("Mod Shop");
+        modShop.transform.SetParent(psk.transform.Find("Building/LOD/Store"), false);
+        modShop.transform.localPosition = new Vector3(14f, 16f, 1.2f);
+        modShop.transform.localEulerAngles = new Vector3(90, 0, 0);
+        shelves = GameObject.Instantiate(shelves);
+        shelves.transform.SetParent(modShop.transform, false);
+        mainShop.shopRefs = shelves.GetComponent<ShopRefs>();
+        assetBundle.Unload(false);
+    }
+    void Mod_Settings_MWC()
+    {
+        ConsoleCommand.Add(new DebugCmd());
     }
     void InitializeShop()
     {
@@ -49,7 +85,8 @@ public class ModsShop : Mod
         GameObject go = new GameObject("Shop for mods");
         GameObject.DontDestroyOnLoad(go);
 #pragma warning disable CS0612 // Type or member is obsolete
-        LegacyShop(go);
+        if (ModLoader.CurrentGame == Game.MySummerCar)
+            LegacyShop(go);
 #pragma warning restore CS0612 // Type or member is obsolete
         mainShop = go.AddComponent<Shop>(); //Standalone shop
 

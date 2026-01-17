@@ -17,7 +17,8 @@ public class CashRegister : MonoBehaviour
     public Transform[] bagSpawnPoint;
     public GameObject bagPrefab;
     public Collider coll;
-    internal Dictionary<ItemDetails, int> shoppingCart = new Dictionary<ItemDetails, int>();
+    public ShopRefs shopRefs;
+
     internal float totalPrice = 0f;
     internal bool uiOpen = false;
 #if !Mini
@@ -36,13 +37,13 @@ public class CashRegister : MonoBehaviour
     }
     public byte AddToCart(ItemDetails item)
     {
-        if (shoppingCart.ContainsKey(item))
+        if (shopRefs.shoppingCart.ContainsKey(item))
         {
             if (item.MultiplePurchases)
             {
-                if (shoppingCart[item] < 10)
+                if (shopRefs.shoppingCart[item] < 10)
                 {
-                    shoppingCart[item] += 1;
+                    shopRefs.shoppingCart[item] += 1;
                     UpdateCart();
                 }
                 return 0;
@@ -59,14 +60,14 @@ public class CashRegister : MonoBehaviour
             return 2;
         }
 
-        shoppingCart.Add(item, 1);
+        shopRefs.shoppingCart.Add(item, 1);
         UpdateCart();
         return 0;
     }
     internal void UpdateCart(bool aud = true)
     {
         totalPrice = 0;
-        foreach (KeyValuePair<ItemDetails, int> cartItems in shoppingCart)
+        foreach (KeyValuePair<ItemDetails, int> cartItems in shopRefs.shoppingCart)
         {
             totalPrice += cartItems.Key.ItemPrice * cartItems.Value;
         }
@@ -87,7 +88,7 @@ public class CashRegister : MonoBehaviour
         uiOpen = true;
         PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerInMenu").Value = true; //unlock mouse
         GameObject.Find("Systems").transform.GetChild(7).gameObject.SetActive(true); //can't clickthrough UI when menu is active.
-        if (shoppingCart.Count == 0)
+        if (shopRefs.shoppingCart.Count == 0)
         {
             MsgBoxBtn btn = ModUI.CreateMessageBoxBtn("Got it", delegate
             {
@@ -112,7 +113,7 @@ public class CashRegister : MonoBehaviour
         if (UnifiedRaycast.GetHit(coll))
         {
             GUIbuy.Value = true;
-            GUIinteraction.Value = $"Shopping cart ({shoppingCart.Count} items)";
+            GUIinteraction.Value = $"Shopping cart ({shopRefs.shoppingCart.Count} items)";
 
             if (Input.GetMouseButtonDown(0))
             {
@@ -120,5 +121,5 @@ public class CashRegister : MonoBehaviour
             }
         }
     }
-    #endif
+#endif
 }

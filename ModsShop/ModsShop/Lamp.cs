@@ -85,7 +85,7 @@ public class Lamp : MonoBehaviour
         {
             SetOnOffEmmision(false, bulbs[i]);
         }
-        if(light != null)
+        if (light != null)
             light.gameObject.SetActive(false);
     }
     void TurnHalfOn()

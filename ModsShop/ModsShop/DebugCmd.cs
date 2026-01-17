@@ -1,5 +1,6 @@
 ﻿#if !Mini
 using MSCLoader;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ModsShop;
@@ -42,7 +43,19 @@ public class DebugCmd : ConsoleCommand
                     }
                     if (nay) ModConsole.Print("Nothing...");
                     break;
+                case "cart":
+
+                    foreach (KeyValuePair<ItemDetails, int> cartItems in ModsShop.GetShopReference().shopRefs.shoppingCart)
+                    {
+                        ModConsole.Print($"{cartItems.Key.ItemName} <color=yellow>x{cartItems.Value}</color> ({cartItems.Key.ItemPrice*cartItems.Value} MK)");
+                    }
+                    break;
                 case "switches":
+                    if (ModLoader.CurrentGame == Game.MyWinterCar)
+                    {
+                        ModConsole.Print("Nope");
+                        break;
+                    }
                     for (int i = 0; i < ModsShop.GetShopReference().shopRefs.lightSwitches.Length; i++)
                     {
                         ModsShop.GetShopReference().shopRefs.lightSwitches[i].MakeInteractable(true);

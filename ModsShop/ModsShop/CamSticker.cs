@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ModsShop;
 
@@ -7,13 +8,15 @@ namespace ModsShop;
 internal class CamSticker : MonoBehaviour
 {
     public Camera stickerGeneratorCam = null;
-    public TextMesh stickerGeneratorText = null;
+    public Text stickerGeneratorText = null;
     public bool doIt = false;
     public Texture2D sticker;
     Coroutine delayed = null;
-    void Start()
+
+    void Awake()
     {
-        transform.SetParent(null, true);
+        transform.parent.SetParent(null, true);
+        transform.parent.gameObject.SetActive(true);
     }
     internal void Generate(string name, int num, MeshRenderer mr)
     {
@@ -29,24 +32,26 @@ internal class CamSticker : MonoBehaviour
     }
     private Texture2D GenerateSticker()
     {
-        RenderTexture rt = new RenderTexture(512, 256, 32, RenderTextureFormat.ARGB32);
-        stickerGeneratorCam.targetTexture = rt;
+        // RenderTexture rt = new RenderTexture(512, 256, 32, RenderTextureFormat.ARGB32);
+        // stickerGeneratorCam.targetTexture = rt;
 
         Texture2D tex = new Texture2D(512, 256, TextureFormat.ARGB32, false);
         tex.name = "sticker_gen";
         stickerGeneratorCam.Render();
-        RenderTexture.active = rt;
+        RenderTexture.active = stickerGeneratorCam.targetTexture;
 
         tex.ReadPixels(new Rect(0, 0, 512, 256), 0, 0);
         tex.Apply();
-        stickerGeneratorCam.targetTexture = null;
+        // stickerGeneratorCam.targetTexture = null;
         RenderTexture.active = null;
-        Destroy(rt);
+        // Destroy(rt);
         return tex;
     }
     IEnumerator Delayed(string name, int num, MeshRenderer mr)
     {
+#if !Mini
         if (!ModsShop.GetShopReference().shopRefs.finished) yield return null;
+#endif
         yield return new WaitForSeconds(2f);
         Generate(name, num, mr);
     }
@@ -62,4 +67,5 @@ internal class CamSticker : MonoBehaviour
         sticker = GenerateSticker();
         doIt = false;
     }
+
 }

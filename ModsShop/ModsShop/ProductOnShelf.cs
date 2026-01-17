@@ -1,5 +1,6 @@
 ﻿using HutongGames.PlayMaker;
 using MSCLoader;
+using System;
 using UnityEngine;
 
 namespace ModsShop;
@@ -59,23 +60,61 @@ public class ProductOnShelf : MonoBehaviour
             gameObject.SetActive(true);
         }
     }
+    int ItemsInCart(ItemDetails itemDetails)
+    {
+        if(shop.shopRefs.shoppingCart.TryGetValue(itemDetails, out int value))
+        {
+            return value;
+        }
+        else
+        {
+            return 0;
+        }
+    }
     void Update()
     {
         if (itemDetails == null) return;
-        if (shop.shopRefs.isShopClosed) return; 
+        if (shop.shopRefs.isShopClosed) return;
         if (UnifiedRaycast.GetRaycastHit().transform == null) return;
         if (UnifiedRaycast.GetRaycastHit().transform.gameObject == gameObject)
         {
             GUIbuy.Value = true;
-            GUIinteraction.Value = $"{itemDetails.ItemName} - {itemDetails.ItemPrice} MK";
+            if(ModLoader.CurrentGame == Game.MyWinterCar)
+                GUIinteraction.Value = $"{itemDetails.ItemName} - {itemDetails.ItemPrice} MK{Environment.NewLine}{ItemsInCart(itemDetails)} in cart";
+            if(ModLoader.CurrentGame == Game.MySummerCar)
+                GUIinteraction.Value = $"{itemDetails.ItemName} - {itemDetails.ItemPrice} MK";
 
             if (Input.GetMouseButtonDown(0))
             {
-                if (shop.shopRefs.cashRegister.AddToCart(itemDetails) == 0)
+                if(ModLoader.CurrentGame == Game.MyWinterCar)
                 {
+                    if (shop.shopRefs.cashRegisterMWC.AddToCart(itemDetails) == 0)
+                    {
+                        if (!itemDetails.MultiplePurchases)
+                        {
+                            gameObject.GetComponent<MeshRenderer>().enabled = false;
+                        }
+                    }
+                }
+                if (ModLoader.CurrentGame == Game.MySummerCar)
+                {
+                    if (shop.shopRefs.cashRegister.AddToCart(itemDetails) == 0)
+                    {
+                        if (!itemDetails.MultiplePurchases)
+                        {
+                            gameObject.SetActive(false);
+                        }
+                    }
+                }
+            }
+            if (Input.GetMouseButtonDown(1))
+            {
+                if (ModLoader.CurrentGame == Game.MyWinterCar)
+                {
+                    shop.shopRefs.cashRegisterMWC.ReduceFromCart(itemDetails);
                     if (!itemDetails.MultiplePurchases)
                     {
-                        gameObject.SetActive(false);
+                        gameObject.GetComponent<MeshRenderer>().enabled = true;
                     }
                 }
             }

@@ -28,7 +28,7 @@ internal class ShoppingBag : MonoBehaviour
             GUIInteraction.Value = $"Get item from bag ({transform.childCount} items)";
             if (cInput.GetButtonDown("Use"))
             {
-                if(transform.childCount>0)
+                if (transform.childCount > 0)
                 {
                     GameObject item = transform.GetChild(0).gameObject;
                     item.transform.localPosition = new Vector3(0, 0.35f, 0);

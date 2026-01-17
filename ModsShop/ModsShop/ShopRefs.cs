@@ -1,31 +1,41 @@
-﻿using UnityEngine;
+﻿using MSCLoader;
+using System.Collections.Generic;
+using UnityEngine;
 namespace ModsShop;
 
 public class ShopRefs : MonoBehaviour
 {
     public AutoShelves autoShelves;
     public CustomShelves customShelves;
+    internal Dictionary<ItemDetails, int> shoppingCart = new Dictionary<ItemDetails, int>();
+
+    [Header("MWC Stuff")]
+    public CashRegisterMWC cashRegisterMWC;
+
+    [Header("MSC Stuff")]
     public CashRegister cashRegister;
     public Switch[] lightSwitches;
     public Door door;
     public bool isShopClosed = false;
-    public Camera stickerGeneratorCam;
-    public TextMesh stickerGeneratorText;
-    internal bool finished = false;
 
+    [Header("Sticker Generator")]
+    public Camera stickerGeneratorCam;
+
+    internal bool finished = false;
 #if !Mini
 
     HutongGames.PlayMaker.FsmBool nightFSM;
 
-  /*  void Update()
-    {
-        if (ModsShop.mainCam == null) return;
-        if (isShopClosed) return;
-        hitted = Physics.Raycast(ModsShop.mainCam.ScreenPointToRay(Input.mousePosition), out hit, 1f);
-    }*/
+    /*  void Update()
+      {
+          if (ModsShop.mainCam == null) return;
+          if (isShopClosed) return;
+          hitted = Physics.Raycast(ModsShop.mainCam.ScreenPointToRay(Input.mousePosition), out hit, 1f);
+      }*/
 
     void OnEnable()
     {
+        if (ModLoader.CurrentGame == Game.MyWinterCar) return;
         nightFSM = GameObject.Find("MAP/SUN/Pivot/SUN").GetComponent<PlayMakerFSM>().FsmVariables.FindFsmBool("Night");
         if (door.isOpen) door.CloseDoor();
         if (HutongGames.PlayMaker.FsmVariables.GlobalVariables.FindFsmInt("GlobalDay").Value == 7)
@@ -69,6 +79,7 @@ public class ShopRefs : MonoBehaviour
 
     internal void SetShadows()
     {
+        if (ModLoader.CurrentGame == Game.MyWinterCar) return;
         for (int i = 0; i < lightSwitches[0].lamps.Length; i++)
         {
             if (ModsShop.instance.interiorShadows.GetValue())
