@@ -17,7 +17,7 @@ namespace CDPlayer
         public bool inRack = false;
         public int inRackNr = 0;
         public byte inRackSlot = 0;
-        public TextMesh[] labelsText;
+      //  public TextMesh[] labelsText;
 #if !Mini
         FsmBool GUIuse;
         FsmString GUIinteraction;
@@ -61,9 +61,10 @@ namespace CDPlayer
                 labels[i].material.mainTexture = t2d;
             }
         }
-        public void SetTextLabels()
+        public void SetTextLabels(LabelGenerator labelGenerator)
         {
-            if (CDName.Length <= 30)
+            labelGenerator.AddToQueue(CDName, CDName, labels);
+        /*    if (CDName.Length <= 30)
                 labelsText[0].text = CDName;
             else
                 labelsText[0].text = CDName.Substring(0, 27) + "...";
@@ -72,7 +73,7 @@ namespace CDPlayer
             else
                 labelsText[1].text = CDName.Substring(0, 19) + "...";
             labelsText[0].gameObject.SetActive(true);
-            labelsText[1].gameObject.SetActive(true);
+            labelsText[1].gameObject.SetActive(true);*/
         }
         void Update()
         {

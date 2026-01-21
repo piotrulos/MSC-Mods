@@ -53,7 +53,8 @@ namespace CDPlayer
         public SettingsTextBox channel3url, channel4url;
         static List<GameObject> listOfCDs, listOfCases, listOfDisplayCases, listOfRacks;
 
-        GameObject rack10_d, cdCaseP_d, cdCaseP, rack10P;
+        // GameObject rack10_d, cdCaseP_d, cdCaseP, rack10P;
+        AssetRefs assets;
         bool cdloadedinplayer = false;
 
         public override void ModSetup()
@@ -115,10 +116,7 @@ namespace CDPlayer
             channel3url = Settings.AddTextBox("ch3url", "Channel 3:", "http://185.33.21.112:11010", "Stream URL...");
             channel4url = Settings.AddTextBox("ch4url", "Channel 4:", "http://185.33.21.112/90s_128", "Stream URL...");
         }
-        void CDPlayer_PostLoad()
-        {
 
-        }
         void LoadUnifiedSave()
         {
             CDPSaveData save = SaveLoad.DeserializeClass<CDPSaveData>(this, "SaveData", true);
@@ -136,7 +134,7 @@ namespace CDPlayer
                         go = listOfCases.Where(x => x.GetComponent<CDCase>().CDName == cdsavelist.CDName).FirstOrDefault();
                         break;
                     case 2:
-                        go = GameObject.Instantiate(rack10P);
+                        go = GameObject.Instantiate(assets.rack10);
                         go.GetComponent<CDRack>().rackNr = cdsavelist.rackID;
                         go.name = "CD Rack(rackz)";
                         listOfRacks.Add(go);
@@ -168,6 +166,7 @@ namespace CDPlayer
                         go.transform.eulerAngles = new Vector3(cdsavelist.rotX, cdsavelist.rotY, cdsavelist.rotZ);
                         go.transform.parent = null;
                         go.GetComponent<Rigidbody>().isKinematic = false;
+                        go.GetComponent<Rigidbody>().detectCollisions = true;
                     }
                     go.MakePickable();
                     go.SetActive(true);
@@ -222,16 +221,14 @@ namespace CDPlayer
         void CDPlayer_OnLoad()
         {
             AssetBundle ab = LoadAssets.LoadBundle(this, "cdplayer.unity3d");
-            rack10P = ab.LoadAsset<GameObject>("rack10.prefab");
-            rack10_d = ab.LoadAsset<GameObject>("rack10(display).prefab");
-            cdCaseP = ab.LoadAsset<GameObject>("cd case.prefab");
-            cdCaseP_d = ab.LoadAsset<GameObject>("cd case(display).prefab");
+            assets = ab.LoadAsset<GameObject>("cdprefabs.prefab").GetComponent<AssetRefs>();
             ab.Unload(false);
-
-            if (!Directory.Exists(path)) //CD folder was renamed to CD1/2/3
+            if (!Directory.Exists(path)) //Ceate CD directory
                 Directory.CreateDirectory(path);
             if (!File.Exists(Path.Combine(path, "CD Player Enhanced.txt")))
                 File.WriteAllText(Path.Combine(path, "CD Player Enhanced.txt"), readme);
+            LabelGenerator labelGenerator = GameObject.Instantiate(assets.labelGenerator).GetComponent<LabelGenerator>();
+            labelGenerator.transform.position = new Vector3(0f, -10f, 0f);
             string[] dirs = Directory.GetDirectories(path);
             listOfCDs = new List<GameObject>();
             listOfCases = new List<GameObject>();
@@ -239,17 +236,18 @@ namespace CDPlayer
             listOfRacks = new List<GameObject>();
             for (int i = 0; i < dirs.Length; i++)
             {
-                GameObject cdCase = GameObject.Instantiate(cdCaseP);
-                GameObject cdCaseD = GameObject.Instantiate(cdCaseP_d);
-                LoadAssets.MakeGameObjectPickable(cdCase);
-                cdCase.name = "cd case(itemz)";
-                cdCase.GetComponent<CDCase>().CDName = new DirectoryInfo(dirs[i]).Name;
-                CD cd = cdCase.GetComponent<CDCase>().cdt.transform.GetChild(0).GetComponent<CD>();
+                GameObject cdCaseObj = GameObject.Instantiate(assets.CDCase);
+                GameObject cdCaseDObj = GameObject.Instantiate(assets.cdCaseD);
+                LoadAssets.MakeGameObjectPickable(cdCaseObj);
+                cdCaseObj.name = "cd case(itemz)";
+                CDCase cdCase = cdCaseObj.GetComponent<CDCase>();
+                cdCase.CDName = new DirectoryInfo(dirs[i]).Name;
+                CD cd = cdCase.cd;
                 cd.CDName = new DirectoryInfo(dirs[i]).Name;
 
-                string[] pls = Directory.GetFiles(dirs[i], "*.*").Where(file => file.ToLower().EndsWith(".m3u", System.StringComparison.OrdinalIgnoreCase) ||
+                string[] pls = [.. Directory.GetFiles(dirs[i], "*.*").Where(file => file.ToLower().EndsWith(".m3u", System.StringComparison.OrdinalIgnoreCase) ||
                                                                             file.ToLower().EndsWith(".m3u8", System.StringComparison.OrdinalIgnoreCase) ||
-                                                                            file.ToLower().EndsWith(".pls", System.StringComparison.OrdinalIgnoreCase)).ToArray();
+                                                                            file.ToLower().EndsWith(".pls", System.StringComparison.OrdinalIgnoreCase))];
                 if (pls.Length > 0)
                 {
                     cd.isPlaylist = true;
@@ -257,36 +255,28 @@ namespace CDPlayer
                 }
                 else
                 {
-                    if (File.Exists(Path.Combine(dirs[i], "folder.txt")))
-                    {
-                        string[] txtDirs = File.ReadAllLines(Path.Combine(dirs[i], "folder.txt"));
-                        cd.CDPath = Path.GetFullPath(txtDirs[0]);
-                    }
-                    else
-                        cd.CDPath = Path.GetFullPath(dirs[i]);
+                    cd.CDPath = Path.GetFullPath(dirs[i]);
                 }
-                cd.cdCase = cdCase.GetComponent<CDCase>();
-                cd.PutInCase();
 
                 //Load coverart.png if exists, else leave default.
                 if (File.Exists(Path.Combine(dirs[i], "coverart.png")))
                 {
                     Texture2D t2d = new Texture2D(1, 1);
                     t2d.LoadImage(File.ReadAllBytes(Path.Combine(dirs[i], "coverart.png")));
-                    cd.transform.GetChild(0).GetComponent<MeshRenderer>().material.mainTexture = t2d;
-                    cdCase.GetComponent<CDCase>().ChangeLabels(t2d);
-                    cdCaseD.transform.GetChild(1).GetComponent<MeshRenderer>().material.mainTexture = t2d;
-                    cdCaseD.transform.GetChild(0).GetChild(0).GetComponent<MeshRenderer>().material.mainTexture = t2d;
+                  //  cd.transform.GetChild(0).GetComponent<MeshRenderer>().material.mainTexture = t2d;
+                    cdCase.ChangeLabels(t2d);
+                    cdCaseDObj.transform.GetChild(1).GetComponent<MeshRenderer>().material.mainTexture = t2d;
+                    cdCaseDObj.transform.GetChild(0).GetChild(0).GetComponent<MeshRenderer>().material.mainTexture = t2d;
                 }
                 else
                 {
-                    cdCase.GetComponent<CDCase>().SetTextLabels();
+                    cdCase.SetTextLabels(labelGenerator);
                 }
                 listOfCDs.Add(cd.gameObject);
-                listOfCases.Add(cdCase);
-                listOfDisplayCases.Add(cdCaseD);
-                cdCase.SetActive(false);
-                cdCaseD.SetActive(false);
+                listOfCases.Add(cdCaseObj);
+                listOfDisplayCases.Add(cdCaseDObj);
+                cdCaseObj.SetActive(false);
+                cdCaseDObj.SetActive(false);
             }
             FindPlayer();
             if (SaveLoad.ValueExists(this, "SaveData"))
@@ -316,25 +306,19 @@ namespace CDPlayer
                 }
             }
             //disable OG cds (probably not needed anymore since import is disabled)
-            if (GameObject.Find("cd(item1)") != null)
-                GameObject.Find("cd(item1)").SetActive(false);
-            if (GameObject.Find("cd case(item1)") != null)
-                GameObject.Find("cd case(item1)").SetActive(false);
-            if (GameObject.Find("cd(item2)") != null)
-                GameObject.Find("cd(item2)").SetActive(false);
-            if (GameObject.Find("cd case(item2)") != null)
-                GameObject.Find("cd case(item2)").SetActive(false);
-            if (GameObject.Find("cd(item3)") != null)
-                GameObject.Find("cd(item3)").SetActive(false);
-            if (GameObject.Find("cd case(item3)") != null)
-                GameObject.Find("cd case(item3)").SetActive(false);
+            GameObject.Find("cd(item1)")?.SetActive(false);
+            GameObject.Find("cd case(item1)")?.SetActive(false);
+            GameObject.Find("cd(item2)")?.SetActive(false);
+            GameObject.Find("cd case(item2)")?.SetActive(false);
+            GameObject.Find("cd(item3)")?.SetActive(false);
+            GameObject.Find("cd case(item3)")?.SetActive(false);
         }
         void SetupShop()
         {
             ModsShop.Shop shop;
             shop = ModsShop.ModsShop.GetShopReference();
-            ModsShop.ItemDetails rackitem = shop.CreateShopItem(this, "rack1", "Rack for 10 CDs", 50, true, BuyCDRack, rack10P, ModsShop.SpawnMethod.Instantiate);
-            shop.AddDisplayItem(rackitem, rack10_d, ModsShop.SpawnMethod.Instantiate);
+            ModsShop.ItemDetails rackitem = shop.CreateShopItem(this, "rack1", "Rack for 10 CDs", 50, true, BuyCDRack, assets.rack10, ModsShop.SpawnMethod.Instantiate);
+            shop.AddDisplayItem(rackitem, assets.rack10_d, ModsShop.SpawnMethod.Instantiate);
 
             for (int i = 0; i < listOfCases.Count; i++)
             {
@@ -419,7 +403,7 @@ namespace CDPlayer
             {
                 if (data.rackpurchased)
                 {
-                    GameObject rack10 = GameObject.Instantiate(rack10P);
+                    GameObject rack10 = GameObject.Instantiate(assets.rack10);
                     rack10.transform.position = data.rackpos;
                     rack10.name = "CD Rack(rackz)";
                     rack10.transform.eulerAngles = new Vector3(data.rackrotX, data.rackrotY, data.rackrotZ);

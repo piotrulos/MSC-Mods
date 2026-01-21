@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>
+    <LangVersion>13</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,7 +36,6 @@
     <DefineConstants>TRACE;Mini</DefineConstants>
     <Optimize>true</Optimize>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
@@ -62,6 +62,9 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
+    <Reference Include="taglib-sharp">
+      <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\Mods\References\taglib-sharp.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\UnityEngine.dll</HintPath>
       <Private>False</Private>
@@ -72,6 +75,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssetRefs.cs" />
+    <Compile Include="LabelGenerator.cs" />
     <Compile Include="CarCDPlayer.cs" />
     <Compile Include="CD.cs" />
     <Compile Include="CDCase.cs" />

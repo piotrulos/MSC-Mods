@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using MSCLoader;
+using SWS;
+using UnityEngine;
 
 //Standard unity MonoBehaviour class
 namespace CDPlayer
@@ -15,6 +17,21 @@ namespace CDPlayer
         public BoxCollider trig;
 
 #if !Mini
+        void Awake()
+        {
+            rb.detectCollisions = false;
+        }
+        void Start()
+        {
+           /* if(CDPath != null)
+            {
+                foreach (var f in System.IO.Directory.GetFiles(CDPath))
+                {
+                    var t = TagLib.File.Create(f);
+                    ModConsole.Warning($"{t.Tag.Title} - {t.Properties.Duration.TotalSeconds}");
+                }
+            }*/
+        }
         void FixedUpdate()
         {
             if (!rb.detectCollisions && transform.parent != null)
