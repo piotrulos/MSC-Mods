@@ -64,6 +64,7 @@
     <Reference Include="System.Data" />
     <Reference Include="taglib-sharp">
       <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\Mods\References\taglib-sharp.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\UnityEngine.dll</HintPath>

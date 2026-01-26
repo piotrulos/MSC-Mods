@@ -1,5 +1,6 @@
 ﻿using MSCLoader;
-using SWS;
+using System;
+using System.IO;
 using UnityEngine;
 
 //Standard unity MonoBehaviour class
@@ -16,22 +17,37 @@ namespace CDPlayer
         public Rigidbody rb;
         public BoxCollider trig;
 
+        public string totalTime = "0:00";
+        public string trackList = string.Empty;
+        public int tracksCount = 0;
+
+
 #if !Mini
         void Awake()
         {
             rb.detectCollisions = false;
         }
-        void Start()
+
+        public void LoadTrackData()
         {
-           /* if(CDPath != null)
+            if (CDPath != null)
             {
-                foreach (var f in System.IO.Directory.GetFiles(CDPath))
+                TimeSpan tt = TimeSpan.Zero;
+                string[] files = Directory.GetFiles(CDPath);
+                for (int i = 0; i < files.Length; i++)
                 {
-                    var t = TagLib.File.Create(f);
-                    ModConsole.Warning($"{t.Tag.Title} - {t.Properties.Duration.TotalSeconds}");
+                    if (!ModAudio.allowedExtensions.Contains(Path.GetExtension(files[i]).ToLower())) continue;
+                    using (TagLib.File t = TagLib.File.Create(files[i]))
+                    {
+                        tt += t.Properties.Duration;
+                        trackList += $"{t.Properties.Duration.Minutes:D1}:{t.Properties.Duration.Seconds:D2} - {t.Tag.Title ?? "Track " + (i + 1)}{Environment.NewLine}";
+                    }
+                    tracksCount++;
                 }
-            }*/
+                totalTime = $"{tt.Minutes:D1}:{tt.Seconds:D2}";
+            }
         }
+
         void FixedUpdate()
         {
             if (!rb.detectCollisions && transform.parent != null)

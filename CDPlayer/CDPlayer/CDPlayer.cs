@@ -234,6 +234,7 @@ namespace CDPlayer
             listOfCases = new List<GameObject>();
             listOfDisplayCases = new List<GameObject>();
             listOfRacks = new List<GameObject>();
+
             for (int i = 0; i < dirs.Length; i++)
             {
                 GameObject cdCaseObj = GameObject.Instantiate(assets.CDCase);
@@ -257,13 +258,13 @@ namespace CDPlayer
                 {
                     cd.CDPath = Path.GetFullPath(dirs[i]);
                 }
-
+                cd.LoadTrackData();
                 //Load coverart.png if exists, else leave default.
                 if (File.Exists(Path.Combine(dirs[i], "coverart.png")))
                 {
                     Texture2D t2d = new Texture2D(1, 1);
                     t2d.LoadImage(File.ReadAllBytes(Path.Combine(dirs[i], "coverart.png")));
-                  //  cd.transform.GetChild(0).GetComponent<MeshRenderer>().material.mainTexture = t2d;
+                    //  cd.transform.GetChild(0).GetComponent<MeshRenderer>().material.mainTexture = t2d;
                     cdCase.ChangeLabels(t2d);
                     cdCaseDObj.transform.GetChild(1).GetComponent<MeshRenderer>().material.mainTexture = t2d;
                     cdCaseDObj.transform.GetChild(0).GetChild(0).GetComponent<MeshRenderer>().material.mainTexture = t2d;

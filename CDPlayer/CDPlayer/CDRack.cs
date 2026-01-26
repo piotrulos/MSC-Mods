@@ -38,9 +38,7 @@ namespace CDPlayer
             cdcase.GetComponent<Rigidbody>().detectCollisions = false;
             cdcase.transform.localPosition = Vector3.zero;
             cdcase.transform.localEulerAngles = Vector3.zero;
-            cdcase.GetComponent<CDCase>().inRack = true;
-            cdcase.GetComponent<CDCase>().inRackNr = rackNr;
-            cdcase.GetComponent<CDCase>().inRackSlot = rackSlot;
+            cdcase.GetComponent<CDCase>().PutInRack(rackSlot, rackNr);
             cdcase.name = "cd case (" + (rackSlot + 1).ToString() + ")(itemz)";
             MasterAudio.PlaySound3DAndForget("CarBuilding", transform, variationName: "assemble");
         }

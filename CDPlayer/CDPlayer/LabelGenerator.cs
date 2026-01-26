@@ -30,7 +30,7 @@ public class LabelGenerator : MonoBehaviour
             generator = StartCoroutine(GenerateLabelsFromQueue());
 
     }
- 
+
     private Texture2D GenerateSticker()
     {
         Texture2D tex = new Texture2D(512, 512, TextureFormat.ARGB32, false);
@@ -43,7 +43,7 @@ public class LabelGenerator : MonoBehaviour
         return tex;
     }
     IEnumerator GenerateLabelsFromQueue()
-    {       
+    {
         yield return null;
         while (queue.Count > 0)
         {

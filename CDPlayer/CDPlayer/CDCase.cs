@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿using HutongGames.PlayMaker;
 using MSCLoader;
-using HutongGames.PlayMaker;
+using System;
+using UnityEngine;
 
 namespace CDPlayer
 {
@@ -17,7 +18,7 @@ namespace CDPlayer
         public bool inRack = false;
         public int inRackNr = 0;
         public byte inRackSlot = 0;
-      //  public TextMesh[] labelsText;
+        //  public TextMesh[] labelsText;
 #if !Mini
         FsmBool GUIuse;
         FsmString GUIinteraction;
@@ -42,6 +43,12 @@ namespace CDPlayer
             }
 
         }
+        internal void PutInRack(byte rackSlot, int rackNr)
+        {
+            inRack = true;
+            inRackNr = rackNr;
+            inRackSlot = rackSlot;
+        }
         internal void LoadInRack(GameObject rack, byte rackSlot, int rackNr)
         {
             rb.isKinematic = true;
@@ -63,17 +70,7 @@ namespace CDPlayer
         }
         public void SetTextLabels(LabelGenerator labelGenerator)
         {
-            labelGenerator.AddToQueue(CDName, CDName, labels);
-        /*    if (CDName.Length <= 30)
-                labelsText[0].text = CDName;
-            else
-                labelsText[0].text = CDName.Substring(0, 27) + "...";
-            if (CDName.Length <= 22)
-                labelsText[1].text = CDName;
-            else
-                labelsText[1].text = CDName.Substring(0, 19) + "...";
-            labelsText[0].gameObject.SetActive(true);
-            labelsText[1].gameObject.SetActive(true);*/
+            labelGenerator.AddToQueue($"{CDName} ({cd.totalTime}){Environment.NewLine}{cd.trackList}", CDName, labels);
         }
         void Update()
         {
