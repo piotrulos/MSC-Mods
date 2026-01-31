@@ -39,7 +39,7 @@ namespace CDPlayer
                     if (!ModAudio.allowedExtensions.Contains(Path.GetExtension(files[i]).ToLower())) continue;
                     using (TagLib.File t = TagLib.File.Create(files[i]))
                     {
-                        tt += t.Properties.Duration;
+                        tt.Add(t.Properties.Duration);
                         trackList += $"{t.Properties.Duration.Minutes:D1}:{t.Properties.Duration.Seconds:D2} - {t.Tag.Title ?? "Track " + (i + 1)}{Environment.NewLine}";
                     }
                     tracksCount++;
@@ -50,10 +50,16 @@ namespace CDPlayer
 
         void FixedUpdate()
         {
+            if (transform.parent.name == "ItemPivot" && rb.isKinematic)
+            {
+                rb.isKinematic = false;
+            }
+            
             if (!rb.detectCollisions && transform.parent != null)
             {
                 if (transform.parent.name == "ItemPivot")
                 {
+
                     rb.detectCollisions = true;
                     inPlayer = false;
                     inCase = false;
