@@ -77,6 +77,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssetRefs.cs" />
+    <Compile Include="StereoCDPlayerMWC.cs" />
     <Compile Include="CarCDPlayerMWC.cs" />
     <Compile Include="LabelGenerator.cs" />
     <Compile Include="CarCDPlayer.cs" />

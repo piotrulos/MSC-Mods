@@ -32,29 +32,32 @@ namespace CDPlayer
         {
             if (CDPath != null)
             {
-                TimeSpan tt = TimeSpan.Zero;
+                TimeSpan tt = new TimeSpan(0);
                 string[] files = Directory.GetFiles(CDPath);
                 for (int i = 0; i < files.Length; i++)
                 {
                     if (!ModAudio.allowedExtensions.Contains(Path.GetExtension(files[i]).ToLower())) continue;
                     using (TagLib.File t = TagLib.File.Create(files[i]))
                     {
-                        tt.Add(t.Properties.Duration);
+                        tt += t.Properties.Duration;
                         trackList += $"{t.Properties.Duration.Minutes:D1}:{t.Properties.Duration.Seconds:D2} - {t.Tag.Title ?? "Track " + (i + 1)}{Environment.NewLine}";
+
                     }
                     tracksCount++;
                 }
-                totalTime = $"{tt.Minutes:D1}:{tt.Seconds:D2}";
+                int remainingSeconds = (int)(tt.TotalSeconds % 60);
+                ModConsole.Warning($"{(int)tt.TotalMinutes:D2}:{remainingSeconds:D2}");
+                totalTime = $"{(int)tt.TotalMinutes:D2}:{remainingSeconds:D2}";
             }
         }
 
         void FixedUpdate()
         {
-            if (transform.parent.name == "ItemPivot" && rb.isKinematic)
+            if (transform.parent != null && transform.parent.name == "ItemPivot" && rb.isKinematic)
             {
                 rb.isKinematic = false;
             }
-            
+
             if (!rb.detectCollisions && transform.parent != null)
             {
                 if (transform.parent.name == "ItemPivot")
