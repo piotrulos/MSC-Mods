@@ -83,6 +83,10 @@ namespace CDPlayer
             distortionFilter = knobFsm.GetVariable<FsmGameObject>("SoundSource").Value.GetComponent<AudioDistortionFilter>();
             knobFsm.GetVariable<FsmGameObject>("SoundSource").Value.GetPlayMaker("Update").enabled = false;
         }
+        public void FilterUpdate()
+        {
+            distortionFilter.enabled = !cdplayer.bypassDisStereo.GetValue();
+        }
         void Start()
         {
             //Globals 
@@ -91,6 +95,7 @@ namespace CDPlayer
             GUIuse = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse");
             GUIinteraction = PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction");
         }
+
         void TurnOn()
         {
             if (!isOnRadio.Value && isCDin && !isPlayerOn)

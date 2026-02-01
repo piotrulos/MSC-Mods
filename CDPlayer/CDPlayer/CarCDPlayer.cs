@@ -51,6 +51,8 @@ namespace CDPlayer
 
         private FsmBool GUIassemble, GUIdisassemble, GUIuse;
         private FsmString GUIinteraction;
+
+        private AudioDistortionFilter distortionFilter;
         void Start()
         {
             //Setup palyer
@@ -79,12 +81,20 @@ namespace CDPlayer
             CDPlayerSpeaker = GameObject.Find("Database/PartsStatus/Subwoofers").GetPlayMaker("Subwoofer").FsmVariables.FindFsmGameObject("CD").Value;
             audioPlayer.audioSource = CDPlayerSpeaker.GetComponent<AudioSource>();
             audioStreamPlayer.audioSource = CDPlayerSpeaker.GetComponent<AudioSource>();
-
+            distortionFilter = CDPlayerSpeaker.GetComponent<AudioDistortionFilter>();
             //Globals 
             GUIassemble = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble");
             GUIdisassemble = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIdisassemble");
             GUIuse = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIuse");
             GUIinteraction = PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction");
+        }
+
+        public void FilterUpdate()
+        {
+            if (subwooferInstalled.Value)
+            {
+                distortionFilter.enabled = !cdplayer.bypassDisCar.GetValue();
+            }
         }
         void TurnOn()
         {
@@ -157,8 +167,6 @@ namespace CDPlayer
                     break;
             }
             PlayMakerFSM radioCh = RadioChannels.GetComponent<PlayMakerFSM>();
-            if (subwooferInstalled.Value)
-                CDPlayer.FilterChange();
 
             radioCh.FsmVariables.FindFsmBool("OnMuteChannel1").Value = true;
             radioCh.FsmVariables.FindFsmBool("OnMuteFolk").Value = true;
@@ -237,8 +245,6 @@ namespace CDPlayer
                 {
                     CDempty = false;
                     isCDplaying = true;
-                    if (subwooferInstalled.Value)
-                        CDPlayer.FilterChange();
                     audioPlayer.LoadAudioFromFile(Path.GetFullPath(audioFiles[currentSong]), true, true);
                     audioPlayer.Play();
                 }

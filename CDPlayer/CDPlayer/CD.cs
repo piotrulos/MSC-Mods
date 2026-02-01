@@ -46,7 +46,6 @@ namespace CDPlayer
                     tracksCount++;
                 }
                 int remainingSeconds = (int)(tt.TotalSeconds % 60);
-                ModConsole.Warning($"{(int)tt.TotalMinutes:D2}:{remainingSeconds:D2}");
                 totalTime = $"{(int)tt.TotalMinutes:D2}:{remainingSeconds:D2}";
             }
         }

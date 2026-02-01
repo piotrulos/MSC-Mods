@@ -22,7 +22,7 @@ public class CDPlayer : Mod
 
     public string path = Path.GetFullPath("CD");
 
-    public static SettingsCheckBox bypassDis;
+    public SettingsCheckBox bypassDisCar, bypassDisStereo;
     public SettingsCheckBox debugInfo, RDSsim;
     public SettingsTextBox channel3url, channel4url;
     static List<GameObject> listOfCDs, listOfCases, listOfDisplayCases, listOfRacks;
@@ -84,34 +84,40 @@ public class CDPlayer : Mod
         }
     }
 
-    public static void FilterChange()
+    public void FilterChange()
     {
+        if(ModLoader.CurrentScene != CurrentScene.Game) return;
         if (ModLoader.CurrentGame == Game.MyWinterCar)
         {
-            if (GameObject.Find("CORRIS").transform.Find("Functions/Radio/SoundSpeakerBass/CDAudioSourceCorris") != null)
-                GameObject.Find("CORRIS").transform.Find("Functions/Radio/SoundSpeakerBass/CDAudioSourceCorris").GetComponent<AudioSource>().bypassEffects = bypassDis.GetValue();
+            if (GameObject.Find("CORRIS").transform.Find("Assemblies/VINP_Radio/Sled/cd_sled_pivot") != null)
+                GameObject.Find("CORRIS").transform.Find("Assemblies/VINP_Radio/Sled/cd_sled_pivot").gameObject.GetComponent<CarCDPlayerMWC>();
+            if (GameObject.Find("HOMENEW").transform.Find("Functions/FunctionsDisable/Stereos/Player/Sled/cd_sled_pivot/stereos_sled").gameObject != null)
+                GameObject.Find("HOMENEW").transform.Find("Functions/FunctionsDisable/Stereos/Player/Sled/cd_sled_pivot/stereos_sled").gameObject.GetComponent<StereoCDPlayerMWC>().FilterUpdate();
             return;
         }
 
-        if (GameObject.Find("SATSUMA(557kg, 248)").transform.Find("Electricity/SpeakerBass/CDPlayer") != null)
-            GameObject.Find("SATSUMA(557kg, 248)").transform.Find("Electricity/SpeakerBass/CDPlayer").GetComponent<AudioSource>().bypassEffects = bypassDis.GetValue();
+        PlayMakerFSM cdp = GameObject.Find("Database/DatabaseOrders/CD_player").GetComponent<PlayMakerFSM>();
+        cdp.FsmVariables.FindFsmGameObject("ThisPart").Value.transform.Find("Sled/cd_sled_pivot").gameObject.AddComponent<CarCDPlayer>().FilterUpdate();
     }
     private void CDPlayer_Settings()
     {
         Settings.AddHeader("CD player settings", new Color32(0, 128, 0, 255));
         Settings.AddButton("Open CD folder", delegate { Process.Start(Path.GetFullPath("CD")); }, Color.black, Color.white, SettingsButton.ButtonIcon.Folder);
+
+        Settings.AddHeader("Audio filters");
+        Settings.AddText("Disable distortion filters");
+        bypassDisCar = Settings.AddCheckBox("cdDisBypass", "Disable distortion filter on aftermarket amplified speakers", false, FilterChange);
         if (ModLoader.CurrentGame == Game.MyWinterCar)
-            Settings.AddText("Disable distortion filter on corris subwoofer speakers");
-        if (ModLoader.CurrentGame == Game.MySummerCar)
-            Settings.AddText("Disable distortion filter on satsuma subwoofer speakers");
-        bypassDis = Settings.AddCheckBox("cdDisBypass", "Bypass distortion filter on aftermarket speakers", false, FilterChange);
+        {            
+            bypassDisStereo = Settings.AddCheckBox("cdDisBypassStereo", "Disable distortion filter on apartment stereo", false, FilterChange);
+        }
         Settings.AddHeader("Reset Settings");
-        Settings.AddText("Respawn purchased stuff on kitchen table");
+        Settings.AddText("Respawn purchased stuff on kitchen table (if you lost them)");
         Settings.AddButton("Reset CDs", ResetPosition, Color.black, Color.white);
         Settings.AddHeader("Internet radio settings", new Color32(0, 128, 0, 255));
         debugInfo = Settings.AddCheckBox("debugInfo", "Show debug info", false);
         RDSsim = Settings.AddCheckBox("RDSsim", "Simulate RDS", true);
-        Settings.AddText("REMINDER! Only links starting with http:// will work. <b>https:// is not supported.</b>");
+        Settings.AddText("REMINDER! Only links starting with http:// will work. <b>https:// is not supported.</b> Majority of streams work with http without any issues.");
         channel3url = Settings.AddTextBox("ch3url", "Channel 3:", "http://185.33.21.112:11010", "Stream URL...");
         channel4url = Settings.AddTextBox("ch4url", "Channel 4:", "http://185.33.21.112/90s_128", "Stream URL...");
     }
@@ -144,7 +150,7 @@ public class CDPlayer : Mod
                 if (cdsavelist.inPlayer && cdsavelist.goType == 0 && !cdloadedinplayer)
                 {
                     if (ModLoader.CurrentGame == Game.MyWinterCar) continue;
-                    Transform cdpl = GameObject.Find("Database/DatabaseOrders/CD_player").GetComponent<PlayMakerFSM>().FsmVariables.FindFsmGameObject("ThisPart").Value.transform.Find("Sled/cd_sled_pivot");
+                        Transform cdpl = GameObject.Find("Database/DatabaseOrders/CD_player").GetComponent<PlayMakerFSM>().FsmVariables.FindFsmGameObject("ThisPart").Value.transform.Find("Sled/cd_sled_pivot");
                     go.GetComponent<CD>().inPlayer = true;
                     go.GetComponent<Rigidbody>().detectCollisions = false;
                     go.transform.SetParent(cdpl, false);
@@ -280,6 +286,7 @@ public class CDPlayer : Mod
             FindCDPlayers_MWC();
         if (ModLoader.CurrentGame == Game.MySummerCar)
             FindPlayer_MSC();
+        FilterChange();
         if (SaveLoad.ValueExists(this, "SaveData"))
         {
             LoadUnifiedSave();

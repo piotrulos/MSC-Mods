@@ -19,17 +19,17 @@ namespace CDPlayer
     }
     public class SpeakerWatcher : MonoBehaviour
     {
-
+       public  CarCDPlayerMWC cdp;
         void OnTransformParentChanged()
         {
             //"CORRIS/Functions/Radio/SoundSpeakerBass/CDAudioSourceCorris"
-            if (CDPlayer.bypassDis.GetValue() && transform.parent.name == "SoundSpeakerBass")
+            if (transform.parent.name == "SoundSpeakerBass")
             {
-                GetComponent<AudioSource>().bypassEffects = true;
+                cdp.FilterUpdate();
             }
             else
             {
-                GetComponent<AudioSource>().bypassEffects = false;
+                cdp.FilterUpdate(true);
             }
 
         }
@@ -77,6 +77,8 @@ namespace CDPlayer
         private FsmBool GUIassemble, GUIdisassemble, GUIuse;
         private FsmString GUIinteraction;
         private FsmString channelFsmText;
+
+        private AudioDistortionFilter distortionFilter;
         public void SetupMod(CDPlayer mod, AttachedTo car, PlayMakerFSM knobFsm)
         {
             cdplayer = mod;
@@ -103,13 +105,23 @@ namespace CDPlayer
             audioPlayer.audioSource = knobFsm.GetVariable<FsmGameObject>("SoundSource").Value.GetComponent<AudioSource>();
             audioStreamPlayer.audioSource = knobFsm.GetVariable<FsmGameObject>("SoundSource").Value.GetComponent<AudioSource>();
             knobFsm.GetVariable<FsmGameObject>("SoundSource").Value.GetPlayMaker("Update").enabled = false;
+            distortionFilter = knobFsm.GetVariable<FsmGameObject>("SoundSource").Value.GetComponent<AudioDistortionFilter>();
+
             if (attachedCar == AttachedTo.Corris)
             {
-                audioPlayer.gameObject.AddComponent<SpeakerWatcher>();
-                if (CDPlayer.bypassDis.GetValue() && audioPlayer.transform.parent.name == "SoundSpeakerBass")
-                {
-                    audioPlayer.GetComponent<AudioSource>().bypassEffects = true;
-                }
+                audioPlayer.gameObject.AddComponent<SpeakerWatcher>().cdp = this;
+            }
+        }
+        public void FilterUpdate(bool forceEnable = false)
+        {
+            if (forceEnable)
+            {
+                distortionFilter.enabled = true;
+                return;
+            }
+            if (audioPlayer.transform.parent.name == "SoundSpeakerBass")
+            {
+                distortionFilter.enabled = !cdplayer.bypassDisCar.GetValue();
             }
         }
         void Start()
