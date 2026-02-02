@@ -593,7 +593,7 @@ namespace CDPlayer
                 }
                 else
                 {
-                    if (!isCDin)
+                    if (transform.childCount == 0)
                     {
                         enteredCD = col;
                         ready = true;

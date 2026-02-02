@@ -1,4 +1,5 @@
 ﻿using MSCLoader;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -20,14 +21,16 @@ public class CDPlayer : Mod
 
     private readonly string readme = $"This folder is used by CDPlayer Enhanced mod{System.Environment.NewLine}{System.Environment.NewLine}To create a new CD, create a new folder here, put your music or playlist file in that new folder.";
 
-    public string path = Path.GetFullPath("CD");
+    public string CDFolderPath = Path.GetFullPath("CD");
 
     public SettingsCheckBox bypassDisCar, bypassDisStereo;
     public SettingsCheckBox debugInfo, RDSsim;
     public SettingsTextBox channel3url, channel4url;
     static List<GameObject> listOfCDs, listOfCases, listOfDisplayCases, listOfRacks;
+    
+    private CDExternalFolders externalFolders;
+    private SettingsText externalFoldersText;
 
-    // GameObject rack10_d, cdCaseP_d, cdCaseP, rack10P;
     AssetRefs assets;
     bool cdloadedinplayer = false;
 
@@ -65,10 +68,16 @@ public class CDPlayer : Mod
             r.transform.Find("CD").GetComponent<PlayMakerFSM>().enabled = false;
             text.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmString("Text").Value = "CD IS MODDED (NO IMPORT NEEDED)";
         }
-        if (!Directory.Exists(path)) //Ceate CD directory
-            Directory.CreateDirectory(path);
-        if (!File.Exists(Path.Combine(path, "CD Player Enhanced.txt")))
-            File.WriteAllText(Path.Combine(path, "CD Player Enhanced.txt"), readme);
+        if (!Directory.Exists(CDFolderPath)) //Ceate CD directory
+            Directory.CreateDirectory(CDFolderPath);
+        if (!File.Exists(Path.Combine(CDFolderPath, "CD Player Enhanced.txt")))
+            File.WriteAllText(Path.Combine(CDFolderPath, "CD Player Enhanced.txt"), readme);
+        if (File.Exists(Path.Combine(CDFolderPath, "ExternalFolders.json")))        
+            externalFolders = JsonConvert.DeserializeObject<CDExternalFolders>(File.ReadAllText(Path.Combine(CDFolderPath, "ExternalFolders.json")));
+        else 
+            externalFolders = new CDExternalFolders();
+        externalFoldersText.SetValue($"<color=yellow>{externalFolders.Folders.Count}</color> <color=aqua>external folder(s) found</color>");
+
     }
     void test()
     {
@@ -101,8 +110,11 @@ public class CDPlayer : Mod
     }
     private void CDPlayer_Settings()
     {
-        Settings.AddHeader("CD player settings", new Color32(0, 128, 0, 255));
+        Settings.AddHeader("CD player Folders", new Color32(0, 128, 0, 255));
+        Settings.AddText($"<color=yellow>{Directory.GetDirectories(CDFolderPath).Count()}</color> <color=aqua>CD folder(s) found</color>");
         Settings.AddButton("Open CD folder", delegate { Process.Start(Path.GetFullPath("CD")); }, Color.black, Color.white, SettingsButton.ButtonIcon.Folder);
+        externalFoldersText= Settings.AddText($"");
+        Settings.AddButton("Add external folder", AddCustomFolderMenu, Color.black, Color.white, SettingsButton.ButtonIcon.Add);
 
         Settings.AddHeader("Audio filters");
         Settings.AddText("Disable distortion filters");
@@ -121,7 +133,54 @@ public class CDPlayer : Mod
         channel3url = Settings.AddTextBox("ch3url", "Channel 3:", "http://185.33.21.112:11010", "Stream URL...");
         channel4url = Settings.AddTextBox("ch4url", "Channel 4:", "http://185.33.21.112/90s_128", "Stream URL...");
     }
+    PopupSetting popup;
+    void AddCustomFolderMenu()
+    {
+        popup = ModUI.CreatePopupSetting("Add Custom Folder", "Add folder");
+        popup.AddText("Add path to custom folder with music.");
+        popup.AddTextBox("folderPath", "Path:",string.Empty, @"ex. C:\Music\MyCoolMusic");
+        popup.ShowPopup(AddFolder, true);
+    }
+    void AddFolder(string path)
+    {
+        ExternalFoldersResult result = ModUI.ParsePopupResponse<ExternalFoldersResult>(path);
+        if (result.folderPath == null || result.folderPath == string.Empty)
+        { 
+            ModUI.ShowMessage("Folder path is empty", "Error");
+            return; 
+        }
+        if (!Directory.Exists(result.folderPath))
+        {
+            ModUI.ShowMessage("Specified folder <color=orange>does not exist</color>", "Error");
+            return;
+        }
+        string name = new DirectoryInfo(result.folderPath).Name;
+        if (Directory.Exists(Path.Combine(CDFolderPath, name)))
+        {
+            ModUI.ShowMessage("Folder with this name <color=orange>already exist in <b>CD</b> folder</color>", "Error");
+            return;
+        }
 
+        if (externalFolders.Folders.Contains(result.folderPath))
+        {
+            ModUI.ShowMessage("Specified folder <color=orange>was already added to External Folders</color>", "Error");
+            return;
+        }
+        for (int i = 0; i < externalFolders.Folders.Count; i++)
+        {
+            if (new DirectoryInfo(externalFolders.Folders[i]).Name == name)
+            {
+                ModUI.ShowMessage("Folder with same name <color=orange>already exist in External Folders</color>", "Error");
+                return;
+            }
+        }
+        externalFolders.Folders.Add(result.folderPath);
+        string save = JsonConvert.SerializeObject(externalFolders, Formatting.Indented);
+        File.WriteAllText(Path.Combine(CDFolderPath, "ExternalFolders.json"), save);
+        ModUI.ShowMessage("Folder added", "Success");
+        externalFoldersText.SetValue($"<color=yellow>{externalFolders.Folders.Count}</color> <color=aqua>external folder(s) found</color>");
+        popup.ClosePopup();
+    }
     void LoadUnifiedSave()
     {
         CDPSaveData save = SaveLoad.DeserializeClass<CDPSaveData>(this, "SaveData", true);
@@ -232,7 +291,9 @@ public class CDPlayer : Mod
 
         LabelGenerator labelGenerator = GameObject.Instantiate(assets.labelGenerator).GetComponent<LabelGenerator>();
         labelGenerator.transform.position = new Vector3(0f, -10f, 0f);
-        string[] dirs = Directory.GetDirectories(path);
+        string[] dirs = Directory.GetDirectories(CDFolderPath);
+        if(externalFolders.Folders.Count > 0)
+            dirs = [.. dirs, .. externalFolders.Folders];
         listOfCDs = new List<GameObject>();
         listOfCases = new List<GameObject>();
         listOfDisplayCases = new List<GameObject>();

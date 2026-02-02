@@ -3,6 +3,14 @@ using UnityEngine;
 
 namespace CDPlayer
 {
+    public class CDExternalFolders
+    {
+        public List<string> Folders = new List<string>();
+    }
+    public class ExternalFoldersResult
+    {
+        public string folderPath;
+    }
     public class CDPSaveData
     {
         public List<CDPSaveList> goSaveList = new List<CDPSaveList>();
