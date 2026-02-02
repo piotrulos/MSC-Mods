@@ -1,5 +1,6 @@
 ﻿using MSCLoader;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -31,6 +32,8 @@ public class CDPlayer : Mod
     private CDExternalFolders externalFolders;
     private SettingsText externalFoldersText;
 
+    private CarCDPlayerMWC corrisCDPlayer, machtwagenCDPlayer, sorbetCDPlayer;
+    private StereoCDPlayerMWC apartmentStereoCDPlayer;
     AssetRefs assets;
     bool cdloadedinplayer = false;
 
@@ -208,15 +211,56 @@ public class CDPlayer : Mod
             {
                 if (cdsavelist.inPlayer && cdsavelist.goType == 0 && !cdloadedinplayer)
                 {
-                    if (ModLoader.CurrentGame == Game.MyWinterCar) continue;
+                    if (ModLoader.CurrentGame == Game.MyWinterCar && cdsavelist.inPlayerID != -1)
+                    {
+                        go.GetComponent<CD>().inPlayer = true;
+                        go.GetComponent<CD>().inPlayerID = cdsavelist.inPlayerID;
+                        go.GetComponent<Rigidbody>().detectCollisions = false;
+                        AttachedTo attached = (AttachedTo)cdsavelist.inPlayerID;
+                        switch (attached)
+                        {
+                            case AttachedTo.Sorbet:
+                                go.transform.SetParent(sorbetCDPlayer.transform, false);
+                                go.transform.localPosition = Vector3.zero;
+                                go.transform.localEulerAngles = Vector3.zero;
+                                sorbetCDPlayer.LoadCDFromSave();
+                                break;
+                            case AttachedTo.Corris:
+                                go.transform.SetParent(corrisCDPlayer.transform, false);
+                                go.transform.localPosition = Vector3.zero;
+                                go.transform.localEulerAngles = Vector3.zero;
+                                corrisCDPlayer.LoadCDFromSave();
+                                break;
+                            case AttachedTo.Machtwagen:
+                                go.transform.SetParent(machtwagenCDPlayer.transform, false);
+                                go.transform.localPosition = Vector3.zero;
+                                go.transform.localEulerAngles = Vector3.zero;
+                                machtwagenCDPlayer.LoadCDFromSave();
+                                break;
+                            case AttachedTo.ApartmentStereo:
+                                go.transform.SetParent(apartmentStereoCDPlayer.transform, false);
+                                go.transform.localPosition = new Vector3(-0.1340341f, 0f, 0.1132002f); //Vanilla values
+                                go.transform.localEulerAngles = Vector3.zero;
+                                apartmentStereoCDPlayer.LoadCDFromSave();
+                                break;
+                            default:
+                                //WTF Happened here
+                                Console.WriteLine($"WTF happened here. PlayerID: {cdsavelist.inPlayerID}");
+                                break;
+                        }
+                        continue;
+                    }
+                    if (ModLoader.CurrentGame == Game.MySummerCar && cdsavelist.inPlayerID == -1)
+                    {
                         Transform cdpl = GameObject.Find("Database/DatabaseOrders/CD_player").GetComponent<PlayMakerFSM>().FsmVariables.FindFsmGameObject("ThisPart").Value.transform.Find("Sled/cd_sled_pivot");
-                    go.GetComponent<CD>().inPlayer = true;
-                    go.GetComponent<Rigidbody>().detectCollisions = false;
-                    go.transform.SetParent(cdpl, false);
-                    go.transform.localPosition = Vector3.zero;
-                    go.transform.localEulerAngles = Vector3.zero;
-                    cdloadedinplayer = true;
-                    continue;
+                        go.GetComponent<CD>().inPlayer = true;
+                        go.GetComponent<Rigidbody>().detectCollisions = false;
+                        go.transform.SetParent(cdpl, false);
+                        go.transform.localPosition = Vector3.zero;
+                        go.transform.localEulerAngles = Vector3.zero;
+                        cdloadedinplayer = true;
+                        continue;
+                    }
                 }
                 if (cdsavelist.rackID != -1 && cdsavelist.RackSlot != 255)
                 {
@@ -273,6 +317,8 @@ public class CDPlayer : Mod
             {
                 CDPSaveList csl = new CDPSaveList(0, listOfCDs[i].GetComponent<CD>().CDName, Vector3.zero, Vector3.zero);
                 csl.inPlayer = true;
+                if(ModLoader.CurrentGame == Game.MyWinterCar)
+                    csl.inPlayerID = listOfCDs[i].GetComponent<CD>().inPlayerID;
                 save.goSaveList.Add(csl);
             }
         }
@@ -389,7 +435,7 @@ public class CDPlayer : Mod
         shop = ModsShop.ModsShop.GetShopReference();
         ModsShop.ItemDetails rackitem = shop.CreateShopItem(this, "rack1", "Rack for 10 CDs", 50, true, BuyCDRack, assets.rack10, ModsShop.SpawnMethod.Instantiate);
         shop.AddDisplayItem(rackitem, assets.rack10_d, ModsShop.SpawnMethod.Instantiate);
-
+        bool first = true;
         for (int i = 0; i < listOfCases.Count; i++)
         {
             GameObject go = listOfCases[i];
@@ -397,10 +443,15 @@ public class CDPlayer : Mod
             {
 
                 ModsShop.ItemDetails item = shop.CreateShopItem(this, $"cd{i}", $"[CD] {go.GetComponent<CDCase>().CDName}", cdPrice, false, BuyCDs, go, ModsShop.SpawnMethod.SetActive);
-                if (i == 0)
+                if (first)
+                {
                     shop.AddDisplayItem(item, listOfDisplayCases[i], ModsShop.SpawnMethod.SetActive, new Vector3(0, -90, 0), 2);
+                    first = false;
+                }
                 else
+                {
                     shop.AddDisplayItem(item, listOfDisplayCases[i], ModsShop.SpawnMethod.SetActive, new Vector3(0, -90, 0), 0);
+                }
 
             }
         }
@@ -464,23 +515,28 @@ public class CDPlayer : Mod
         //"SORBET(190-200psi)/Functions/Radio/cd player(Clone)/Sled/cd_sled_pivot"
         PlayMakerFSM volume = GameObject.Find("SORBET(190-200psi)").transform.Find("Functions/Radio/cd player(Clone)/ButtonsCD/CDplrVolume").GetPlayMaker("Knob");
         GameObject.Find("SORBET(190-200psi)").transform.Find("Functions/Radio/cd player(Clone)/Sled/cd_sled_pivot").gameObject.AddComponent<CarCDPlayerMWC>().SetupMod(this, AttachedTo.Sorbet, volume);
+        sorbetCDPlayer =  GameObject.Find("SORBET(190-200psi)").transform.Find("Functions/Radio/cd player(Clone)/Sled/cd_sled_pivot").GetComponent<CarCDPlayerMWC>();
+      
         //"JOBS/TAXIJOB/MACHTWAGEN/LOD/Radio/cd player(Clone)/ButtonsCD/CDplrVolume"
         //"JOBS/TAXIJOB/MACHTWAGEN/LOD/Radio/cd player(Clone)/Sled/cd_sled_pivot"
         GameObject machtwagen = GameObject.Find("JOBS").transform.Find("TAXIJOB/MACHTWAGEN").gameObject;
-        if (machtwagen == null)
+        if (machtwagen == null) //Probably unnecessary
             machtwagen = GameObject.Find("MACHTWAGEN").gameObject;
         PlayMakerFSM volume2 = machtwagen.transform.Find("LOD/Radio/cd player(Clone)/ButtonsCD/CDplrVolume").GetPlayMaker("Knob");
         machtwagen.transform.Find("LOD/Radio/cd player(Clone)/Sled/cd_sled_pivot").gameObject.AddComponent<CarCDPlayerMWC>().SetupMod(this, AttachedTo.Machtwagen, volume2);
+        machtwagenCDPlayer = machtwagen.transform.Find("LOD/Radio/cd player(Clone)/Sled/cd_sled_pivot").GetComponent<CarCDPlayerMWC>();
 
         //"CORRIS/Assemblies/VINP_Radio/Sled/cd_sled_pivot"
         //"CORRIS/Assemblies/VINP_Radio/CDPlayer1/ButtonsCD/CDplrVolume"
         PlayMakerFSM volume3 = GameObject.Find("CORRIS").transform.Find("Assemblies/VINP_Radio/CDPlayer1/ButtonsCD/CDplrVolume").GetPlayMaker("Knob");
         GameObject.Find("CORRIS").transform.Find("Assemblies/VINP_Radio/Sled/cd_sled_pivot").gameObject.AddComponent<CarCDPlayerMWC>().SetupMod(this, AttachedTo.Corris, volume3);
+        corrisCDPlayer = GameObject.Find("CORRIS").transform.Find("Assemblies/VINP_Radio/Sled/cd_sled_pivot").GetComponent<CarCDPlayerMWC>();
 
         //"HOMENEW/Functions/FunctionsDisable/Stereos/Player/Sled/cd_sled_pivot/stereos_sled"
         //"HOMENEW/Functions/FunctionsDisable/Stereos/Player/ButtonsCD/Volume"
         PlayMakerFSM volume4 = GameObject.Find("HOMENEW").transform.Find("Functions/FunctionsDisable/Stereos/Player/ButtonsCD/Volume").GetPlayMaker("Knob");
         GameObject.Find("HOMENEW").transform.Find("Functions/FunctionsDisable/Stereos/Player/Sled/cd_sled_pivot/stereos_sled").gameObject.AddComponent<StereoCDPlayerMWC>().SetupMod(this, AttachedTo.ApartmentStereo, volume4);
+        apartmentStereoCDPlayer = GameObject.Find("HOMENEW").transform.Find("Functions/FunctionsDisable/Stereos/Player/Sled/cd_sled_pivot/stereos_sled").GetComponent<StereoCDPlayerMWC>();
 
         ModConsole.Print("<color=green>Your CD Players are now enhanced! Enjoy.</color>");
     }

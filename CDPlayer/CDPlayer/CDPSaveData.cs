@@ -24,6 +24,7 @@ namespace CDPlayer
         public int rackID = -1;
         public byte RackSlot = 255;
         public bool inPlayer = false;
+        public sbyte inPlayerID = -1;
 
         public CDPSaveList() { }
         public CDPSaveList(byte type, string cdName, Vector3 pos, Vector3 rot)

@@ -376,6 +376,7 @@ namespace CDPlayer
         {
             ReadFiles(cd.isPlaylist, cd.CDPath);
             cd.inPlayer = true;
+            cd.inPlayerID = (sbyte)attachedCar;
             if (!isOnRadio.Value)
                 loadingCD = true;
             isCDin = true;
@@ -407,6 +408,7 @@ namespace CDPlayer
             }
 
         }
+        //Probably unnecessary (test it later)
         IEnumerator LoadSavedCD()
         {
             isCDLoadingFromSave = true;
@@ -415,14 +417,16 @@ namespace CDPlayer
             cd = insertedCD.GetComponent<CD>();
             cd.rb.isKinematic = true;
             cd.rb.detectCollisions = false;
-            insertedCD.transform.SetParent(transform, false);
             insertedCD.layer = 0;
-            insertedCD.transform.localPosition = new Vector3(-0.1340341f, 0f, 0.1132002f); //Vanilla values
-            insertedCD.transform.localEulerAngles = new Vector3(0, 0, UnityEngine.Random.Range(0f, 359f));
-            transform.GetComponent<Animation>().Play("cd_sled_in");
+            /*    insertedCD.transform.SetParent(transform, false);
+
+                insertedCD.transform.localPosition = new Vector3(-0.1340341f, 0f, 0.1132002f); //Vanilla values
+                insertedCD.transform.localEulerAngles = new Vector3(0, 0, UnityEngine.Random.Range(0f, 359f));
+            transform.GetComponent<Animation>().Play("cd_sled_in");*/
             ReadFiles(cd.isPlaylist, cd.CDPath);
 
             cd.inPlayer = true;
+            cd.inPlayerID = (sbyte)attachedCar;
             isCDin = true;
             currentSong = 0;
             LoadCdFromSaveRoutine = false;

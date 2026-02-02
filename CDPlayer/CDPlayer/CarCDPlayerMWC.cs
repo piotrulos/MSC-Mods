@@ -400,6 +400,7 @@ namespace CDPlayer
             ReadFiles(cd.isPlaylist, cd.CDPath);
             eject.gameObject.SetActive(true);
             cd.inPlayer = true;
+            cd.inPlayerID = (sbyte)attachedCar;
             loadingCD = true;
             isCDin = true;
             currentSong = 0;
@@ -438,15 +439,17 @@ namespace CDPlayer
             cd = insertedCD.GetComponent<CD>();
             cd.rb.isKinematic = true;
             cd.rb.detectCollisions = false;
-            insertedCD.transform.SetParent(transform, false);
             insertedCD.layer = 0;
-            insertedCD.transform.localPosition = Vector3.zero;
-            insertedCD.transform.localEulerAngles = Vector3.zero;
+            /*  insertedCD.transform.SetParent(transform, false);
+
+              insertedCD.transform.localPosition = Vector3.zero;
+              insertedCD.transform.localEulerAngles = Vector3.zero;*/
             transform.GetComponent<Animation>().Play("cd_sled_in");
             ReadFiles(cd.isPlaylist, cd.CDPath);
 
             eject.gameObject.SetActive(true);
             cd.inPlayer = true;
+            cd.inPlayerID = (sbyte)attachedCar;
             isCDin = true;
             currentSong = 0;
             LoadCdFromSaveRoutine = false;
@@ -476,7 +479,8 @@ namespace CDPlayer
         }
         IEnumerator EjectWait(GameObject cd)
         {
-            yield return new WaitForSeconds(1f);
+            while(gameObject.GetComponentInParent<Animation>().isPlaying)
+                yield return null;
             cd.MakePickable();
         }
         void Update()
