@@ -53,9 +53,11 @@ namespace CDPlayer
         private FsmString GUIinteraction;
 
         private AudioDistortionFilter distortionFilter;
-        void Start()
+
+       public void SetupPlayer(CDPlayer cdp)
         {
             //Setup palyer
+            cdplayer = cdp;
             rootCDplayer = transform.parent.parent;
             rootCDplayer.transform.Find("trigger_disc").gameObject.SetActive(false);
             audioPlayer = gameObject.AddComponent<ModAudio>();
@@ -79,9 +81,14 @@ namespace CDPlayer
             radioVolFSM = radioVol.GetComponent<PlayMakerFSM>();
             subwooferInstalled = GameObject.Find("Database/PartsStatus/Subwoofers").GetPlayMaker("Subwoofer").FsmVariables.FindFsmBool("Subwoofers");
             CDPlayerSpeaker = GameObject.Find("Database/PartsStatus/Subwoofers").GetPlayMaker("Subwoofer").FsmVariables.FindFsmGameObject("CD").Value;
+            CDPlayerSpeaker.GetPlayMaker("Update").enabled = false;
             audioPlayer.audioSource = CDPlayerSpeaker.GetComponent<AudioSource>();
             audioStreamPlayer.audioSource = CDPlayerSpeaker.GetComponent<AudioSource>();
             distortionFilter = CDPlayerSpeaker.GetComponent<AudioDistortionFilter>();
+            CDPlayerSpeaker.gameObject.AddComponent<SpeakerWatcherCDPE>().cdp2 = this;
+        }
+        void Start()
+        {
             //Globals 
             GUIassemble = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIassemble");
             GUIdisassemble = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIdisassemble");
@@ -89,8 +96,18 @@ namespace CDPlayer
             GUIinteraction = PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction");
         }
 
-        public void FilterUpdate()
+        public void FilterUpdate(bool force = false, bool forceOff = false)
         {
+            if (force)
+            {
+                distortionFilter.enabled = true;
+                return;
+            }
+            if (forceOff)
+            {
+                distortionFilter.enabled = false;
+                return;
+            }
             if (subwooferInstalled.Value)
             {
                 distortionFilter.enabled = !cdplayer.bypassDisCar.GetValue();

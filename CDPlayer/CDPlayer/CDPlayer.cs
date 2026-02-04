@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 namespace CDPlayer;
@@ -16,7 +17,7 @@ public class CDPlayer : Mod
     public override string ID => "CDPlayer";
     public override string Name => "CDPlayer Enhanced";
     public override string Author => "piotrulos";
-    public override string Version => "1.6.4";
+    public override string Version => "2.0";
     public override string Description => "Makes adding CDs much easier, no renaming, no converting. (supports <color=orage>*.mp3, *.ogg, *.flac, *.wav, *.aiff</color>";
     public override Game SupportedGames => Game.MySummerCar_And_MyWinterCar;
 
@@ -43,7 +44,7 @@ public class CDPlayer : Mod
         SetupFunction(Setup.OnLoad, CDPlayer_OnLoad);
         SetupFunction(Setup.OnSave, CDPlayer_OnSave);
         SetupFunction(Setup.ModSettings, CDPlayer_Settings);
-        SetupFunction(Setup.Update, test);
+        //SetupFunction(Setup.Update, test); //Debug only
 
         //MWC
         //"SORBET(190-200psi)/Functions/Radio/SoundSpeaker/CDAudioSourceSorbett"
@@ -109,7 +110,7 @@ public class CDPlayer : Mod
         }
 
         PlayMakerFSM cdp = GameObject.Find("Database/DatabaseOrders/CD_player").GetComponent<PlayMakerFSM>();
-        cdp.FsmVariables.FindFsmGameObject("ThisPart").Value.transform.Find("Sled/cd_sled_pivot").gameObject.AddComponent<CarCDPlayer>().FilterUpdate();
+        cdp.FsmVariables.FindFsmGameObject("ThisPart").Value.transform.Find("Sled/cd_sled_pivot").gameObject.GetComponent<CarCDPlayer>().FilterUpdate();
     }
     private void CDPlayer_Settings()
     {
@@ -118,6 +119,7 @@ public class CDPlayer : Mod
         Settings.AddButton("Open CD folder", delegate { Process.Start(Path.GetFullPath("CD")); }, Color.black, Color.white, SettingsButton.ButtonIcon.Folder);
         externalFoldersText= Settings.AddText($"");
         Settings.AddButton("Add external folder", AddCustomFolderMenu, Color.black, Color.white, SettingsButton.ButtonIcon.Add);
+        Settings.AddButton("Remove external folders", () => EditCustomFolderMenu(), Color.black, Color.white, SettingsButton.ButtonIcon.Close);
 
         Settings.AddHeader("Audio filters");
         Settings.AddText("Disable distortion filters");
@@ -128,11 +130,15 @@ public class CDPlayer : Mod
         }
         Settings.AddHeader("Reset Settings");
         Settings.AddText("Respawn purchased stuff on kitchen table (if you lost them)");
-        Settings.AddButton("Reset CDs", ResetPosition, Color.black, Color.white);
+        Settings.AddButton("Reset CDs", ResetPosition, Color.black, Color.white, SettingsButton.ButtonIcon.Update);
+        if(ModLoader.CurrentGame == Game.MyWinterCar)
+            Settings.AddButton("Reset CDs (Apartment)", ResetPositionApartment, Color.black, Color.white, SettingsButton.ButtonIcon.Update);
+
         Settings.AddHeader("Internet radio settings", new Color32(0, 128, 0, 255));
         debugInfo = Settings.AddCheckBox("debugInfo", "Show debug info", false);
         RDSsim = Settings.AddCheckBox("RDSsim", "Simulate RDS", true);
         Settings.AddText("REMINDER! Only links starting with http:// will work. <b>https:// is not supported.</b> Majority of streams work with http without any issues.");
+        Settings.AddText("<color=yellow>RIGHT CLICK radio channel button in cd player to switch channel 3 and 4</color>");
         channel3url = Settings.AddTextBox("ch3url", "Channel 3:", "http://185.33.21.112:11010", "Stream URL...");
         channel4url = Settings.AddTextBox("ch4url", "Channel 4:", "http://185.33.21.112/90s_128", "Stream URL...");
     }
@@ -141,11 +147,13 @@ public class CDPlayer : Mod
     {
         popup = ModUI.CreatePopupSetting("Add Custom Folder", "Add folder");
         popup.AddText("Add path to custom folder with music.");
+        popup.AddText("<color=yellow>IMPORTANT: It will only take music files from root of specified folder, subfolders will be ignored (you need to add them separately)</color>");
         popup.AddTextBox("folderPath", "Path:",string.Empty, @"ex. C:\Music\MyCoolMusic");
         popup.ShowPopup(AddFolder, true);
     }
     void AddFolder(string path)
     {
+        
         ExternalFoldersResult result = ModUI.ParsePopupResponse<ExternalFoldersResult>(path);
         if (result.folderPath == null || result.folderPath == string.Empty)
         { 
@@ -183,6 +191,70 @@ public class CDPlayer : Mod
         ModUI.ShowMessage("Folder added", "Success");
         externalFoldersText.SetValue($"<color=yellow>{externalFolders.Folders.Count}</color> <color=aqua>external folder(s) found</color>");
         popup.ClosePopup();
+    }
+    void EditCustomFolderMenu(byte page = 0)
+    {
+        byte currentPage = page;
+
+        if (externalFolders.Folders.Count == 0)
+        {
+            ModUI.ShowMessage("No external folders found. Add one first", "Error");
+            return;
+        }
+        popup = ModUI.CreatePopupSetting("Delete external folders", "close");
+        popup.AddText("Click on folder you want to delete from External Folders list");
+        List<SettingsGroupLayout> pages = new List<SettingsGroupLayout>();
+        for (int i = 0; i < externalFolders.Folders.Count; i++)
+        {
+            if (i % 10 == 0)
+            {
+                if (i != 0)
+                    popup.EndGroup();
+                SettingsGroupLayout group = popup.CreateGroup(visibleByDefault: false);
+                pages.Add(group);
+            }
+            string wtf = externalFolders.Folders[i];
+            popup.AddButton(externalFolders.Folders[i], delegate
+            {
+                externalFolders.Folders.Remove(wtf);
+                popup.ClosePopup();
+                string save = JsonConvert.SerializeObject(externalFolders, Formatting.Indented);
+                File.WriteAllText(Path.Combine(CDFolderPath, "ExternalFolders.json"), save);
+                externalFoldersText.SetValue($"<color=yellow>{externalFolders.Folders.Count}</color> <color=aqua>external folder(s) found</color>");
+                EditCustomFolderMenu(currentPage);
+            }, SettingsButton.ButtonIcon.Delete);
+        }
+        popup.EndGroup();
+        if (currentPage > pages.Count - 1)
+        {
+            currentPage--;
+        }
+        pages[currentPage].SetVisibility(true);
+        if (pages.Count > 1)
+        {
+            SettingsText pagetext = popup.AddText($"PAGE {currentPage + 1}/{pages.Count}", TextAlignment.Center);
+            popup.CreateGroup(true);
+            popup.AddButton("<< Previous Page", delegate
+            {
+                if (currentPage == 0)
+                    return;
+                pages[currentPage].SetVisibility(false);
+                currentPage--;
+                pages[currentPage].SetVisibility(true);
+                pagetext.SetValue($"PAGE {currentPage + 1}/{pages.Count}");
+            });
+            popup.AddButton("Next Page >>", delegate
+            {
+                if (currentPage == pages.Count - 1)
+                    return;
+                pages[currentPage].SetVisibility(false);
+                currentPage++;
+                pages[currentPage].SetVisibility(true);
+                pagetext.SetValue($"PAGE {currentPage + 1}/{pages.Count}");
+            });
+            popup.EndGroup();
+        }
+        popup.ShowPopup(null);
     }
     void LoadUnifiedSave()
     {
@@ -413,10 +485,13 @@ public class CDPlayer : Mod
         }
         else
         {
-            //if no shop installed.
-            for (int i = 0; i < listOfCases.Count; i++)
+            if (ModLoader.CurrentGame == Game.MySummerCar)
             {
-                listOfCases[i].SetActive(true);
+                //if no shop installed.
+                for (int i = 0; i < listOfCases.Count; i++)
+                {
+                    listOfCases[i].SetActive(true);
+                }
             }
         }
         //disable OG cds (probably not needed anymore since import is disabled)
@@ -500,12 +575,44 @@ public class CDPlayer : Mod
             ModUI.ShowMessage("Lost CDs and racks should be now on kitchen table. (This resets only purchased racks and CDs)", "Reset CD positions");
         }
     }
+    public void ResetPositionApartment()
+    {
+        if (Application.loadedLevelName == "MainMenu")
+        {
+            ModUI.ShowMessage("Please use this when you are in game!", "Reset CD positions");
+        }
+        else
+        {
+            for (int i = 0; i < listOfCases.Count; i++)
+            {
+                if (!listOfCases[i].activeSelf || listOfCases[i].GetComponent<CDCase>().inRack)
+                    continue;
+                listOfCases[i].transform.position = new Vector3(-1285.186f, 0.8f, 1075.557f);
+                listOfCases[i].transform.localEulerAngles = new Vector3(270f, 0f, 0f);
+            }
+            for (int i = 0; i < listOfCDs.Count; i++)
+            {
+                if (!listOfCDs[i].activeSelf || listOfCDs[i].GetComponent<CD>().inPlayer || listOfCDs[i].GetComponent<CD>().inCase)
+                    continue;
+                listOfCDs[i].transform.position = new Vector3(-1285.441f, 0.8f, 1075.482f);
+                listOfCDs[i].transform.localEulerAngles = new Vector3(270f, 0, 0f);
+            }
+            for (int i = 0; i < listOfRacks.Count; i++)
+            {
+                if (!listOfRacks[i].activeSelf)
+                    continue;
+                listOfRacks[i].transform.position = new Vector3(-1285.647f, 1f, 1075.79f);
+                listOfRacks[i].transform.transform.localEulerAngles = new Vector3(270f, 0f, 0f);
+            }
+            ModUI.ShowMessage("Lost CDs and racks should be now on apartment livingroom table. (This resets only purchased racks and CDs)", "Reset CD positions");
+        }
+    }
 
     void FindPlayer_MSC()
     {
         PlayMakerFSM cdp = GameObject.Find("Database/DatabaseOrders/CD_player").GetComponent<PlayMakerFSM>();
         // cdp.FsmVariables.FindFsmBool("Purchased");
-        cdp.FsmVariables.FindFsmGameObject("ThisPart").Value.transform.Find("Sled/cd_sled_pivot").gameObject.AddComponent<CarCDPlayer>().cdplayer = this;
+        cdp.FsmVariables.FindFsmGameObject("ThisPart").Value.transform.Find("Sled/cd_sled_pivot").gameObject.AddComponent<CarCDPlayer>().SetupPlayer(this);
         ModConsole.Print("<color=green>Your CD Player is now enhanced! Enjoy.</color>");
     }
 

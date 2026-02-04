@@ -17,19 +17,34 @@ namespace CDPlayer
         Machtwagen,
         ApartmentStereo
     }
-    public class SpeakerWatcher : MonoBehaviour
+    public class SpeakerWatcherCDPE : MonoBehaviour
     {
        public  CarCDPlayerMWC cdp;
+        public CarCDPlayer cdp2;
         void OnTransformParentChanged()
         {
-            //"CORRIS/Functions/Radio/SoundSpeakerBass/CDAudioSourceCorris"
-            if (transform.parent.name == "SoundSpeakerBass")
+            if (ModLoader.CurrentGame == Game.MyWinterCar)
             {
-                cdp.FilterUpdate();
+                //"CORRIS/Functions/Radio/SoundSpeakerBass/CDAudioSourceCorris"
+                if (transform.parent.name == "SoundSpeakerBass")
+                {
+                    cdp.FilterUpdate();
+                }
+                else
+                {
+                    cdp.FilterUpdate(true);
+                }
             }
-            else
+            if(ModLoader.CurrentGame == Game.MySummerCar)
             {
-                cdp.FilterUpdate(true);
+                if (transform.parent.name == "SpeakerBass")
+                {
+                    cdp2.FilterUpdate(false, true);
+                }
+                else
+                {
+                    cdp2.FilterUpdate(true);
+                }
             }
 
         }
@@ -61,12 +76,10 @@ namespace CDPlayer
         private bool ready;
         private bool noAntenna = false;
 
-        private GameObject insertedCD, RadioChannels, CDPlayerSpeaker;
+        private GameObject insertedCD, RadioChannels;
         private Collider enteredCD;
         private CD cd;
-        // private Transform rootCDplayer;
-        //  private GameObject radioVol;
-        private FsmBool isOnRadio, subwooferInstalled;
+        private FsmBool isOnRadio;
         private PlayMakerFSM radioCDSwitch;
         internal bool CDempty;
         private HashSet<string> allowedExtensions = ModAudio.allowedExtensions;
@@ -109,7 +122,7 @@ namespace CDPlayer
 
             if (attachedCar == AttachedTo.Corris)
             {
-                audioPlayer.gameObject.AddComponent<SpeakerWatcher>().cdp = this;
+                audioPlayer.gameObject.AddComponent<SpeakerWatcherCDPE>().cdp = this;
             }
         }
         public void FilterUpdate(bool forceEnable = false)
