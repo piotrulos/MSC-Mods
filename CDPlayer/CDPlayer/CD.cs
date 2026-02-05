@@ -38,11 +38,19 @@ namespace CDPlayer
                 for (int i = 0; i < files.Length; i++)
                 {
                     if (!ModAudio.allowedExtensions.Contains(Path.GetExtension(files[i]).ToLower())) continue;
-                    using (TagLib.File t = TagLib.File.Create(files[i]))
+                    try
                     {
-                        tt += t.Properties.Duration;
-                        trackList += $"{t.Properties.Duration.Minutes:D1}:{t.Properties.Duration.Seconds:D2} - {t.Tag.Title ?? "Track " + (i + 1)}{Environment.NewLine}";
+                        using (TagLib.File t = TagLib.File.Create(files[i]))
+                        {
+                            tt += t.Properties.Duration;
+                            trackList += $"{t.Properties.Duration.Minutes:D1}:{t.Properties.Duration.Seconds:D2} - {t.Tag.Title ?? "Track " + (i + 1)}{Environment.NewLine}";
 
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        ModConsole.Error($"Error reading file <b>{Path.GetFileName(files[i])}</b>: {e.Message}");
+                        Console.WriteLine(e);
                     }
                     tracksCount++;
                 }

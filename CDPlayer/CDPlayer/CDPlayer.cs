@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 
 namespace CDPlayer;
@@ -17,7 +16,7 @@ public class CDPlayer : Mod
     public override string ID => "CDPlayer";
     public override string Name => "CDPlayer Enhanced";
     public override string Author => "piotrulos";
-    public override string Version => "2.0";
+    public override string Version => "2.0.1";
     public override string Description => "Makes adding CDs much easier, no renaming, no converting. (supports <color=orage>*.mp3, *.ogg, *.flac, *.wav, *.aiff</color>";
     public override Game SupportedGames => Game.MySummerCar_And_MyWinterCar;
 
@@ -44,7 +43,7 @@ public class CDPlayer : Mod
         SetupFunction(Setup.OnLoad, CDPlayer_OnLoad);
         SetupFunction(Setup.OnSave, CDPlayer_OnSave);
         SetupFunction(Setup.ModSettings, CDPlayer_Settings);
-        //SetupFunction(Setup.Update, test); //Debug only
+     //   SetupFunction(Setup.Update, test); //Debug only
 
         //MWC
         //"SORBET(190-200psi)/Functions/Radio/SoundSpeaker/CDAudioSourceSorbett"
