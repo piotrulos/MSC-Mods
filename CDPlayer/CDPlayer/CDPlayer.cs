@@ -16,7 +16,7 @@ public class CDPlayer : Mod
     public override string ID => "CDPlayer";
     public override string Name => "CDPlayer Enhanced";
     public override string Author => "piotrulos";
-    public override string Version => "2.0.1";
+    public override string Version => "2.0.2";
     public override string Description => "Makes adding CDs much easier, no renaming, no converting. (supports <color=orage>*.mp3, *.ogg, *.flac, *.wav, *.aiff</color>";
     public override Game SupportedGames => Game.MySummerCar_And_MyWinterCar;
 
@@ -439,7 +439,10 @@ public class CDPlayer : Mod
             {
                 cd.CDPath = Path.GetFullPath(dirs[i]);
             }
-            cd.LoadTrackData();
+            if (ModLoader.IsReferencePresent("taglib-sharp"))
+                cd.LoadTrackData();
+            else
+                cd.LoadTrackDataDummy();
             //Load coverart.png if exists, else leave default.
             if (File.Exists(Path.Combine(dirs[i], "coverart.png")))
             {

@@ -28,7 +28,22 @@ namespace CDPlayer
         {
             rb.detectCollisions = false;
         }
-
+        public void LoadTrackDataDummy()
+        {
+            if (CDPath != null)
+            {
+                TimeSpan tt = new TimeSpan(0);
+                string[] files = Directory.GetFiles(CDPath);
+                for (int i = 0; i < files.Length; i++)
+                {
+                    if (!ModAudio.allowedExtensions.Contains(Path.GetExtension(files[i]).ToLower())) continue;
+                    tracksCount++;
+                }
+                tt = TimeSpan.FromSeconds(tracksCount);
+                int remainingSeconds = (int)(tt.TotalSeconds % 60);
+                totalTime = $"{(int)tt.TotalMinutes:D2}:{remainingSeconds:D2}";
+            }
+        }
         public void LoadTrackData()
         {
             if (CDPath != null)
