@@ -11,7 +11,7 @@ public class ModsShop : Mod
     public override string ID => "ModsShop";
     public override string Name => "Mods Shop (shop for mods)";
     public override string Author => "piotrulos";
-    public override string Version => "1.2";
+    public override string Version => "1.2.2";
     public override string Description => description;
     public override Game SupportedGames => Game.MySummerCar_And_MyWinterCar;
 

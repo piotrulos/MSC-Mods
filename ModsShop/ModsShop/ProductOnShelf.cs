@@ -1,6 +1,7 @@
 ﻿using HutongGames.PlayMaker;
 using MSCLoader;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ModsShop;
@@ -22,6 +23,7 @@ public class ProductOnShelf : MonoBehaviour
 #if !Mini
     FsmBool GUIbuy;
     FsmString GUIinteraction;
+    MeshRenderer[] meshRenderers;
     void Awake()
     {
         shop = ModsShop.GetShopReference();
@@ -45,6 +47,16 @@ public class ProductOnShelf : MonoBehaviour
             }
         }
         itemDetails.product = this;
+        List<MeshRenderer> mr = new List<MeshRenderer>();
+        if (gameObject.GetComponent<MeshRenderer>() != null)
+        {
+            mr.Add(gameObject.GetComponent<MeshRenderer>());
+        }
+        else
+        {
+            mr.AddRange(GetComponentsInChildren<MeshRenderer>());
+        }
+        meshRenderers = [.. mr];
     }
 
     void OnMouseExit()
@@ -92,7 +104,10 @@ public class ProductOnShelf : MonoBehaviour
                     {
                         if (!itemDetails.MultiplePurchases)
                         {
-                            gameObject.GetComponent<MeshRenderer>().enabled = false;
+                            for (int i = 0; i < meshRenderers.Length; i++)
+                            {
+                                meshRenderers[i].enabled = false;
+                            }
                         }
                     }
                 }
@@ -114,7 +129,10 @@ public class ProductOnShelf : MonoBehaviour
                     shop.shopRefs.cashRegisterMWC.ReduceFromCart(itemDetails);
                     if (!itemDetails.MultiplePurchases)
                     {
-                        gameObject.GetComponent<MeshRenderer>().enabled = true;
+                        for (int i = 0; i < meshRenderers.Length; i++)
+                        {
+                            meshRenderers[i].enabled = true;
+                        }
                     }
                 }
             }
