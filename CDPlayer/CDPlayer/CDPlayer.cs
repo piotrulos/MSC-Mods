@@ -16,7 +16,7 @@ public class CDPlayer : Mod
     public override string ID => "CDPlayer";
     public override string Name => "CDPlayer Enhanced";
     public override string Author => "piotrulos";
-    public override string Version => "2.0.2";
+    public override string Version => "2.0.3";
     public override string Description => "Makes adding CDs much easier, no renaming, no converting. (supports <color=orage>*.mp3, *.ogg, *.flac, *.wav, *.aiff</color>";
     public override Game SupportedGames => Game.MySummerCar_And_MyWinterCar;
 
@@ -103,7 +103,7 @@ public class CDPlayer : Mod
         {
             if (GameObject.Find("CORRIS").transform.Find("Assemblies/VINP_Radio/Sled/cd_sled_pivot") != null)
                 GameObject.Find("CORRIS").transform.Find("Assemblies/VINP_Radio/Sled/cd_sled_pivot").gameObject.GetComponent<CarCDPlayerMWC>();
-            if (GameObject.Find("HOMENEW").transform.Find("Functions/FunctionsDisable/Stereos/Player/Sled/cd_sled_pivot/stereos_sled").gameObject != null)
+            if (GameObject.Find("HOMENEW").transform.Find("Functions/FunctionsDisable/Stereos/Player/Sled/cd_sled_pivot/stereos_sled") != null)
                 GameObject.Find("HOMENEW").transform.Find("Functions/FunctionsDisable/Stereos/Player/Sled/cd_sled_pivot/stereos_sled").gameObject.GetComponent<StereoCDPlayerMWC>().FilterUpdate();
             return;
         }
@@ -309,6 +309,7 @@ public class CDPlayer : Mod
                                 machtwagenCDPlayer.LoadCDFromSave();
                                 break;
                             case AttachedTo.ApartmentStereo:
+                                if (apartmentStereoCDPlayer == null) break;
                                 go.transform.SetParent(apartmentStereoCDPlayer.transform, false);
                                 go.transform.localPosition = new Vector3(-0.1340341f, 0f, 0.1132002f); //Vanilla values
                                 go.transform.localEulerAngles = Vector3.zero;
@@ -643,10 +644,16 @@ public class CDPlayer : Mod
 
         //"HOMENEW/Functions/FunctionsDisable/Stereos/Player/Sled/cd_sled_pivot/stereos_sled"
         //"HOMENEW/Functions/FunctionsDisable/Stereos/Player/ButtonsCD/Volume"
-        PlayMakerFSM volume4 = GameObject.Find("HOMENEW").transform.Find("Functions/FunctionsDisable/Stereos/Player/ButtonsCD/Volume").GetPlayMaker("Knob");
-        GameObject.Find("HOMENEW").transform.Find("Functions/FunctionsDisable/Stereos/Player/Sled/cd_sled_pivot/stereos_sled").gameObject.AddComponent<StereoCDPlayerMWC>().SetupMod(this, AttachedTo.ApartmentStereo, volume4);
-        apartmentStereoCDPlayer = GameObject.Find("HOMENEW").transform.Find("Functions/FunctionsDisable/Stereos/Player/Sled/cd_sled_pivot/stereos_sled").GetComponent<StereoCDPlayerMWC>();
-
+        if (GameObject.Find("HOMENEW").transform.Find("Functions/FunctionsDisable/Stereos/Player/ButtonsCD/Volume") != null)
+        {
+            PlayMakerFSM volume4 = GameObject.Find("HOMENEW").transform.Find("Functions/FunctionsDisable/Stereos/Player/ButtonsCD/Volume").GetPlayMaker("Knob");
+            GameObject.Find("HOMENEW").transform.Find("Functions/FunctionsDisable/Stereos/Player/Sled/cd_sled_pivot/stereos_sled").gameObject.AddComponent<StereoCDPlayerMWC>().SetupMod(this, AttachedTo.ApartmentStereo, volume4);
+            apartmentStereoCDPlayer = GameObject.Find("HOMENEW").transform.Find("Functions/FunctionsDisable/Stereos/Player/Sled/cd_sled_pivot/stereos_sled").GetComponent<StereoCDPlayerMWC>();
+        }
+        else
+        {
+            ModConsole.Print("Evicted from the apartment (no apartment stereo found)");
+        }
         ModConsole.Print("<color=green>Your CD Players are now enhanced! Enjoy.</color>");
     }
 
