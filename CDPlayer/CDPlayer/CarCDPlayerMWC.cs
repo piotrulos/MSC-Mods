@@ -15,7 +15,8 @@ namespace CDPlayer
         Sorbet,
         Corris,
         Machtwagen,
-        ApartmentStereo
+        ApartmentStereo,
+        Custom
     }
     public class SpeakerWatcherCDPE : MonoBehaviour
     {
@@ -92,8 +93,13 @@ namespace CDPlayer
         private FsmString channelFsmText;
 
         private AudioDistortionFilter distortionFilter;
-        public void SetupMod(CDPlayer mod, AttachedTo car, PlayMakerFSM knobFsm)
+        internal void SetupMod(CDPlayer mod, AttachedTo car, PlayMakerFSM knobFsm)
         {
+            if(transform.childCount > 0) //if Vanilla CD was inserted before installing mod
+            {
+                transform.GetChild(0).gameObject.SetActive(false);
+                transform.GetChild(0).SetParent(null);
+            }
             cdplayer = mod;
             attachedCar = car;
             audioPlayer = gameObject.AddComponent<ModAudio>();
@@ -113,6 +119,7 @@ namespace CDPlayer
             knobFsm.gameObject.FsmInject("Knob", "Elec off", TurnOff);
             knobFsm.gameObject.FsmInject("Knob", "State 2", ResetWait);
             channelFsmText = knobFsm.GetVariable<FsmString>("Channel");
+            eject.gameObject.GetPlayMaker("Use").GetVariable<FsmGameObject>("TriggerDisc").Value.GetPlayMaker("Data").GetVariable<FsmBool>("CDin").Value = false;
             eject.gameObject.GetPlayMaker("Use").GetVariable<FsmGameObject>("TriggerDisc").Value.SetActive(false);
             eject.gameObject.GetPlayMaker("Use").enabled = false;
             audioPlayer.audioSource = knobFsm.GetVariable<FsmGameObject>("SoundSource").Value.GetComponent<AudioSource>();
@@ -125,7 +132,7 @@ namespace CDPlayer
                 audioPlayer.gameObject.AddComponent<SpeakerWatcherCDPE>().cdp = this;
             }
         }
-        public void FilterUpdate(bool forceEnable = false)
+        internal void FilterUpdate(bool forceEnable = false)
         {
             if (forceEnable)
             {

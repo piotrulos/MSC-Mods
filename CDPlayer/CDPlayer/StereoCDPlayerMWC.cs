@@ -55,8 +55,13 @@ namespace CDPlayer
         private FsmString channelFsmText;
 
         private AudioDistortionFilter distortionFilter;
-        public void SetupMod(CDPlayer mod, AttachedTo car, PlayMakerFSM knobFsm)
+        internal void SetupMod(CDPlayer mod, AttachedTo car, PlayMakerFSM knobFsm)
         {
+            if(transform.parent.Find("cd(itemx)") != null)
+            {
+                transform.parent.Find("cd(itemx)").gameObject.SetActive(false);
+                transform.parent.Find("cd(itemx)").SetParent(null);
+            }
             cdplayer = mod;
             attachedCar = car;
             audioPlayer = gameObject.AddComponent<ModAudio>();
@@ -64,6 +69,7 @@ namespace CDPlayer
 
             lcdText = knobFsm.GetVariable<FsmGameObject>("Settings").Value.transform.parent.Find("LCD").GetComponent<TextMesh>();
             eject = knobFsm.GetVariable<FsmGameObject>("Eject").Value.GetComponent<SphereCollider>();
+            eject.gameObject.GetPlayMaker("Use").GetVariable<FsmGameObject>("TriggerDisc").Value.GetPlayMaker("Data").GetVariable<FsmBool>("CDin").Value = false;
             eject.gameObject.GetPlayMaker("Use").GetVariable<FsmGameObject>("TriggerDisc").Value.SetActive(false);
             eject.gameObject.GetPlayMaker("Use").enabled = false;
 
@@ -83,7 +89,7 @@ namespace CDPlayer
             distortionFilter = knobFsm.GetVariable<FsmGameObject>("SoundSource").Value.GetComponent<AudioDistortionFilter>();
             knobFsm.GetVariable<FsmGameObject>("SoundSource").Value.GetPlayMaker("Update").enabled = false;
         }
-        public void FilterUpdate()
+        internal void FilterUpdate()
         {
             distortionFilter.enabled = !cdplayer.bypassDisStereo.GetValue();
         }

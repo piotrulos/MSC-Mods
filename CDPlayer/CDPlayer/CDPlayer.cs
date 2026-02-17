@@ -16,7 +16,7 @@ public class CDPlayer : Mod
     public override string ID => "CDPlayer";
     public override string Name => "CDPlayer Enhanced";
     public override string Author => "piotrulos";
-    public override string Version => "2.0.3";
+    public override string Version => "2.0.4";
     public override string Description => "Makes adding CDs much easier, no renaming, no converting. (supports <color=orage>*.mp3, *.ogg, *.flac, *.wav, *.aiff</color>";
     public override Game SupportedGames => Game.MySummerCar_And_MyWinterCar;
 
@@ -498,6 +498,8 @@ public class CDPlayer : Mod
             }
         }
         //disable OG cds (probably not needed anymore since import is disabled)
+        for(int i = 0; i < 3; i++)
+            GameObject.Find("cd(itemx)")?.SetActive(false);
         GameObject.Find("cd(item1)")?.SetActive(false);
         GameObject.Find("cd case(item1)")?.SetActive(false);
         GameObject.Find("cd(item2)")?.SetActive(false);
@@ -509,8 +511,8 @@ public class CDPlayer : Mod
     {
         int cdPrice = 100;
         if (ModLoader.CurrentGame == Game.MyWinterCar) cdPrice = 75;
-        ModsShop.Shop shop;
-        shop = ModsShop.ModsShop.GetShopReference();
+        ModsShop.Shop shop = ModsShop.ModsShop.GetShopReference();
+
         ModsShop.ItemDetails rackitem = shop.CreateShopItem(this, "rack1", "Rack for 10 CDs", 50, true, BuyCDRack, assets.rack10, ModsShop.SpawnMethod.Instantiate);
         shop.AddDisplayItem(rackitem, assets.rack10_d, ModsShop.SpawnMethod.Instantiate);
         bool first = true;
