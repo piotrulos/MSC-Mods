@@ -13,7 +13,7 @@ namespace CDPlayer
     public class CarCDPlayer : MonoBehaviour
     {
 #if !Mini     
-        public CDPlayer cdplayer;
+     //   public CDPlayer cdplayer;
 
         private ModAudio audioPlayer;
         private bool isPlayerOn;
@@ -54,10 +54,10 @@ namespace CDPlayer
 
         private AudioDistortionFilter distortionFilter;
 
-       public void SetupPlayer(CDPlayer cdp)
+       public void SetupPlayer()
         {
             //Setup palyer
-            cdplayer = cdp;
+          //  cdplayer = cdp;
             rootCDplayer = transform.parent.parent;
             rootCDplayer.transform.Find("trigger_disc").gameObject.SetActive(false);
             audioPlayer = gameObject.AddComponent<ModAudio>();
@@ -110,7 +110,7 @@ namespace CDPlayer
             }
             if (subwooferInstalled.Value)
             {
-                distortionFilter.enabled = !cdplayer.bypassDisCar.GetValue();
+                distortionFilter.enabled = !CDPlayer.bypassDisCar.GetValue();
             }
         }
         void TurnOn()
@@ -177,10 +177,10 @@ namespace CDPlayer
             switch (channel)
             {
                 case 1:
-                    url = cdplayer.channel3url.GetValue();
+                    url = CDPlayer.channel3url.GetValue();
                     break;
                 case 2:
-                    url = cdplayer.channel4url.GetValue();
+                    url = CDPlayer.channel4url.GetValue();
                     break;
             }
             PlayMakerFSM radioCh = RadioChannels.GetComponent<PlayMakerFSM>();
@@ -192,7 +192,7 @@ namespace CDPlayer
 
             if (url != null && url != string.Empty)
             {
-                if (cdplayer.debugInfo.GetValue())
+                if (CDPlayer.debugInfo.GetValue())
                     audioStreamPlayer.showDebug = true;
                 audioStreamPlayer.PlayStream(url);
                 radioCh.FsmVariables.FindFsmBool("OnStatic").Value = false;
@@ -340,7 +340,7 @@ namespace CDPlayer
             {
                 if (!waiting)
                 {
-                    if (cdplayer.RDSsim.GetValue() && !isEmptyStreamingChannel)
+                    if (CDPlayer.RDSsim.GetValue() && !isEmptyStreamingChannel)
                         lcdText.text = DisplayRDS;
                     else
                         lcdText.text = $"Channel {streamingChannel + 2}";

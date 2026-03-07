@@ -54,8 +54,8 @@ namespace CDPlayer
     {
 #if !Mini
         public AttachedTo attachedCar;
-
-        private CDPlayer cdplayer;
+        public string customName = "None";
+     //   private CDPlayer cdplayer;
         private ModAudio audioPlayer;
         private bool isPlayerOn;
         private bool isCDin;
@@ -93,14 +93,19 @@ namespace CDPlayer
         private FsmString channelFsmText;
 
         private AudioDistortionFilter distortionFilter;
-        internal void SetupMod(CDPlayer mod, AttachedTo car, PlayMakerFSM knobFsm)
+
+        internal void SetupCustomVanillaMod(string customPlayerName, PlayMakerFSM knobFsm)
+        {
+            customName = customPlayerName;
+            SetupVanillaPlayer(AttachedTo.Custom, knobFsm);
+        }
+        internal void SetupVanillaPlayer(AttachedTo car, PlayMakerFSM knobFsm)
         {
             if(transform.childCount > 0) //if Vanilla CD was inserted before installing mod
             {
                 transform.GetChild(0).gameObject.SetActive(false);
                 transform.GetChild(0).SetParent(null);
             }
-            cdplayer = mod;
             attachedCar = car;
             audioPlayer = gameObject.AddComponent<ModAudio>();
             audioStreamPlayer = gameObject.AddComponent<ModAudioStream>();
@@ -141,7 +146,7 @@ namespace CDPlayer
             }
             if (audioPlayer.transform.parent.name == "SoundSpeakerBass")
             {
-                distortionFilter.enabled = !cdplayer.bypassDisCar.GetValue();
+                distortionFilter.enabled = !CDPlayer.bypassDisCar.GetValue();
             }
         }
         void Start()
@@ -206,10 +211,10 @@ namespace CDPlayer
             switch (channel)
             {
                 case 1:
-                    url = cdplayer.channel3url.GetValue();
+                    url = CDPlayer.channel3url.GetValue();
                     break;
                 case 2:
-                    url = cdplayer.channel4url.GetValue();
+                    url = CDPlayer.channel4url.GetValue();
                     break;
             }
             PlayMakerFSM radioCh = RadioChannels.GetComponent<PlayMakerFSM>();
@@ -221,7 +226,7 @@ namespace CDPlayer
 
             if (url != null && url != string.Empty)
             {
-                if (cdplayer.debugInfo.GetValue())
+                if (CDPlayer.debugInfo.GetValue())
                     audioStreamPlayer.showDebug = true;
                 audioStreamPlayer.PlayStream(url);
                 radioCh.FsmVariables.FindFsmBool("OnStatic").Value = false;
@@ -369,7 +374,7 @@ namespace CDPlayer
             {
                 if (!waiting)
                 {
-                    if (cdplayer.RDSsim.GetValue() && !isEmptyStreamingChannel)
+                    if (CDPlayer.RDSsim.GetValue() && !isEmptyStreamingChannel)
                         SetLCDText(DisplayRDS);
                     else
                         SetLCDText($"Channel {streamingChannel + 2}");
