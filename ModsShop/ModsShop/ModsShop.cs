@@ -11,7 +11,7 @@ public class ModsShop : Mod
     public override string ID => "ModsShop";
     public override string Name => "Mods Shop (shop for mods)";
     public override string Author => "piotrulos";
-    public override string Version => "1.2.2";
+    public override string Version => "1.2.3";
     public override string Description => description;
     public override Game SupportedGames => Game.MySummerCar_And_MyWinterCar;
 
@@ -62,7 +62,7 @@ public class ModsShop : Mod
 
         GameObject psk = GameObject.Find("PERAPORTTI");
         modShop = new GameObject("Mod Shop");
-        modShop.transform.SetParent(psk.transform.Find("Building/LOD/Store"), false);
+        modShop.transform.SetParent(psk.transform.Find("Building/LOD100/Store"), false);
         modShop.transform.localPosition = new Vector3(14f, 16f, 1.2f);
         modShop.transform.localEulerAngles = new Vector3(90, 0, 0);
         shelves = GameObject.Instantiate(shelves);

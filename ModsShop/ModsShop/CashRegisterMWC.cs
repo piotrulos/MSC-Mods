@@ -24,7 +24,7 @@ public class CashRegisterMWC : MonoBehaviour
     private byte bagSpawnPointNo = 0;
     void Start()
     {
-        pskRegister = GameObject.Find("PERAPORTTI").transform.Find("Building/Store/Cashier/StoreCashRegister/CashRegisterLogic").GetComponent<PlayMakerFSM>();
+        pskRegister = GameObject.Find("PERAPORTTI").transform.Find("ActiveFunctions/Store/Cashier/StoreCashRegister/CashRegisterLogic").GetComponent<PlayMakerFSM>();
         pskRegister.FsmInject("Purchase", ModsShopPurchase);
     }
 
