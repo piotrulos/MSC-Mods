@@ -17,7 +17,7 @@ namespace CDPlayer
         public AttachedTo attachedCar;
 
         //CDPlayer
-     //   private CDPlayer cdplayer;
+        //   private CDPlayer cdplayer;
         private ModAudio audioPlayer;
         private bool isPlayerOn;
         private bool isCDin;
@@ -57,12 +57,12 @@ namespace CDPlayer
         private AudioDistortionFilter distortionFilter;
         internal void SetupVanillaPlayer(AttachedTo car, PlayMakerFSM knobFsm)
         {
-            if(transform.parent.Find("cd(itemx)") != null)
+            if (transform.parent.Find("cd(itemx)") != null)
             {
                 transform.parent.Find("cd(itemx)").gameObject.SetActive(false);
                 transform.parent.Find("cd(itemx)").SetParent(null);
             }
-           // cdplayer = mod;
+            // cdplayer = mod;
             attachedCar = car;
             audioPlayer = gameObject.AddComponent<ModAudio>();
             audioStreamPlayer = gameObject.AddComponent<ModAudioStream>();

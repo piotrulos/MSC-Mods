@@ -16,7 +16,7 @@ public class CDPlayer : Mod
     public override string ID => "CDPlayer";
     public override string Name => "CDPlayer Enhanced";
     public override string Author => "piotrulos";
-    public override string Version => "2.0.4";
+    public override string Version => "2.0.5";
     public override string Description => "Makes adding CDs much easier, no renaming, no converting. (supports <color=orage>*.mp3, *.ogg, *.flac, *.wav, *.aiff</color>";
     public override Game SupportedGames => Game.MySummerCar_And_MyWinterCar;
 
@@ -28,7 +28,7 @@ public class CDPlayer : Mod
     public static SettingsCheckBox debugInfo, RDSsim;
     public static SettingsTextBox channel3url, channel4url;
     static List<GameObject> listOfCDs, listOfCases, listOfDisplayCases, listOfRacks;
-    
+
     private CDExternalFolders externalFolders;
     private SettingsText externalFoldersText;
 
@@ -41,9 +41,11 @@ public class CDPlayer : Mod
     {
         SetupFunction(Setup.OnMenuLoad, CDPlayer_OnMenuLoad);
         SetupFunction(Setup.OnLoad, CDPlayer_OnLoad);
+        if (ModLoader.CurrentGame == Game.MyWinterCar)
+            SetupFunction(Setup.PostLoad, CDPlayer_PostLoad);
         SetupFunction(Setup.OnSave, CDPlayer_OnSave);
         SetupFunction(Setup.ModSettings, CDPlayer_Settings);
-     //   SetupFunction(Setup.Update, test); //Debug only
+        //     SetupFunction(Setup.Update, test); //Debug only
 
         //MWC
         //"SORBET(190-200psi)/Functions/Radio/SoundSpeaker/CDAudioSourceSorbett"
@@ -58,6 +60,7 @@ public class CDPlayer : Mod
     }
     void CDPlayer_OnMenuLoad()
     {
+        CDPlayerStorage.Reset();
         GameObject r = GameObject.Find("Radio");
         GameObject text = GameObject.Find("Interface/Songs/LoadingCD");
         if (ModLoader.IsModPresent("Toiveradio_Enhanced"))
@@ -75,9 +78,9 @@ public class CDPlayer : Mod
             Directory.CreateDirectory(CDFolderPath);
         if (!File.Exists(Path.Combine(CDFolderPath, "CD Player Enhanced.txt")))
             File.WriteAllText(Path.Combine(CDFolderPath, "CD Player Enhanced.txt"), readme);
-        if (File.Exists(Path.Combine(CDFolderPath, "ExternalFolders.json")))        
+        if (File.Exists(Path.Combine(CDFolderPath, "ExternalFolders.json")))
             externalFolders = JsonConvert.DeserializeObject<CDExternalFolders>(File.ReadAllText(Path.Combine(CDFolderPath, "ExternalFolders.json")));
-        else 
+        else
             externalFolders = new CDExternalFolders();
         externalFoldersText.SetValue($"<color=yellow>{externalFolders.Folders.Count}</color> <color=aqua>external folder(s) found</color>");
 
@@ -98,7 +101,7 @@ public class CDPlayer : Mod
 
     public void FilterChange()
     {
-        if(ModLoader.CurrentScene != CurrentScene.Game) return;
+        if (ModLoader.CurrentScene != CurrentScene.Game) return;
         if (ModLoader.CurrentGame == Game.MyWinterCar)
         {
             if (GameObject.Find("CORRIS").transform.Find("Assemblies/VINP_Radio/Sled/cd_sled_pivot") != null)
@@ -116,7 +119,7 @@ public class CDPlayer : Mod
         Settings.AddHeader("CD player Folders", new Color32(0, 128, 0, 255));
         Settings.AddText($"<color=yellow>{Directory.GetDirectories(CDFolderPath).Count()}</color> <color=aqua>CD folder(s) found</color>");
         Settings.AddButton("Open CD folder", delegate { Process.Start(Path.GetFullPath("CD")); }, Color.black, Color.white, SettingsButton.ButtonIcon.Folder);
-        externalFoldersText= Settings.AddText($"");
+        externalFoldersText = Settings.AddText($"");
         Settings.AddButton("Add external folder", AddCustomFolderMenu, Color.black, Color.white, SettingsButton.ButtonIcon.Add);
         Settings.AddButton("Remove external folders", () => EditCustomFolderMenu(), Color.black, Color.white, SettingsButton.ButtonIcon.Close);
 
@@ -124,13 +127,13 @@ public class CDPlayer : Mod
         Settings.AddText("Disable distortion filters");
         bypassDisCar = Settings.AddCheckBox("cdDisBypass", "Disable distortion filter on aftermarket amplified speakers", false, FilterChange);
         if (ModLoader.CurrentGame == Game.MyWinterCar)
-        {            
+        {
             bypassDisStereo = Settings.AddCheckBox("cdDisBypassStereo", "Disable distortion filter on apartment stereo", false, FilterChange);
         }
         Settings.AddHeader("Reset Settings");
         Settings.AddText("Respawn purchased stuff on kitchen table (if you lost them)");
         Settings.AddButton("Reset CDs", ResetPosition, Color.black, Color.white, SettingsButton.ButtonIcon.Update);
-        if(ModLoader.CurrentGame == Game.MyWinterCar)
+        if (ModLoader.CurrentGame == Game.MyWinterCar)
             Settings.AddButton("Reset CDs (Apartment)", ResetPositionApartment, Color.black, Color.white, SettingsButton.ButtonIcon.Update);
 
         Settings.AddHeader("Internet radio settings", new Color32(0, 128, 0, 255));
@@ -147,17 +150,17 @@ public class CDPlayer : Mod
         popup = ModUI.CreatePopupSetting("Add Custom Folder", "Add folder");
         popup.AddText("Add path to custom folder with music.");
         popup.AddText("<color=yellow>IMPORTANT: It will only take music files from root of specified folder, subfolders will be ignored (you need to add them separately)</color>");
-        popup.AddTextBox("folderPath", "Path:",string.Empty, @"ex. C:\Music\MyCoolMusic");
+        popup.AddTextBox("folderPath", "Path:", string.Empty, @"ex. C:\Music\MyCoolMusic");
         popup.ShowPopup(AddFolder, true);
     }
     void AddFolder(string path)
     {
-        
+
         ExternalFoldersResult result = ModUI.ParsePopupResponse<ExternalFoldersResult>(path);
         if (result.folderPath == null || result.folderPath == string.Empty)
-        { 
+        {
             ModUI.ShowMessage("Folder path is empty", "Error");
-            return; 
+            return;
         }
         if (!Directory.Exists(result.folderPath))
         {
@@ -315,6 +318,15 @@ public class CDPlayer : Mod
                                 go.transform.localEulerAngles = Vector3.zero;
                                 apartmentStereoCDPlayer.LoadCDFromSave();
                                 break;
+                            case AttachedTo.CustomCarMWC:
+                                CustomCarPlayer stereoCDPlayerMWC = CDPlayerStorage.players.Where(x => x.playerName == cdsavelist.customPlayerName).FirstOrDefault();
+                                if (stereoCDPlayerMWC == null) break;
+                                CarCDPlayerMWC carCDPlayerMWC = stereoCDPlayerMWC.mwcPlayer;
+                                go.transform.SetParent(carCDPlayerMWC.transform, false);
+                                go.transform.localPosition = Vector3.zero;
+                                go.transform.localEulerAngles = Vector3.zero;
+                                carCDPlayerMWC.LoadCDFromSave();
+                                break;
                             default:
                                 //WTF Happened here
                                 Console.WriteLine($"WTF happened here. PlayerID: {cdsavelist.inPlayerID}");
@@ -389,8 +401,11 @@ public class CDPlayer : Mod
             {
                 CDPSaveList csl = new CDPSaveList(0, listOfCDs[i].GetComponent<CD>().CDName, Vector3.zero, Vector3.zero);
                 csl.inPlayer = true;
-                if(ModLoader.CurrentGame == Game.MyWinterCar)
+                if (ModLoader.CurrentGame == Game.MyWinterCar)
+                {
                     csl.inPlayerID = listOfCDs[i].GetComponent<CD>().inPlayerID;
+                    csl.customPlayerName = listOfCDs[i].GetComponent<CD>().inPlayerName;
+                }
                 save.goSaveList.Add(csl);
             }
         }
@@ -400,9 +415,11 @@ public class CDPlayer : Mod
             File.Delete(old_path);
     }
 
+
     //Called when mod is loading
     void CDPlayer_OnLoad()
     {
+
         AssetBundle ab = LoadAssets.LoadBundle(this, "cdplayer.unity3d");
         assets = ab.LoadAsset<GameObject>("cdprefabs.prefab").GetComponent<AssetRefs>();
         ab.Unload(false);
@@ -410,7 +427,7 @@ public class CDPlayer : Mod
         LabelGenerator labelGenerator = GameObject.Instantiate(assets.labelGenerator).GetComponent<LabelGenerator>();
         labelGenerator.transform.position = new Vector3(0f, -10f, 0f);
         string[] dirs = Directory.GetDirectories(CDFolderPath);
-        if(externalFolders.Folders.Count > 0)
+        if (externalFolders.Folders.Count > 0)
             dirs = [.. dirs, .. externalFolders.Folders];
         listOfCDs = new List<GameObject>();
         listOfCases = new List<GameObject>();
@@ -498,7 +515,7 @@ public class CDPlayer : Mod
             }
         }
         //disable OG cds (probably not needed anymore since import is disabled)
-        for(int i = 0; i < 3; i++)
+        for (int i = 0; i < 3; i++)
             GameObject.Find("cd(itemx)")?.SetActive(false);
         GameObject.Find("cd(item1)")?.SetActive(false);
         GameObject.Find("cd case(item1)")?.SetActive(false);
@@ -506,6 +523,14 @@ public class CDPlayer : Mod
         GameObject.Find("cd case(item2)")?.SetActive(false);
         GameObject.Find("cd(item3)")?.SetActive(false);
         GameObject.Find("cd case(item3)")?.SetActive(false);
+    }
+    void CDPlayer_PostLoad()
+    {
+        if (CDPlayerStorage.players.Count == 0) return;
+        if (SaveLoad.ValueExists(this, "SaveData"))
+        {
+            LoadUnifiedSave();
+        }
     }
     void SetupShop()
     {
@@ -626,8 +651,8 @@ public class CDPlayer : Mod
         //"SORBET(190-200psi)/Functions/Radio/cd player(Clone)/Sled/cd_sled_pivot"
         PlayMakerFSM volume = GameObject.Find("SORBET(190-200psi)").transform.Find("Functions/Radio/cd player(Clone)/ButtonsCD/CDplrVolume").GetPlayMaker("Knob");
         GameObject.Find("SORBET(190-200psi)").transform.Find("Functions/Radio/cd player(Clone)/Sled/cd_sled_pivot").gameObject.AddComponent<CarCDPlayerMWC>().SetupVanillaPlayer(AttachedTo.Sorbet, volume);
-        sorbetCDPlayer =  GameObject.Find("SORBET(190-200psi)").transform.Find("Functions/Radio/cd player(Clone)/Sled/cd_sled_pivot").GetComponent<CarCDPlayerMWC>();
-      
+        sorbetCDPlayer = GameObject.Find("SORBET(190-200psi)").transform.Find("Functions/Radio/cd player(Clone)/Sled/cd_sled_pivot").GetComponent<CarCDPlayerMWC>();
+
         //"JOBS/TAXIJOB/MACHTWAGEN/LOD/Radio/cd player(Clone)/ButtonsCD/CDplrVolume"
         //"JOBS/TAXIJOB/MACHTWAGEN/LOD/Radio/cd player(Clone)/Sled/cd_sled_pivot"
         GameObject machtwagen = GameObject.Find("JOBS").transform.Find("TAXIJOB/MACHTWAGEN").gameObject;

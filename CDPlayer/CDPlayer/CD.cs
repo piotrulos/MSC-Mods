@@ -15,6 +15,7 @@ namespace CDPlayer
         public bool inCase = false;
         public bool inPlayer = false;
         public sbyte inPlayerID = -1;
+        public string inPlayerName = "None";
         public Rigidbody rb;
         public BoxCollider trig;
 
@@ -89,6 +90,7 @@ namespace CDPlayer
                     rb.detectCollisions = true;
                     inPlayer = false;
                     inPlayerID = -1;
+                    inPlayerName = "None";
                     inCase = false;
                 }
             }
@@ -97,6 +99,7 @@ namespace CDPlayer
                 rb.detectCollisions = true;
                 inPlayer = false;
                 inPlayerID = -1;
+                inPlayerName = "None";
                 inCase = false;
             }
             if (transform.parent == null && !rb.useGravity)

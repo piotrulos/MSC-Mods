@@ -16,11 +16,11 @@ namespace CDPlayer
         Corris,
         Machtwagen,
         ApartmentStereo,
-        Custom
+        CustomCarMWC
     }
     public class SpeakerWatcherCDPE : MonoBehaviour
     {
-       public  CarCDPlayerMWC cdp;
+        public CarCDPlayerMWC cdp;
         public CarCDPlayer cdp2;
         void OnTransformParentChanged()
         {
@@ -36,7 +36,7 @@ namespace CDPlayer
                     cdp.FilterUpdate(true);
                 }
             }
-            if(ModLoader.CurrentGame == Game.MySummerCar)
+            if (ModLoader.CurrentGame == Game.MySummerCar)
             {
                 if (transform.parent.name == "SpeakerBass")
                 {
@@ -55,7 +55,7 @@ namespace CDPlayer
 #if !Mini
         public AttachedTo attachedCar;
         public string customName = "None";
-     //   private CDPlayer cdplayer;
+        //   private CDPlayer cdplayer;
         private ModAudio audioPlayer;
         private bool isPlayerOn;
         private bool isCDin;
@@ -94,14 +94,15 @@ namespace CDPlayer
 
         private AudioDistortionFilter distortionFilter;
 
-        internal void SetupCustomVanillaMod(string customPlayerName, PlayMakerFSM knobFsm)
+        public void SetupCustomVanillaPlayer(string uniquePlayerName, PlayMakerFSM knobFsm)
         {
-            customName = customPlayerName;
-            SetupVanillaPlayer(AttachedTo.Custom, knobFsm);
+            customName = uniquePlayerName;
+            CDPlayerStorage.players.Add(new CustomCarPlayer(uniquePlayerName, this));
+            SetupVanillaPlayer(AttachedTo.CustomCarMWC, knobFsm);
         }
         internal void SetupVanillaPlayer(AttachedTo car, PlayMakerFSM knobFsm)
         {
-            if(transform.childCount > 0) //if Vanilla CD was inserted before installing mod
+            if (transform.childCount > 0) //if Vanilla CD was inserted before installing mod
             {
                 transform.GetChild(0).gameObject.SetActive(false);
                 transform.GetChild(0).SetParent(null);
@@ -426,6 +427,7 @@ namespace CDPlayer
             eject.gameObject.SetActive(true);
             cd.inPlayer = true;
             cd.inPlayerID = (sbyte)attachedCar;
+            cd.inPlayerName = customName;
             loadingCD = true;
             isCDin = true;
             currentSong = 0;
@@ -475,6 +477,7 @@ namespace CDPlayer
             eject.gameObject.SetActive(true);
             cd.inPlayer = true;
             cd.inPlayerID = (sbyte)attachedCar;
+            cd.inPlayerName = customName;
             isCDin = true;
             currentSong = 0;
             LoadCdFromSaveRoutine = false;
@@ -504,7 +507,7 @@ namespace CDPlayer
         }
         IEnumerator EjectWait(GameObject cd)
         {
-            while(gameObject.GetComponentInParent<Animation>().isPlaying)
+            while (gameObject.GetComponentInParent<Animation>().isPlaying)
                 yield return null;
             cd.MakePickable();
         }

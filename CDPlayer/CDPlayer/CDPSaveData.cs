@@ -3,6 +3,28 @@ using UnityEngine;
 
 namespace CDPlayer
 {
+    class CDPlayerStorage
+    {
+        internal static List<CustomCarPlayer> players = new List<CustomCarPlayer>();
+
+        internal static void Reset()
+        {
+            players = new List<CustomCarPlayer>();
+        }
+
+    }
+    class CustomCarPlayer
+    {
+        internal string playerName;
+        internal CarCDPlayerMWC mwcPlayer;
+
+        internal CustomCarPlayer(string name, CarCDPlayerMWC car)
+        {
+            playerName = name;
+            mwcPlayer = car;
+        }
+
+    }
     public class CDExternalFolders
     {
         public List<string> Folders = new List<string>();

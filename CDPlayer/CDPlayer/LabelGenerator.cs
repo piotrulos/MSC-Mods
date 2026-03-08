@@ -1,7 +1,5 @@
-﻿using MSCLoader;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -32,13 +30,13 @@ public class LabelGenerator : MonoBehaviour
     public Text boxText = null;
     public Text cdText = null;
     public bool doIt = false;
-   // public Texture2D label;
+    // public Texture2D label;
 
     Queue<Labels> queue = new Queue<Labels>();
     Coroutine generator = null;
     void Awake()
     {
-      //  generatorCam.gameObject.AddComponent<StickerCam>();
+        //  generatorCam.gameObject.AddComponent<StickerCam>();
     }
     internal void AddToQueue(string textb, string textc, MeshRenderer[] mr)
     {

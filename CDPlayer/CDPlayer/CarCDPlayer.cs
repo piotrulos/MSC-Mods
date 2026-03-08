@@ -12,8 +12,8 @@ namespace CDPlayer
 {
     public class CarCDPlayer : MonoBehaviour
     {
-#if !Mini     
-     //   public CDPlayer cdplayer;
+#if !Mini
+        //   public CDPlayer cdplayer;
 
         private ModAudio audioPlayer;
         private bool isPlayerOn;
@@ -54,10 +54,10 @@ namespace CDPlayer
 
         private AudioDistortionFilter distortionFilter;
 
-       public void SetupPlayer()
+        public void SetupPlayer()
         {
             //Setup palyer
-          //  cdplayer = cdp;
+            //  cdplayer = cdp;
             rootCDplayer = transform.parent.parent;
             rootCDplayer.transform.Find("trigger_disc").gameObject.SetActive(false);
             audioPlayer = gameObject.AddComponent<ModAudio>();
