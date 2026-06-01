@@ -16,7 +16,7 @@ public class CDPlayer : Mod
     public override string ID => "CDPlayer";
     public override string Name => "CDPlayer Enhanced";
     public override string Author => "piotrulos";
-    public override string Version => "2.0.5";
+    public override string Version => "2.0.6";
     public override string Description => "Makes adding CDs much easier, no renaming, no converting. (supports <color=orage>*.mp3, *.ogg, *.flac, *.wav, *.aiff</color>";
     public override Game SupportedGames => Game.MySummerCar_And_MyWinterCar;
 
@@ -647,11 +647,11 @@ public class CDPlayer : Mod
     }
     void FindCDPlayers_MWC()
     {
-        //"SORBET(190-200psi)/Functions/Radio/cd player(Clone)/ButtonsCD/CDplrVolume"
+        //"SORBET(190-200psi)/Functions/Radio/cd player(Clone)/ButtonsCD/CDplrVolume" "SORBET(190-200psi)/Functions/VINP_RadioSorbet/CDPlayer1/ButtonsCD/CDplrVolume"
         //"SORBET(190-200psi)/Functions/Radio/cd player(Clone)/Sled/cd_sled_pivot"
-        PlayMakerFSM volume = GameObject.Find("SORBET(190-200psi)").transform.Find("Functions/Radio/cd player(Clone)/ButtonsCD/CDplrVolume").GetPlayMaker("Knob");
-        GameObject.Find("SORBET(190-200psi)").transform.Find("Functions/Radio/cd player(Clone)/Sled/cd_sled_pivot").gameObject.AddComponent<CarCDPlayerMWC>().SetupVanillaPlayer(AttachedTo.Sorbet, volume);
-        sorbetCDPlayer = GameObject.Find("SORBET(190-200psi)").transform.Find("Functions/Radio/cd player(Clone)/Sled/cd_sled_pivot").GetComponent<CarCDPlayerMWC>();
+        PlayMakerFSM volume = GameObject.Find("SORBET(190-200psi)").transform.Find("Functions/VINP_RadioSorbet/CDPlayer1/ButtonsCD/CDplrVolume").GetPlayMaker("Knob");
+        GameObject.Find("SORBET(190-200psi)").transform.Find("Functions/VINP_RadioSorbet/Sled/cd_sled_pivot").gameObject.AddComponent<CarCDPlayerMWC>().SetupVanillaPlayer(AttachedTo.Sorbet, volume);
+        sorbetCDPlayer = GameObject.Find("SORBET(190-200psi)").transform.Find("Functions/VINP_RadioSorbet/Sled/cd_sled_pivot").GetComponent<CarCDPlayerMWC>();
 
         //"JOBS/TAXIJOB/MACHTWAGEN/LOD/Radio/cd player(Clone)/ButtonsCD/CDplrVolume"
         //"JOBS/TAXIJOB/MACHTWAGEN/LOD/Radio/cd player(Clone)/Sled/cd_sled_pivot"
@@ -662,11 +662,11 @@ public class CDPlayer : Mod
         machtwagen.transform.Find("LOD/Radio/cd player(Clone)/Sled/cd_sled_pivot").gameObject.AddComponent<CarCDPlayerMWC>().SetupVanillaPlayer(AttachedTo.Machtwagen, volume2);
         machtwagenCDPlayer = machtwagen.transform.Find("LOD/Radio/cd player(Clone)/Sled/cd_sled_pivot").GetComponent<CarCDPlayerMWC>();
 
-        //"CORRIS/Assemblies/VINP_Radio/Sled/cd_sled_pivot"
+        //"CORRIS/Assemblies/VINP_Radio/Sled/cd_sled_pivot" "CORRIS/Assemblies/VINP_RadioCorris"
         //"CORRIS/Assemblies/VINP_Radio/CDPlayer1/ButtonsCD/CDplrVolume"
-        PlayMakerFSM volume3 = GameObject.Find("CORRIS").transform.Find("Assemblies/VINP_Radio/CDPlayer1/ButtonsCD/CDplrVolume").GetPlayMaker("Knob");
-        GameObject.Find("CORRIS").transform.Find("Assemblies/VINP_Radio/Sled/cd_sled_pivot").gameObject.AddComponent<CarCDPlayerMWC>().SetupVanillaPlayer(AttachedTo.Corris, volume3);
-        corrisCDPlayer = GameObject.Find("CORRIS").transform.Find("Assemblies/VINP_Radio/Sled/cd_sled_pivot").GetComponent<CarCDPlayerMWC>();
+        PlayMakerFSM volume3 = GameObject.Find("CORRIS").transform.Find("Assemblies/VINP_RadioCorris/CDPlayer1/ButtonsCD/CDplrVolume").GetPlayMaker("Knob");
+        GameObject.Find("CORRIS").transform.Find("Assemblies/VINP_RadioCorris/Sled/cd_sled_pivot").gameObject.AddComponent<CarCDPlayerMWC>().SetupVanillaPlayer(AttachedTo.Corris, volume3);
+        corrisCDPlayer = GameObject.Find("CORRIS").transform.Find("Assemblies/VINP_RadioCorris/Sled/cd_sled_pivot").GetComponent<CarCDPlayerMWC>();
 
         //"HOMENEW/Functions/FunctionsDisable/Stereos/Player/Sled/cd_sled_pivot/stereos_sled"
         //"HOMENEW/Functions/FunctionsDisable/Stereos/Player/ButtonsCD/Volume"
