@@ -96,12 +96,22 @@ namespace CDPlayer
 
         public void SetupCustomVanillaPlayer(string uniquePlayerName, PlayMakerFSM knobFsm)
         {
+            if (ModLoader.CurrentGame != Game.MyWinterCar)
+            {
+                ModConsole.Error("CarCDPlayerMWC only supports My Winter Car");
+                return;
+            }
             customName = uniquePlayerName;
             CDPlayerStorage.players.Add(new CustomCarPlayer(uniquePlayerName, this));
             SetupVanillaPlayer(AttachedTo.CustomCarMWC, knobFsm);
         }
         internal void SetupVanillaPlayer(AttachedTo car, PlayMakerFSM knobFsm)
         {
+            if(ModLoader.CurrentGame != Game.MyWinterCar)
+            {
+                ModConsole.Error("CarCDPlayerMWC only supports My Winter Car");
+                return;
+            }
             if (transform.childCount > 0) //if Vanilla CD was inserted before installing mod
             {
                 transform.GetChild(0).gameObject.SetActive(false);

@@ -16,7 +16,7 @@ public class CDPlayer : Mod
     public override string ID => "CDPlayer";
     public override string Name => "CDPlayer Enhanced";
     public override string Author => "piotrulos";
-    public override string Version => "2.0.6";
+    public override string Version => "2.0.7";
     public override string Description => "Makes adding CDs much easier, no renaming, no converting. (supports <color=orage>*.mp3, *.ogg, *.flac, *.wav, *.aiff</color>";
     public override Game SupportedGames => Game.MySummerCar_And_MyWinterCar;
 
@@ -143,6 +143,9 @@ public class CDPlayer : Mod
         Settings.AddText("<color=yellow>RIGHT CLICK radio channel button in cd player to switch channel 3 and 4</color>");
         channel3url = Settings.AddTextBox("ch3url", "Channel 3:", "http://185.33.21.112:11010", "Stream URL...");
         channel4url = Settings.AddTextBox("ch4url", "Channel 4:", "http://185.33.21.112/90s_128", "Stream URL...");
+        Settings.AddHeader("Reset CDPlayer Save", true);
+        Settings.AddText("Reset CDPlayer Enhanced save file");
+        Settings.AddSaveResetButton(this);
     }
     PopupSetting popup;
     void AddCustomFolderMenu()
@@ -488,7 +491,8 @@ public class CDPlayer : Mod
         FilterChange();
         if (SaveLoad.ValueExists(this, "SaveData"))
         {
-            LoadUnifiedSave();
+            if (CDPlayerStorage.players.Count == 0)
+                LoadUnifiedSave();
         }
         if (cdloadedinplayer)
         {
