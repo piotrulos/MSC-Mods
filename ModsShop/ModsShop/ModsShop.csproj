@@ -42,20 +42,20 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(ManagedPath)\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="cInput">
-      <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\cInput.dll</HintPath>
+      <HintPath>$(ManagedPath)\cInput.dll</HintPath>
     </Reference>
     <Reference Include="MSCLoader, Version=0.4.6.145, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\MSCLoader.dll</HintPath>
+      <HintPath>$(ManagedPath)\MSCLoader.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="PlayMaker, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\PlayMaker.dll</HintPath>
+      <HintPath>$(ManagedPath)\PlayMaker.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -66,12 +66,12 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>$(ManagedPath)\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(ManagedPath)\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -100,14 +100,49 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if "$(ConfigurationName)" == "Debug" (
-copy "$(TargetPath)" "D:\Steam\steamapps\common\My Winter Car\Mods" /y
-copy "$(TargetDir)$(TargetName).pdb" "D:\Steam\steamapps\common\My Winter Car\Mods" /y
-cd "D:\Steam\steamapps\common\My Winter Car\Mods"
-call "D:\Steam\steamapps\common\My Winter Car\Mods\debug.bat"
-) ELSE (
-copy "$(TargetPath)" "D:\Steam\steamapps\common\My Winter Car\Mods" /y
-)
-</PostBuildEvent>
+    <MSCMODSFOLDER>$(MSCPath)\Mods</MSCMODSFOLDER>
+    <MWCMODSFOLDER>$(MWCPath)\Mods</MWCMODSFOLDER>
+    <ABFOLDER>NONE</ABFOLDER>
+    <PostBuildEvent>
+      echo .
+      echo "== Running post build actions for configuration $(ConfigurationName)! ==="
+
+      IF "$(ConfigurationName)" == "Release" (
+      IF NOT "$(MSCMODSFOLDER)" == "NONE" (
+      copy "$(TargetPath)" "$(MSCMODSFOLDER)" /y
+      echo  "Copied dll into MSC mods folder!"        
+      )
+      IF NOT "$(MWCMODSFOLDER)" == "NONE" (
+      copy "$(TargetPath)" "$(MWCMODSFOLDER)" /y
+      echo  "Copied dll into MWC mods folder!"        
+      )
+      )
+      IF "$(ConfigurationName)" == "Debug" (
+      IF NOT "$(MSCMODSFOLDER)" == "NONE" (        
+      copy "$(TargetPath)" "$(MSCMODSFOLDER)" /y
+      copy "$(TargetDir)$(TargetName).pdb" "$(MSCMODSFOLDER)" /y
+      echo  "Copied pdb file into mods folder!"
+      cd "$(MSCMODSFOLDER)"
+      IF exist "$(MSCMODSFOLDER)\debug.bat" (
+      call "$(MSCMODSFOLDER)\debug.bat"
+      ) ELSE (
+      echo "debug.bat not found in "$(MSCMODSFOLDER)". You probably dont have MSCLoader debugging enabled!"
+      )
+      )
+      IF NOT "$(MWCMODSFOLDER)" == "NONE" (        
+      copy "$(TargetPath)" "$(MWCMODSFOLDER)" /y
+      copy "$(TargetDir)$(TargetName).pdb" "$(MWCMODSFOLDER)" /y
+      echo  "Copied pdb file into mods folder!"
+      cd "$(MWCMODSFOLDER)"
+      IF exist "$(MWCMODSFOLDER)\debug.bat" (
+      call "$(MWCMODSFOLDER)\debug.bat"
+      ) ELSE (
+      echo "debug.bat not found in "$(MWCMODSFOLDER)". You probably dont have MSCLoader debugging enabled!"
+      )
+      )      
+      )
+
+      echo "=== Done! ==="
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>

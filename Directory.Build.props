@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Directory.Build.props - place in the repository root (MSC-Mods\).
+  Auto-imported by every project below it.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Import Project="$(MSBuildThisFileDirectory)GamePath.user"
+        Condition="Exists('$(MSBuildThisFileDirectory)GamePath.user')" />
+
+  <PropertyGroup>
+    <ManagedPath>$(MSCPath)\mysummercar_Data\Managed</ManagedPath>
+    <ModsPath>$(MSCPath)\Mods</ModsPath>
+    <RefsPath>$(ModsPath)\References</RefsPath>
+    <PackagesDir>$(MSBuildThisFileDirectory)packages\</PackagesDir>
+  </PropertyGroup>
+
+  <Target Name="ValidateGamePath" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="'$(MSCPath)' == ''"
+           Text="Game install not found. Copy GamePath.user.sample to GamePath.user (repo root) and set your 'My Summer Car' path." />
+    <Error Condition="!Exists('$(ManagedPath)\MSCLoader.dll')"
+           Text="MSCLoader.dll not found in '$(ManagedPath)'. Is MSCLoader installed into that game copy?" />
+  </Target>
+
+  <!-- Download third-party reference DLLs on first build (game DLLs must come from the install) -->
+  <Target Name="AcquireThirdPartyRefs" BeforeTargets="ResolveAssemblyReferences" DependsOnTargets="ValidateGamePath">
+    <MakeDir Directories="$(RefsPath);$(PackagesDir)" />
+
+    <DownloadFile Condition="!Exists('$(RefsPath)\taglib-sharp.dll')"
+                  SourceUrl="https://www.nuget.org/api/v2/package/taglib/2.1.0.0"
+                  DestinationFolder="$(PackagesDir)" DestinationFileName="taglib.nupkg.zip" Retries="2" />
+    <Unzip Condition="!Exists('$(RefsPath)\taglib-sharp.dll')"
+           SourceFiles="$(PackagesDir)taglib.nupkg.zip" DestinationFolder="$(PackagesDir)taglib" />
+    <Copy Condition="!Exists('$(RefsPath)\taglib-sharp.dll')"
+          SourceFiles="$(PackagesDir)taglib\lib\taglib-sharp.dll" DestinationFiles="$(RefsPath)\taglib-sharp.dll" />
+
+    <DownloadFile Condition="!Exists('$(RefsPath)\BouncyCastle.Crypto.dll')"
+                  SourceUrl="https://www.nuget.org/api/v2/package/BouncyCastle/1.8.9"
+                  DestinationFolder="$(PackagesDir)" DestinationFileName="bouncycastle.nupkg.zip" Retries="2" />
+    <Unzip Condition="!Exists('$(RefsPath)\BouncyCastle.Crypto.dll')"
+           SourceFiles="$(PackagesDir)bouncycastle.nupkg.zip" DestinationFolder="$(PackagesDir)bouncycastle" />
+    <Copy Condition="!Exists('$(RefsPath)\BouncyCastle.Crypto.dll')"
+          SourceFiles="$(PackagesDir)bouncycastle\lib\BouncyCastle.Crypto.dll" DestinationFiles="$(RefsPath)\BouncyCastle.Crypto.dll" />
+  </Target>
+
+  <!-- Build ModsShop from this repo when its DLL is missing -->
+  <Target Name="BuildModsShopIfMissing" BeforeTargets="ResolveAssemblyReferences" DependsOnTargets="ValidateGamePath"
+          Condition="'$(MSBuildProjectName)' == 'CDPlayer' And !Exists('$(ModsPath)\ModsShop.dll')">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)ModsShop\ModsShop\ModsShop.csproj" Properties="Configuration=Release" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)ModsShop\ModsShop\bin\Release\ModsShop.dll" DestinationFolder="$(ModsPath)" />
+  </Target>
+
+</Project>
