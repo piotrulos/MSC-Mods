@@ -84,6 +84,8 @@ public class CDPlayer : Mod
             externalFolders = new CDExternalFolders();
         externalFoldersText.SetValue($"<color=yellow>{externalFolders.Folders.Count}</color> <color=aqua>external folder(s) found</color>");
 
+        // Internet radio previous state load
+        InternetRadio.Init(this);
     }
     void test()
     {
@@ -139,10 +141,14 @@ public class CDPlayer : Mod
         Settings.AddHeader("Internet radio settings", new Color32(0, 128, 0, 255));
         debugInfo = Settings.AddCheckBox("debugInfo", "Show debug info", false);
         RDSsim = Settings.AddCheckBox("RDSsim", "Simulate RDS", true);
-        Settings.AddText("REMINDER! Only links starting with http:// will work. <b>https:// is not supported.</b> Majority of streams work with http without any issues.");
+        Settings.AddText("Channels accept a direct stream URL (http:// or https://) or a <color=aqua>radio.garden</color> share link (https://radio.garden/listen/...). Links are resolved automatically when entering the game.");
         Settings.AddText("<color=yellow>RIGHT CLICK radio channel button in cd player to switch channel 3 and 4</color>");
-        channel3url = Settings.AddTextBox("ch3url", "Channel 3:", "http://185.33.21.112:11010", "Stream URL...");
-        channel4url = Settings.AddTextBox("ch4url", "Channel 4:", "http://185.33.21.112/90s_128", "Stream URL...");
+        // TODO: Add a method which is just going to read cache. If the value in settings matches any entry in cache, make this status into "loaded from cache"
+        channel3url = Settings.AddTextBox("ch3url", "Channel 3:", "http://185.33.21.112:11010", "Stream URL or radio.garden link...");
+        InternetRadio.ch3Status = Settings.AddText("<color=grey>not resolved yet</color>");
+        channel4url = Settings.AddTextBox("ch4url", "Channel 4:", "https://radio.garden/listen/nordic-lodge-copenhagen/RuChgK4N", "Stream URL or radio.garden link...");
+        InternetRadio.ch4Status = Settings.AddText("<color=grey>not resolved yet</color>");
+        Settings.AddButton("Resolve stations", InternetRadio.ResolveForce, Color.black, Color.white, SettingsButton.ButtonIcon.Update);
         Settings.AddHeader("Reset CDPlayer Save", true);
         Settings.AddText("Reset CDPlayer Enhanced save file");
         Settings.AddSaveResetButton(this);
@@ -527,6 +533,9 @@ public class CDPlayer : Mod
         GameObject.Find("cd case(item2)")?.SetActive(false);
         GameObject.Find("cd(item3)")?.SetActive(false);
         GameObject.Find("cd case(item3)")?.SetActive(false);
+
+        // Resolve URLs for internet radio, set in settings
+        InternetRadio.ResolveAuto();   // cache-first; network only for uncached share links (incl. placeholder on first run)
     }
     void CDPlayer_PostLoad()
     {

@@ -177,10 +177,10 @@ namespace CDPlayer
             switch (channel)
             {
                 case 1:
-                    url = CDPlayer.channel3url.GetValue();
+                    url = InternetRadio.GetChannelUrl(1);
                     break;
                 case 2:
-                    url = CDPlayer.channel4url.GetValue();
+                    url = InternetRadio.GetChannelUrl(2);
                     break;
             }
             PlayMakerFSM radioCh = RadioChannels.GetComponent<PlayMakerFSM>();
